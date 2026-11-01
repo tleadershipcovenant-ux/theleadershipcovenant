@@ -9,7 +9,6 @@ export interface SummitVideoItem {
   id: string;
   youtubeId: string;
   title: string;
-  tag: string;
   description: string;
   thumbnail: string;
 }
@@ -19,7 +18,6 @@ export const SUMMIT_VIDEOS: SummitVideoItem[] = [
     id: "v1",
     youtubeId: "e-zgk1VWN1s",
     title: "School Impact Summit — Event Highlights",
-    tag: "Keynotes & Sessions",
     description:
       "A look inside the room: keynote addresses, coaching corners, and leadership teams formulating 90-day whole-school action plans.",
     thumbnail: "https://img.youtube.com/vi/e-zgk1VWN1s/maxresdefault.jpg",
@@ -28,7 +26,6 @@ export const SUMMIT_VIDEOS: SummitVideoItem[] = [
     id: "v2",
     youtubeId: "omlFZklTLV8",
     title: "Leader Voices & Classroom Transformation",
-    tag: "Participant Reflections",
     description:
       "School heads and educators share firsthand how FranklinCovey Education leadership principles transformed student agency and staff culture.",
     thumbnail: "https://img.youtube.com/vi/omlFZklTLV8/maxresdefault.jpg",
@@ -37,7 +34,6 @@ export const SUMMIT_VIDEOS: SummitVideoItem[] = [
     id: "v3",
     youtubeId: "e-zgk1VWN1s",
     title: "Empowering Educators & Strategic Culture",
-    tag: "Leadership Culture",
     description:
       "Collaborative roundtables where educational leaders formulate measurable 90-day action targets for their school communities.",
     thumbnail: "https://img.youtube.com/vi/e-zgk1VWN1s/hqdefault.jpg",
@@ -208,11 +204,6 @@ export default function SummitVideoSlider() {
             transition={{ duration: 0.25 }}
             className="flex flex-col items-center"
           >
-            {/* Tag Badge */}
-            <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-widest text-[#FF7900] bg-[#FF7900]/10 border border-[#FF7900]/25 px-3 py-1 rounded-full mb-2">
-              {activeVideo.tag}
-            </span>
-
             {/* Video Title */}
             <h3 className="font-serif font-extrabold text-lg sm:text-xl md:text-2xl text-[#102E4D] leading-snug">
               {activeVideo.title}
@@ -248,4 +239,3 @@ export default function SummitVideoSlider() {
     </div>
   );
 }
-

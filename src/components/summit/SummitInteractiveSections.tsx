@@ -17,7 +17,7 @@ const SUMMIT_SPEAKERS = [
     role: "Lead Facilitator",
     title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
     bio: "Leads the FranklinCovey Education practice across Pakistan, Türkiye, and Azerbaijan. An executive advisor partnering with school leaders on leadership cultures, student empowerment, and the 4DX operating system.",
-    image: "/Submit/SP1.png",
+    image: "/images/fazal.jpg",
     badgeColor: "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30",
     topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
   },
@@ -26,7 +26,7 @@ const SUMMIT_SPEAKERS = [
     role: "Event Facilitator",
     title: "Regional Manager, FranklinCovey Education North Region",
     bio: "Partners with educational leaders and faculties across the North Region to foster sustainable character-based environments. Leads the summit's intensive working sessions, goal scorecards, and institutional commitment pledges.",
-    image: "/Submit/SP1.png",
+    image: "/images/ubaid.jpg",
     badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
     topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
   },
@@ -120,11 +120,11 @@ export default function SummitInteractiveSections() {
 
                 <div className="flex flex-col sm:flex-row flex-1">
                   {/* Speaker Image Presentation Area */}
-                  <div className="w-full h-64 sm:h-auto sm:w-[38%] lg:w-[36%] relative overflow-hidden bg-[#C2F9D2] border-b sm:border-b-0 sm:border-r border-[#D7F5EF] flex items-end justify-center shrink-0">
+                  <div className="w-full h-64 sm:h-auto sm:w-[38%] lg:w-[36%] relative overflow-hidden bg-[#E8F7F1] border-b sm:border-b-0 sm:border-r border-[#D7F5EF] flex items-center justify-center shrink-0">
                     <img
                       src={spk.image}
                       alt={spk.name}
-                      className="w-full h-full object-contain object-bottom select-none transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover object-center select-none transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
                     />
                   </div>
@@ -337,4 +337,3 @@ export default function SummitInteractiveSections() {
     </>
   );
 }
-

@@ -84,7 +84,7 @@ export const HOME_CONTENT = {
       {
         quote:
           "The 7 Habits training was the most impactful PD our staff has ever experienced.",
-        author: "District Superintendent",
+        author: "Head of Professional Development",
       },
     ],
   },

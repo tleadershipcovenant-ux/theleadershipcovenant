@@ -83,6 +83,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+      if (!phone || String(phone).trim().length < 7) {
+        return NextResponse.json(
+          { ok: false, error: "Valid phone number is required" },
+          { status: 400 }
+        );
+      }
       if (!message || String(message).trim().length < 5) {
         return NextResponse.json(
           { ok: false, error: "Message is required (min 5 characters)" },

@@ -25,21 +25,18 @@ const OBJECTIVE_THEMES = [
     numBadge: "bg-[#102E4D] text-[#FFC400]",
     iconColor: "text-[#FF7900]",
     iconBg: "bg-[#FF7900]/10 border-[#FF7900]/25",
-    tag: "Discover",
     takeaway: "Practices • Perspectives • Possibilities",
   },
   {
     numBadge: "bg-[#FF7900] text-white",
     iconColor: "text-[#FFC400]",
     iconBg: "bg-[#FFC400]/15 border-[#FFC400]/30",
-    tag: "Voice",
     takeaway: "LiM Schools • Journeys • Learning",
   },
   {
     numBadge: "bg-[#16A34A] text-white",
     iconColor: "text-[#16A34A]",
     iconBg: "bg-[#16A34A]/10 border-[#16A34A]/25",
-    tag: "Impact",
     takeaway: "Purposeful Leadership & Intentional Action",
   },
 ];
@@ -165,11 +162,6 @@ export default function SummitObjectivesAndAudience() {
                       <IconComp className="w-5 h-5" />
                     </div>
                   </div>
-
-                  {/* Category Tag */}
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF7900] block mb-1.5">
-                    {theme.tag}
-                  </span>
 
                   {/* Card Title */}
                   <h3 className="font-serif font-black text-lg sm:text-xl text-[#102E4D] group-hover:text-[#FF7900] transition-colors leading-snug tracking-wider mb-2">

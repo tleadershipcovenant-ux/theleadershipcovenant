@@ -119,6 +119,10 @@ export default function ContactSection() {
       setErrorMessage("Please enter a valid email address.");
       return;
     }
+    if (formData.phone.trim().length < 7) {
+      setErrorMessage("Please enter a valid phone / WhatsApp number.");
+      return;
+    }
     if (formData.organization.trim().length < 2) {
       setErrorMessage("Please enter your school or organization name.");
       return;
@@ -138,7 +142,7 @@ export default function ContactSection() {
           type: "contact",
           full_name: formData.name.trim(),
           email: formData.email.trim(),
-          phone: formData.phone.trim() || undefined,
+          phone: formData.phone.trim(),
           organization: formData.organization.trim(),
           interest: formData.interest,
           message: formData.message.trim(),
@@ -540,7 +544,7 @@ export default function ContactSection() {
                             setFormData({ ...formData, name: e.target.value });
                           }}
                           className={inputClass}
-                          placeholder="e.g. Ayesha Khan"
+                          placeholder="e.g. Salman Ahmed"
                           autoComplete="name"
                         />
                       </div>
@@ -562,7 +566,7 @@ export default function ContactSection() {
                             setFormData({ ...formData, email: e.target.value });
                           }}
                           className={inputClass}
-                          placeholder="ayesha@school.edu.pk"
+                          placeholder="salman@school.edu.pk"
                           autoComplete="email"
                         />
                       </div>
@@ -573,15 +577,13 @@ export default function ContactSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="contact-phone" className={labelClass}>
-                        Phone / WhatsApp{" "}
-                        <span className="text-[11px] font-medium normal-case text-slate-400">
-                          (Optional)
-                        </span>
+                        Phone / WhatsApp <span className="text-[#FF7900]">*</span>
                       </label>
                       <div className={inputWrapperClass}>
                         <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
                         <input
                           id="contact-phone"
+                          required
                           type="tel"
                           value={formData.phone}
                           onChange={(e) =>
@@ -708,4 +710,3 @@ export default function ContactSection() {
     </section>
   );
 }
-

@@ -101,7 +101,7 @@ export default function GovernanceSection() {
               {/* Right Column: CEO Image */}
               <div className="lg:col-span-4 relative min-h-[300px] sm:min-h-[340px] lg:min-h-full bg-slate-100 overflow-hidden">
                 <img
-                  src="/images/ceo.jpg"
+                  src="/images/ubaid.jpg"
                   alt="Portrait of Ubaid ur Rehman, CEO of The Leadership Covenant"
                   loading="lazy"
                   decoding="async"

@@ -34,7 +34,7 @@ export default function AboutSection() {
             Our Story
           </p>
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
-            Everyone has the potential to lead. We help them find it.
+            Everyone has a leader within. We help them discover it.
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           <p className="text-sm sm:text-base text-slate-600 mt-3.5 font-medium leading-relaxed">

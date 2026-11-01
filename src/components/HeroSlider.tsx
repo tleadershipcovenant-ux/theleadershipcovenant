@@ -1,8 +1,35 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { MdArrowForward } from "react-icons/md";
 
+const HERO_BACKGROUNDS = [
+  {
+    src: "/Hero%20Section/H1.png",
+    alt: "A Covenant to Build Leaders - The Leadership Covenant",
+  },
+  {
+    src: "/images/pd-educators.jpg",
+    alt: "Professional development for educators",
+  },
+  {
+    src: "/images/leadership-camp.jpg",
+    alt: "Leadership camp experience",
+  },
+];
+
 export default function HeroSlider() {
+  const [activeBackground, setActiveBackground] = useState(0);
+
+  useEffect(() => {
+    const rotation = window.setInterval(() => {
+      setActiveBackground((current) => (current + 1) % HERO_BACKGROUNDS.length);
+    }, 4000);
+
+    return () => window.clearInterval(rotation);
+  }, []);
+
   return (
     <section
       className="relative w-full overflow-hidden bg-[#001B33]"
@@ -17,13 +44,18 @@ export default function HeroSlider() {
 
       {/* Background Image & Executive Overlays */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <img
-          src="/Hero%20Section/H1.png"
-          alt="A Covenant to Build Leaders - The Leadership Covenant"
-          fetchPriority="high"
-          decoding="async"
-          className="w-full h-full object-cover object-center scale-105"
-        />
+        {HERO_BACKGROUNDS.map((background, index) => (
+          <img
+            key={background.src}
+            src={background.src}
+            alt={background.alt}
+            fetchPriority={index === 0 ? "high" : "auto"}
+            decoding="async"
+            className={`absolute inset-0 w-full h-full object-cover object-center scale-105 transition-opacity duration-1000 ${
+              activeBackground === index ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
         <div className="absolute inset-0 bg-black/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#001B33]/90 via-black/30 to-[#001B33]/55" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,27,51,0.5)_0%,_transparent_75%)]" />

@@ -68,7 +68,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center shrink-0 text-xs text-slate-300">
             <span className="inline-flex items-center gap-1.5">
               <MdLocationOn className="text-[13px] text-[#FFC400]" />
-              <span className="font-num">171, St. 68, F-10/3, Islamabad, Pakistan</span>
+              <span className="font-num">F-10/3, Islamabad</span>
             </span>
           </div>
         </div>

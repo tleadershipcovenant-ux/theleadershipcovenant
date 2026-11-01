@@ -52,11 +52,11 @@ export default function Footer() {
               href="/"
               className="inline-flex items-center gap-3 sm:gap-3.5 group max-w-full"
             >
-              <div className="w-11 h-11 sm:w-[52px] sm:h-[52px] rounded-xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-md shadow-black/30 border border-white/25 group-hover:border-[#FFC400] transition-all duration-300">
+              <div className="w-11 h-11 sm:w-[52px] sm:h-[52px] flex items-center justify-center shrink-0">
                 <img
                   alt="The Leadership Covenant"
                   className="w-full h-full object-contain"
-                  src="/Logo_For_Navbar_Fotter.png"
+                  src="/images/footerlogo-transparent.png"
                 />
               </div>
 
@@ -71,7 +71,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-xs sm:text-[13px] text-slate-300/90 leading-relaxed max-w-sm">
-              The Leadership Covenant is a commitment to build leadership in every student, educator, and family, one principle, one habit, one school at a time.
+              The Leadership Covenant exists to prepare individuals for life, organizations for meaningful contribution, and education for awareness and wisdom.
             </p>
 
             {/* Social Channels */}
@@ -165,12 +165,12 @@ export default function Footer() {
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-3 text-xs sm:text-[13px] text-slate-300">
-              <div className="flex items-start gap-2.5">
-                <span className="w-7 h-7 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
                   <MdLocationOn className="text-sm text-[#FFC400]" />
                 </span>
                 <span className="font-num leading-snug">
-                  171, St. 68, F-10/3, Islamabad, Pakistan
+                  F-10/3, Islamabad
                 </span>
               </div>
 

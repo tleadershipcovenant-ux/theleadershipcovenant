@@ -13,14 +13,14 @@ export const SERVICES_SLIDES = [
     title: "Leader in Me",
     category: "Whole-School Transformation",
     description:
-      "Our flagship EY–12 whole-school transformation process empowering students, educators, and families with The 7 Habits and leadership character for life.",
+      "EY–12 whole-school transformation process empowering students, educators, and families with The 7 Habits and leadership character for life.",
     href: "/services#leader-in-me",
   },
   {
     id: "leader-u",
     image: "/images/leader-u.jpg",
     title: "LeaderU",
-    category: "Higher Education & Young Adults",
+    category: "Higher Education",
     description:
       "Developing future-ready leaders for college, university, and beyond with FranklinCovey's globally trusted frameworks, self-mastery, and career readiness.",
     href: "/services#leader-u",
@@ -31,7 +31,7 @@ export const SERVICES_SLIDES = [
     title: "Professional Development for Educators",
     category: "Faculty & Institutional Leadership",
     description:
-      "Certified deep-dive masterclasses in The 7 Habits, The 4 Disciplines of Execution (4DX), and high-trust leadership that transform schools from within.",
+      "Transformative professional learning in The 7 Habits®, 4 Disciplines of Execution®, and the principles of high-trust leadership, equipping educators to lead themselves, empower others, and create lasting school-wide impact.",
     href: "/services#professional-development",
   },
   {
@@ -235,7 +235,7 @@ export default function HomeServicesSection() {
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           <p className="text-sm sm:text-base text-slate-600 mt-3.5 font-medium leading-relaxed max-w-2xl mx-auto">
-            From whole-school character transformation to university readiness, educator masterclasses, and youth expeditions, explore our 6 core leadership pathways.
+            From personal leadership development to whole-school and organizational transformation, explore our six pathways to building leadership at every level.
           </p>
         </motion.div>
 

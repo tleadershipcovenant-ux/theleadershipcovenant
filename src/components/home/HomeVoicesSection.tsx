@@ -45,9 +45,6 @@ export default function HomeVoicesSection() {
 
             {/* Author Attribution with Institutional Crest Seal */}
             <div className="flex items-center gap-3.5 mt-5 sm:mt-6 pt-3 border-t border-[#D7F5EF] w-full">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#102E4D] to-[#001B33] text-[#FFC400] font-num font-extrabold text-xs flex items-center justify-center border border-[#FFC400]/40 shadow-xs shrink-0">
-                7H
-              </div>
               <div className="flex flex-col">
                 <span className="font-serif font-bold text-sm sm:text-base text-[#102E4D] leading-tight">
                   {principle.author}

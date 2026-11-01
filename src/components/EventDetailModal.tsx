@@ -120,6 +120,7 @@ export default function EventDetailModal({
         const targetLink = isSummit
           ? "/summit"
           : `/apply?activity=${event.slug}#apply-form`;
+        const enrollmentLink = `/apply?activity=${event.slug}#apply-form`;
 
         return (
           <div
@@ -240,7 +241,7 @@ export default function EventDetailModal({
                       </div>
 
                       <Link
-                        href={targetLink}
+                        href={enrollmentLink}
                         onClick={onClose}
                         className="self-start sm:self-auto shrink-0 px-4 py-2 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer active:scale-98"
                       >
@@ -448,4 +449,3 @@ export default function EventDetailModal({
     </AnimatePresence>
   );
 }
-
