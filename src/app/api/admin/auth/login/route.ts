@@ -3,8 +3,9 @@ import {
   ADMIN_COOKIE_NAME,
   JWT_EXPIRY_SECONDS,
   signAdminJwt,
-  verifyAdminCredentials,
+  verifyAdminWithSupabase,
 } from "@/lib/admin-auth";
+import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,18 +20,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isValid = verifyAdminCredentials(email, password);
-    if (!isValid) {
+    // 1. Authenticate user directly against Supabase Auth
+    const authResult = await verifyAdminWithSupabase(email, password);
+    if (!authResult.ok) {
       return NextResponse.json(
         {
           ok: false,
-          error: "Invalid admin email or password. Please check your credentials.",
+          error: authResult.error || "Invalid admin email or password.",
         },
         { status: 401 }
       );
     }
 
-    const { token, payload } = await signAdminJwt(email);
+    // 2. Also refresh/set SSR Supabase session cookies
+    try {
+      const supabase = await createClient();
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+    } catch {
+      // Non-critical if SSR cookies are bypassed
+    }
+
+    // 3. Issue cryptographically signed Admin JWT session token
+    const verifiedEmail = authResult.email || email;
+    const { token, payload } = await signAdminJwt(verifiedEmail);
 
     const res = NextResponse.json({
       ok: true,
@@ -60,4 +75,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

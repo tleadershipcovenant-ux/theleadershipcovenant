@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 export const ADMIN_COOKIE_NAME = "tlc_admin_jwt";
 export const JWT_EXPIRY_SECONDS = 60 * 60 * 24; // 24 hours
@@ -17,16 +18,6 @@ function getJwtSecret(): string {
     process.env.ADMIN_JWT_SECRET ||
     "tlc_jwt_hs256_secret_2026_leadership_covenant_8492017465a9c3e1"
   );
-}
-
-export function getExpectedAdminCredentials(): {
-  email: string;
-  password: string;
-} {
-  return {
-    email: (process.env.ADMIN_EMAIL || "admin@gamail.com").trim().toLowerCase(),
-    password: process.env.ADMIN_PASSWORD || "001001",
-  };
 }
 
 function base64UrlEncodeBytes(bytes: Uint8Array): string {
@@ -57,18 +48,6 @@ function base64UrlDecodeToBytes(b64url: string): Uint8Array {
   return bytes;
 }
 
-function timingSafeEqualString(a: string, b: string): boolean {
-  const enc = new TextEncoder();
-  const aBytes = enc.encode(a);
-  const bBytes = enc.encode(b);
-  const len = Math.max(aBytes.length, bBytes.length);
-  let diff = aBytes.length ^ bBytes.length;
-  for (let i = 0; i < len; i++) {
-    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
-  }
-  return diff === 0;
-}
-
 async function importHmacKey(secret: string): Promise<CryptoKey> {
   return crypto.subtle.importKey(
     "raw",
@@ -80,17 +59,54 @@ async function importHmacKey(secret: string): Promise<CryptoKey> {
 }
 
 /**
- * Verifies admin login credentials using timing-safe comparison.
+ * Verifies admin credentials directly against Supabase Auth (auth.users).
+ * No admin credentials are stored in environment files.
  */
-export function verifyAdminCredentials(
+export async function verifyAdminWithSupabase(
   inputEmail: string,
   inputPassword: string
-): boolean {
-  const expected = getExpectedAdminCredentials();
-  const normalizedEmail = (inputEmail || "").trim().toLowerCase();
-  const emailOk = timingSafeEqualString(normalizedEmail, expected.email);
-  const passwordOk = timingSafeEqualString(inputPassword || "", expected.password);
-  return emailOk && passwordOk;
+): Promise<{ ok: boolean; email?: string; error?: string }> {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  const key = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    ""
+  ).trim();
+
+  if (!url || !key) {
+    return { ok: false, error: "Supabase service is not configured." };
+  }
+
+  const supabase = createSupabaseJsClient(url, key, {
+    auth: { persistSession: false },
+  });
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: inputEmail.trim().toLowerCase(),
+    password: inputPassword,
+  });
+
+  if (error || !data?.user) {
+    return {
+      ok: false,
+      error: error?.message || "Invalid admin email or password.",
+    };
+  }
+
+  const user = data.user;
+  const isSuperAdmin =
+    user.app_metadata?.role === "admin" ||
+    user.user_metadata?.role === "admin" ||
+    user.email === "tleadershipcovenant@gmail.com";
+
+  if (!isSuperAdmin) {
+    return {
+      ok: false,
+      error: "Access denied. This user does not have administrator privileges.",
+    };
+  }
+
+  return { ok: true, email: user.email || inputEmail };
 }
 
 /**
@@ -190,4 +206,3 @@ export async function authenticateAdminRequest(
 
   return null;
 }
-

@@ -1,23 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ADMIN_COOKIE_NAME, authenticateAdminRequest, verifyAdminJwt } from "@/lib/admin-auth";
+import { updateSession } from "./utils/supabase/middleware";
 
 /**
- * Next.js 16 Proxy guarding the hidden `/AD_Admin` portal and `/api/admin/*` endpoints
- * with cryptographic HS256 JWT verification and `noindex, nofollow` headers.
+ * Next.js 16 Proxy guarding the hidden `/AD_Admin` portal and `/api/admin/*` endpoints,
+ * keeping Supabase user sessions refreshed, and enforcing `noindex, nofollow` headers.
  */
 export async function proxy(request: NextRequest) {
+  // 1. Refresh Supabase session cookies
+  const supabaseResponse = await updateSession(request);
+
   const { pathname } = request.nextUrl;
 
-  // 1. Protect /api/admin/* endpoints (except public auth endpoints)
+  // 2. Protect /api/admin/* endpoints (except public auth endpoints)
   if (pathname.startsWith("/api/admin")) {
     if (
       pathname === "/api/admin/auth/login" ||
       pathname === "/api/admin/auth/logout"
     ) {
-      const res = NextResponse.next();
-      res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-      return res;
+      supabaseResponse.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+      return supabaseResponse;
     }
 
     const session = await authenticateAdminRequest(request);
@@ -31,12 +34,11 @@ export async function proxy(request: NextRequest) {
       );
     }
 
-    const res = NextResponse.next();
-    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-    return res;
+    supabaseResponse.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return supabaseResponse;
   }
 
-  // 2. Protect /AD_Admin pages
+  // 3. Protect /AD_Admin pages
   if (pathname.startsWith("/AD_Admin")) {
     const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
     const session = await verifyAdminJwt(token);
@@ -59,15 +61,15 @@ export async function proxy(request: NextRequest) {
       return res;
     }
 
-    const res = NextResponse.next();
-    res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-    return res;
+    supabaseResponse.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return supabaseResponse;
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/AD_Admin/:path*", "/api/admin/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
-

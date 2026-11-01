@@ -281,6 +281,9 @@ function RegistrationsCrmInner() {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("purpose", "screenshot");
+      if (selected?.activity_slug) {
+        fd.append("activity_slug", selected.activity_slug);
+      }
       const upRes = await fetch("/api/upload", { method: "POST", body: fd });
       const upJson = await upRes.json();
       if (upRes.ok && upJson.url) {

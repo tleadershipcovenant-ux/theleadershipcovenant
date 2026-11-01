@@ -19,6 +19,11 @@ import {
   shareOfficialReceipt,
   type ReceiptPayload,
 } from "@/lib/receipt";
+import {
+  validateScreenshotFile,
+  compressScreenshotImage,
+  type CompressionResult,
+} from "@/lib/image-compressor";
 
 const PartyConfetti = dynamic(() => import("@/components/PartyConfetti"), {
   ssr: false,
@@ -95,6 +100,8 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     null
   );
   const [isDragging, setIsDragging] = useState(false);
+  const [compressingScreenshot, setCompressingScreenshot] = useState(false);
+  const [compressionStats, setCompressionStats] = useState<CompressionResult | null>(null);
 
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
@@ -261,24 +268,40 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     }
   };
 
-  const processScreenshotFile = (file: File | undefined | null) => {
+  const processScreenshotFile = async (file: File | undefined | null) => {
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError(
-        "Please upload a valid image screenshot (JPG, PNG, WEBP, or HEIC)."
-      );
-      return;
-    }
-    if (file.size > 12 * 1024 * 1024) {
-      setError("Screenshot image must be smaller than 12 MB.");
-      return;
-    }
     setError(null);
-    if (screenshotPreview) {
-      URL.revokeObjectURL(screenshotPreview);
+    setCompressingScreenshot(true);
+
+    try {
+      // 1. Validate if image is a genuine receipt screenshot (MIME, min dimensions, aspect ratio)
+      const validation = await validateScreenshotFile(file);
+      if (!validation.isValid) {
+        setError(validation.error || "Please upload a valid receipt screenshot.");
+        setCompressingScreenshot(false);
+        return;
+      }
+
+      // 2. Compress image strictly under 2 MB limit while keeping text & reference crisp
+      const result = await compressScreenshotImage(file, {
+        maxSizeBytes: 1.8 * 1024 * 1024,
+      });
+
+      if (screenshotPreview) {
+        URL.revokeObjectURL(screenshotPreview);
+      }
+      setScreenshotFile(result.compressedFile);
+      setScreenshotPreview(result.previewUrl);
+      setCompressionStats(result);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to optimize screenshot. Please try another image."
+      );
+    } finally {
+      setCompressingScreenshot(false);
     }
-    setScreenshotFile(file);
-    setScreenshotPreview(URL.createObjectURL(file));
   };
 
   const clearScreenshot = () => {
@@ -287,6 +310,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     }
     setScreenshotFile(null);
     setScreenshotPreview(null);
+    setCompressionStats(null);
     if (galleryInputRef.current) galleryInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
@@ -316,6 +340,10 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
         const uploadForm = new FormData();
         uploadForm.append("file", screenshotFile);
         uploadForm.append("purpose", "screenshot");
+        uploadForm.append(
+          "activity_slug",
+          formData.activity_slug || "school-impact-summit-2026"
+        );
 
         const uploadRes = await fetch("/api/upload", {
           method: "POST",
@@ -2254,7 +2282,17 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                     className="hidden"
                   />
 
-                  {!screenshotFile ? (
+                  {compressingScreenshot ? (
+                    <div className="p-8 rounded-2xl border-2 border-dashed border-[#FF7900] bg-[#FFF8F1] text-center">
+                      <Loader2 className="w-8 h-8 text-[#FF7900] animate-spin mx-auto mb-3" />
+                      <p className="text-sm font-extrabold text-[#102E4D]">
+                        Validating &amp; Optimizing Receipt Image...
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Ensuring sharp text &amp; compressing below the 2 MB limit
+                      </p>
+                    </div>
+                  ) : !screenshotFile ? (
                     <div
                       onDragOver={(e) => {
                         e.preventDefault();
@@ -2279,8 +2317,8 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                         Drop Receipt Screenshot Here
                       </p>
                       <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                        Supports PNG, JPG, WEBP or HEIC up to{" "}
-                        <span className="font-num font-bold">12 MB</span>
+                        Supports PNG, JPG, WEBP or HEIC • Auto-compressed to{" "}
+                        <span className="font-num font-bold text-[#102E4D]">under 2 MB</span>
                       </p>
 
                       <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -2324,14 +2362,19 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                       <div className="flex-1 min-w-0 text-center sm:text-left">
                         <div className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#15803D] uppercase tracking-wider">
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>Receipt Screenshot Attached</span>
+                          <span>Receipt Validated &amp; Attached</span>
                         </div>
                         <p className="font-num text-sm font-bold text-[#102E4D] truncate mt-1">
                           {screenshotFile.name}
                         </p>
                         <p className="font-num text-xs text-slate-500 mt-0.5">
-                          {formatFileSize(screenshotFile.size)} •{" "}
-                          {activePaymentAccount.name}
+                          {formatFileSize(screenshotFile.size)}
+                          {compressionStats && compressionStats.savingsPercent > 0 && (
+                            <span className="text-[#15803D] font-bold ml-1.5">
+                              (Saved {compressionStats.savingsPercent}% • &lt; 2 MB)
+                            </span>
+                          )}{" "}
+                          • {activePaymentAccount.name}
                         </p>
 
                         <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-2">

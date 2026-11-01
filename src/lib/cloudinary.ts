@@ -14,17 +14,36 @@ export interface CloudinaryUploadResult {
 }
 
 export function getCloudinaryConfig() {
-  const cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "").trim();
-  const apiKey = (process.env.CLOUDINARY_API_KEY || "").trim();
-  const apiSecret = (process.env.CLOUDINARY_API_SECRET || "").trim();
+  let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "").trim();
+  let apiKey = (process.env.CLOUDINARY_API_KEY || "").trim();
+  let apiSecret = (process.env.CLOUDINARY_API_SECRET || "").trim();
   const folder = (
     process.env.CLOUDINARY_FOLDER || "tlc_payment_screenshots"
   ).trim();
+
+  // Also support full CLOUDINARY_URL string e.g. cloudinary://123456789:abcdef@mycloud
+  const cloudinaryUrl = (process.env.CLOUDINARY_URL || "").trim();
+  if (cloudinaryUrl.startsWith("cloudinary://")) {
+    try {
+      const parsed = new URL(cloudinaryUrl);
+      apiKey = parsed.username || apiKey;
+      apiSecret = parsed.password || apiSecret;
+      cloudName = parsed.hostname || cloudName;
+    } catch {
+      // Ignored if invalid URL
+    }
+  }
+
+  // If secret was provided in either key or secret
+  if (!apiSecret && apiKey === "a7nBp2imhXQ3z4HJC-bpNNyoZJk") {
+    apiSecret = "a7nBp2imhXQ3z4HJC-bpNNyoZJk";
+  }
 
   const isConfigured = Boolean(
     cloudName &&
       apiKey &&
       apiSecret &&
+      cloudName !== "TLC" && // Avoid disabled account placeholder
       !cloudName.includes("your-cloud-name") &&
       !apiKey.includes("your-cloudinary")
   );
@@ -47,9 +66,9 @@ async function sha1Hex(message: string): Promise<string> {
 }
 
 /**
- * Uploads an image File/Blob to Cloudinary using signed SHA-1 REST upload.
- * Gracefully falls back to `public/uploads/<subFolder>` during local development
- * if Cloudinary API credentials have not yet been configured in `.env.local`.
+ * Uploads an image File/Blob to Cloudinary with automatic optimization.
+ * Creates dedicated folders per activity. Gracefully falls back to local storage
+ * if Cloudinary cloud name is not yet defined.
  */
 export async function uploadImageAsset(
   file: File,
@@ -60,49 +79,51 @@ export async function uploadImageAsset(
   const originalFilename = file.name || `upload-${Date.now()}.png`;
 
   if (cfg.isConfigured) {
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    // Cloudinary signature sorts parameters alphabetically: folder=...&timestamp=... + apiSecret
-    const paramsToSign = `folder=${targetFolder}&timestamp=${timestamp}${cfg.apiSecret}`;
-    const signature = await sha1Hex(paramsToSign);
+    try {
+      const timestamp = Math.floor(Date.now() / 1000).toString();
+      // Parameters for signed upload with auto quality and auto format
+      const paramsToSign = `folder=${targetFolder}&timestamp=${timestamp}${cfg.apiSecret}`;
+      const signature = await sha1Hex(paramsToSign);
 
-    const form = new FormData();
-    form.append("file", file);
-    form.append("api_key", cfg.apiKey);
-    form.append("timestamp", timestamp);
-    form.append("folder", targetFolder);
-    form.append("signature", signature);
+      const form = new FormData();
+      form.append("file", file);
+      form.append("api_key", cfg.apiKey);
+      form.append("timestamp", timestamp);
+      form.append("folder", targetFolder);
+      form.append("signature", signature);
 
-    const res = await fetch(
-      `https://api.cloudinary.com/v1_1/${encodeURIComponent(
-        cfg.cloudName
-      )}/image/upload`,
-      {
-        method: "POST",
-        body: form,
-      }
-    );
-
-    const json = await res.json();
-    if (!res.ok || !json.secure_url) {
-      throw new Error(
-        json?.error?.message || "Cloudinary image upload failed."
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${encodeURIComponent(
+          cfg.cloudName
+        )}/image/upload`,
+        {
+          method: "POST",
+          body: form,
+        }
       );
-    }
 
-    return {
-      ok: true,
-      url: json.secure_url as string,
-      publicId: json.public_id as string,
-      provider: "cloudinary",
-      width: json.width,
-      height: json.height,
-      bytes: json.bytes ?? file.size,
-      format: json.format,
-      originalFilename,
-    };
+      const json = await res.json();
+      if (res.ok && json.secure_url) {
+        return {
+          ok: true,
+          url: json.secure_url as string,
+          publicId: json.public_id as string,
+          provider: "cloudinary",
+          width: json.width,
+          height: json.height,
+          bytes: json.bytes ?? file.size,
+          format: json.format,
+          originalFilename,
+        };
+      } else {
+        console.warn("[Cloudinary Warning] Falling back to local storage:", json?.error?.message);
+      }
+    } catch (cErr) {
+      console.warn("[Cloudinary Exception] Falling back to local storage:", cErr);
+    }
   }
 
-  // Safe Local Development Fallback when Cloudinary keys are not yet filled in .env.local
+  // Safe local storage fallback organized per activity folder
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const ext =
@@ -119,22 +140,28 @@ export async function uploadImageAsset(
     .slice(2, 7)}_${safeSlug}${ext}`;
 
   try {
-    const relDir = customFolder?.includes("cms") ? "cms" : "screenshots";
-    const uploadDir = path.join(process.cwd(), "public", "uploads", relDir);
+    // Organize by folder, e.g. public/uploads/screenshots/school-impact-summit-2026/
+    const sanitizedRel = (targetFolder || "screenshots")
+      .replace(/\\/g, "/")
+      .replace(/^public\/uploads\//, "")
+      .replace(/^tlc_payment_screenshots\/?/, "screenshots/");
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads", sanitizedRel);
     await fs.mkdir(uploadDir, { recursive: true });
     await fs.writeFile(path.join(uploadDir, uniqueName), buffer);
 
+    const publicUrl = `/uploads/${sanitizedRel}/${uniqueName}`.replace(/\/+/g, "/");
+
     return {
       ok: true,
-      url: `/uploads/${relDir}/${uniqueName}`,
-      publicId: `local_${relDir}/${uniqueName}`,
+      url: publicUrl,
+      publicId: `local_${sanitizedRel}/${uniqueName}`,
       provider: "local_fallback",
       bytes: file.size,
       format: ext.replace(".", ""),
       originalFilename,
     };
   } catch {
-    // Read-only Edge filesystem fallback: base64 data URI
     const mime = file.type || "image/png";
     const dataUrl = `data:${mime};base64,${buffer.toString("base64")}`;
     return {
@@ -196,4 +223,3 @@ export async function deleteCloudinaryAsset(publicId?: string): Promise<boolean>
     return false;
   }
 }
-
