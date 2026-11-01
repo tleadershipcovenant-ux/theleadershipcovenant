@@ -126,7 +126,8 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/api/admin")) {
     if (
       pathname === "/api/admin/auth/login" ||
-      pathname === "/api/admin/auth/logout"
+      pathname === "/api/admin/auth/logout" ||
+      pathname === "/api/admin/health"
     ) {
       response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
       return response;
