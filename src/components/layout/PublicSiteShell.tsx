@@ -17,7 +17,7 @@ export default function PublicSiteShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [isAdminSubdomain, setIsAdminSubdomain] = useState(false);
+  const [isAdminHost, setIsAdminHost] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -26,36 +26,22 @@ export default function PublicSiteShell({
         host === "admin.leadershipcovenant.com.pk" ||
         host.startsWith("admin.")
       ) {
-        setIsAdminSubdomain(true);
+        setIsAdminHost(true);
       }
     }
   }, []);
 
-  const isCleanAdminRoute =
-    pathname === "/" ||
+  const isAdminRoute =
+    isAdminHost ||
+    pathname?.startsWith("/AD_Admin") ||
     pathname === "/login" ||
     pathname?.startsWith("/registrations") ||
     pathname?.startsWith("/contacts") ||
     pathname?.startsWith("/cms");
 
-  const isAdminRoute =
-    pathname?.startsWith("/AD_Admin") ||
-    (isAdminSubdomain && isCleanAdminRoute);
-
-  // If on admin route or admin subdomain, do not render public site header/footer
+  // Never render public website navbar/footer on admin routes or admin subdomain
   if (isAdminRoute) {
     return <>{children}</>;
-  }
-
-  // Double check client window location to prevent flashes on admin subdomain
-  if (typeof window !== "undefined") {
-    const host = window.location.hostname.toLowerCase();
-    if (
-      host === "admin.leadershipcovenant.com.pk" ||
-      host.startsWith("admin.")
-    ) {
-      return <>{children}</>;
-    }
   }
 
   return (

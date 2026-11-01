@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Playfair_Display, Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import PublicSiteShell from "@/components/layout/PublicSiteShell";
@@ -63,11 +64,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let isAdminSubdomain = false;
+  try {
+    const headersList = await headers();
+    const host = (
+      headersList.get("x-forwarded-host") ||
+      headersList.get("host") ||
+      ""
+    ).toLowerCase();
+    isAdminSubdomain =
+      host === "admin.leadershipcovenant.com.pk" || host.startsWith("admin.");
+  } catch {
+    // Non-blocking fallback during build / static optimization
+  }
+
   return (
     <html
       lang="en"
@@ -79,7 +94,11 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-background text-[#111c2d] antialiased selection:bg-[#ffbe3b] selection:text-[#00153d]"
       >
-        <PublicSiteShell>{children}</PublicSiteShell>
+        {isAdminSubdomain ? (
+          children
+        ) : (
+          <PublicSiteShell>{children}</PublicSiteShell>
+        )}
       </body>
     </html>
   );
