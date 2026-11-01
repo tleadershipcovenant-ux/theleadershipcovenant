@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
+import ReactDOM from "react-dom";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Lock,
@@ -16,6 +17,12 @@ import {
 } from "lucide-react";
 
 function AdminLoginFormInner() {
+  // Preload logo asset at the very start of rendering
+  ReactDOM.preload("/Logo_For_Navbar_Fotter.png", {
+    as: "image",
+    fetchPriority: "high",
+  });
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,6 +51,15 @@ function AdminLoginFormInner() {
     "checking" | "connected" | "standby"
   >("checking");
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
+
+  // Pre-warm dashboard route in the background so sign-in is instant
+  useEffect(() => {
+    try {
+      router.prefetch(isCleanUrl ? "/" : "/AD_Admin");
+    } catch {
+      // Non-critical prefetch
+    }
+  }, [isCleanUrl, router]);
 
   const validateEmail = (val: string): string | null => {
     const trimmed = val.trim();
@@ -87,14 +103,19 @@ function AdminLoginFormInner() {
     setPasswordError(validatePassword(password));
   };
 
-  // Run database health check on page load to keep database alive and warm
+  // Run non-blocking database health check after initial paint to maximize reload speed
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
 
     async function checkHealth() {
       try {
         const start = Date.now();
-        const res = await fetch("/api/admin/health", { cache: "no-store" });
+        const res = await fetch("/api/admin/health", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         const elapsed = Date.now() - start;
 
         if (!active) return;
@@ -112,13 +133,22 @@ function AdminLoginFormInner() {
         }
       } catch {
         if (active) setHealthStatus("standby");
+      } finally {
+        clearTimeout(timeoutId);
       }
     }
 
-    checkHealth();
+    // Schedule health check on browser idle time so UI renders and interacts instantaneously
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      window.requestIdleCallback(() => checkHealth());
+    } else {
+      setTimeout(checkHealth, 30);
+    }
 
     return () => {
       active = false;
+      controller.abort();
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -210,6 +240,10 @@ function AdminLoginFormInner() {
                 <img
                   src="/Logo_For_Navbar_Fotter.png"
                   alt="The Leadership Covenant"
+                  width={96}
+                  height={96}
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-contain"
                 />
               </div>

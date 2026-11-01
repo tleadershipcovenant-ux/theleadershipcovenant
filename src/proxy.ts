@@ -98,19 +98,25 @@ export async function proxy(request: NextRequest) {
   const hostname = getNormalizedHost(request);
   const onAdminDomain = isAdminSubdomain(hostname);
   const { pathname, search } = request.nextUrl;
+  const lowerPath = pathname.toLowerCase();
+  const isLoginPage =
+    lowerPath === "/login" ||
+    lowerPath === "/ad_admin/login" ||
+    lowerPath === "/admin/login";
 
   // Check if Supabase session refresh is actually required.
   // CRITICAL PERFORMANCE FIX: Skip external Supabase network calls for anonymous public page visits
-  // to prevent Cloudflare Worker subrequest timeouts and keep client-side navigation instantaneous.
+  // and login page requests without an active cookie to keep edge rendering and reload instantaneous.
   const hasSupabaseCookie = request.cookies
     .getAll()
     .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
 
   const needsSessionRefresh =
-    onAdminDomain ||
-    pathname.startsWith("/AD_Admin") ||
-    pathname.startsWith("/api/admin") ||
-    hasSupabaseCookie;
+    !isLoginPage &&
+    (onAdminDomain ||
+      pathname.startsWith("/AD_Admin") ||
+      pathname.startsWith("/api/admin") ||
+      hasSupabaseCookie);
 
   // 1. Refresh Supabase session cookies only when relevant
   const response = needsSessionRefresh
@@ -234,7 +240,6 @@ export async function proxy(request: NextRequest) {
   }
 
   // Local development: canonicalize /admin or /ad_admin to /AD_Admin
-  const lowerPath = pathname.toLowerCase();
   if (lowerPath === "/admin" || lowerPath.startsWith("/admin/")) {
     const canonical = pathname.replace(/^\/admin/i, "/AD_Admin");
     return NextResponse.redirect(new URL(`${canonical}${search}`, request.url), 307);
