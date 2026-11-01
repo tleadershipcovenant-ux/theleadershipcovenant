@@ -8,8 +8,10 @@ import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 
 /**
  * Wraps public-facing site navigation, footer, and floating WhatsApp button,
- * hiding them completely on the dedicated admin subdomain (admin.leadershipcovenant.com.pk)
- * and on /AD_Admin routes, so the Admin Portal renders its own dedicated executive navbar and drawer.
+ * hiding them completely on:
+ * 1. The dedicated admin subdomain (admin.leadershipcovenant.com.pk)
+ * 2. Any local or production /AD_Admin routes (/AD_Admin, /ad_admin, /admin, /login, /registrations, /contacts, /cms)
+ * so only the clean Executive Admin Portal is displayed without any public website elements.
  */
 export default function PublicSiteShell({
   children,
@@ -31,15 +33,17 @@ export default function PublicSiteShell({
     }
   }, []);
 
+  const normalizedPath = (pathname || "").toLowerCase();
   const isAdminRoute =
     isAdminHost ||
-    pathname?.startsWith("/AD_Admin") ||
-    pathname === "/login" ||
-    pathname?.startsWith("/registrations") ||
-    pathname?.startsWith("/contacts") ||
-    pathname?.startsWith("/cms");
+    normalizedPath.startsWith("/ad_admin") ||
+    normalizedPath.startsWith("/admin") ||
+    normalizedPath === "/login" ||
+    normalizedPath.startsWith("/registrations") ||
+    normalizedPath.startsWith("/contacts") ||
+    normalizedPath.startsWith("/cms");
 
-  // Never render public website navbar/footer on admin routes or admin subdomain
+  // NEVER render public website navbar, footer, or floating WhatsApp on admin routes or subdomain
   if (isAdminRoute) {
     return <>{children}</>;
   }

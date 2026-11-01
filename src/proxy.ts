@@ -232,11 +232,24 @@ export async function proxy(request: NextRequest) {
     return createRedirectResponse(new URL(targetUrl), response, 301);
   }
 
+  // Local development: canonicalize /admin or /ad_admin to /AD_Admin
+  const lowerPath = pathname.toLowerCase();
+  if (lowerPath === "/admin" || lowerPath.startsWith("/admin/")) {
+    const canonical = pathname.replace(/^\/admin/i, "/AD_Admin");
+    return NextResponse.redirect(new URL(`${canonical}${search}`, request.url), 307);
+  }
+  if (lowerPath === "/ad_admin" || lowerPath.startsWith("/ad_admin/")) {
+    if (pathname !== "/AD_Admin" && !pathname.startsWith("/AD_Admin/")) {
+      const canonical = pathname.replace(/^\/ad_admin/i, "/AD_Admin");
+      return NextResponse.redirect(new URL(`${canonical}${search}`, request.url), 307);
+    }
+  }
+
   // Local development fallback for /AD_Admin (e.g. running on localhost:3000)
   if (pathname.startsWith("/AD_Admin")) {
     const rawToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
     const session = await verifyAdminJwt(rawToken);
-    const isLoginPage = pathname === "/AD_Admin/login";
+    const isLoginPage = pathname === "/AD_Admin/login" || pathname === "/AD_Admin/login/";
 
     if (isLoginPage && session) {
       const dashUrl = new URL(`/AD_Admin${search}`, request.url);
@@ -248,7 +261,7 @@ export async function proxy(request: NextRequest) {
       if (rawToken) {
         loginUrl.searchParams.set("reason", "inactivity");
       }
-      if (pathname !== "/AD_Admin") {
+      if (pathname !== "/AD_Admin" && pathname !== "/AD_Admin/") {
         loginUrl.searchParams.set("next", `${pathname}${search}`);
       }
       return createRedirectResponse(loginUrl, response);
