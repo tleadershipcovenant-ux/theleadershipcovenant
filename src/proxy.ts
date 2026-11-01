@@ -41,6 +41,8 @@ function isAdminSubdomain(hostname: string): boolean {
 
 /**
  * Clones cookies & security headers from the base Supabase response to a rewrite response.
+ * CRITICAL: Excludes internal Next.js `x-middleware-*` control headers (e.g. x-middleware-next),
+ * which would cancel the rewrite and cause Next.js to fall back to the unrewritten route.
  */
 function createRewriteResponse(
   targetUrl: URL,
@@ -48,7 +50,10 @@ function createRewriteResponse(
 ): NextResponse {
   const rewriteRes = NextResponse.rewrite(targetUrl);
   baseResponse.headers.forEach((val, key) => {
-    rewriteRes.headers.set(key, val);
+    const lowerKey = key.toLowerCase();
+    if (!lowerKey.startsWith("x-middleware-")) {
+      rewriteRes.headers.set(key, val);
+    }
   });
   baseResponse.cookies.getAll().forEach((c) => {
     rewriteRes.cookies.set(c);
@@ -59,6 +64,7 @@ function createRewriteResponse(
 
 /**
  * Clones cookies & security headers from the base Supabase response to a redirect response.
+ * CRITICAL: Excludes internal Next.js `x-middleware-*` control headers.
  */
 function createRedirectResponse(
   targetUrl: URL,
@@ -67,7 +73,10 @@ function createRedirectResponse(
 ): NextResponse {
   const redirectRes = NextResponse.redirect(targetUrl, status);
   baseResponse.headers.forEach((val, key) => {
-    redirectRes.headers.set(key, val);
+    const lowerKey = key.toLowerCase();
+    if (!lowerKey.startsWith("x-middleware-")) {
+      redirectRes.headers.set(key, val);
+    }
   });
   baseResponse.cookies.getAll().forEach((c) => {
     redirectRes.cookies.set(c);
