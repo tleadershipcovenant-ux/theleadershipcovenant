@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   Lock,
@@ -17,9 +17,16 @@ import {
 
 function AdminLoginFormInner() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const nextPath = searchParams?.get("next") || "/AD_Admin";
+  const nextPath = searchParams?.get("next");
   const isInactiveTimeout = searchParams?.get("reason") === "inactivity";
+
+  const isCleanUrl =
+    pathname === "/login" ||
+    (typeof window !== "undefined" &&
+      (window.location.hostname === "admin.leadershipcovenant.com.pk" ||
+        window.location.hostname.startsWith("admin.")));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,9 +60,19 @@ function AdminLoginFormInner() {
         );
       }
 
-      const safeDestination = nextPath.startsWith("/AD_Admin")
-        ? nextPath
-        : "/AD_Admin";
+      let safeDestination = isCleanUrl ? "/" : "/AD_Admin";
+      if (nextPath) {
+        if (isCleanUrl) {
+          safeDestination = nextPath.startsWith("/AD_Admin")
+            ? nextPath.replace("/AD_Admin", "") || "/"
+            : nextPath;
+        } else {
+          safeDestination = nextPath.startsWith("/AD_Admin")
+            ? nextPath
+            : `/AD_Admin${nextPath.startsWith("/") ? nextPath : `/${nextPath}`}`;
+        }
+      }
+
       router.replace(safeDestination);
       router.refresh();
     } catch (err: unknown) {
@@ -208,12 +225,12 @@ function AdminLoginFormInner() {
 
           <div className="px-7 py-3.5 bg-[#F8FCFB] border-t border-[#E2F4EF] flex items-center justify-between text-xs text-slate-500">
             <span>The Leadership Covenant</span>
-            <Link
-              href="/"
+            <a
+              href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
               className="font-bold text-[#102E4D] hover:text-[#FF7900] transition-colors"
             >
               ← Return to Website
-            </Link>
+            </a>
           </div>
         </div>
       </div>

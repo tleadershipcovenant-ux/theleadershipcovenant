@@ -103,11 +103,16 @@ export async function POST(req: NextRequest) {
       inactivityTimeoutMinutes: 15,
     });
 
+    const host =
+      req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
+    const isLeadershipDomain = host.includes("leadershipcovenant.com.pk");
+
     res.cookies.set(ADMIN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
+      domain: isLeadershipDomain ? ".leadershipcovenant.com.pk" : undefined,
       maxAge: SESSION_INACTIVITY_SECONDS, // Strict 15-minute inactivity session
     });
 

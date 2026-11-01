@@ -10,7 +10,8 @@ const WARNING_THRESHOLD_MS = 60 * 1000; // Show warning in last 60 seconds
 export default function AdminInactivityGuard() {
   const router = useRouter();
   const pathname = usePathname();
-  const isLoginPage = pathname === "/AD_Admin/login";
+  const isCleanUrl = !pathname.startsWith("/AD_Admin");
+  const isLoginPage = pathname === "/AD_Admin/login" || pathname === "/login";
 
   const [showWarning, setShowWarning] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(60);
@@ -26,9 +27,13 @@ export default function AdminInactivityGuard() {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("tlc_admin_jwt_preview");
     }
-    router.replace("/AD_Admin/login?reason=inactivity");
+    router.replace(
+      isCleanUrl
+        ? "/login?reason=inactivity"
+        : "/AD_Admin/login?reason=inactivity"
+    );
     router.refresh();
-  }, [router]);
+  }, [isCleanUrl, router]);
 
   const resetActivity = useCallback(() => {
     lastActivityRef.current = Date.now();

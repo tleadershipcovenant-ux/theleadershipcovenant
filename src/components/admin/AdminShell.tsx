@@ -96,7 +96,31 @@ export default function AdminShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isLoginRoute = pathname === "/AD_Admin/login";
+  const isCleanUrl = !pathname.startsWith("/AD_Admin");
+  const isLoginRoute = pathname === "/AD_Admin/login" || pathname === "/login";
+
+  // Helper to dynamically output clean URLs on admin subdomain (e.g. /registrations instead of /AD_Admin/registrations)
+  const resolveLink = useCallback(
+    (legacyPath: string) => {
+      if (isCleanUrl) {
+        if (legacyPath === "/AD_Admin") return "/";
+        if (legacyPath.startsWith("/AD_Admin/")) return legacyPath.replace("/AD_Admin", "");
+        if (legacyPath.startsWith("/AD_Admin?")) return legacyPath.replace("/AD_Admin", "/");
+        return legacyPath;
+      }
+      return legacyPath;
+    },
+    [isCleanUrl]
+  );
+
+  const isDashboardActive = pathname === "/" || pathname === "/AD_Admin";
+  const isContactsActive =
+    pathname?.startsWith("/contacts") || pathname?.startsWith("/AD_Admin/contacts");
+  const isRegistrationsActive =
+    pathname?.startsWith("/registrations") ||
+    pathname?.startsWith("/AD_Admin/registrations");
+  const isCmsActive =
+    pathname?.startsWith("/cms") || pathname?.startsWith("/AD_Admin/cms");
 
   // Desktop sidebar: true = expanded drawer, false = collapsed slim vertical bar
   const [expanded, setExpanded] = useState(true);
@@ -126,7 +150,7 @@ export default function AdminShell({
       ]);
 
       if (meRes.status === 401) {
-        router.replace("/AD_Admin/login");
+        router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
         return;
       }
 
@@ -152,7 +176,7 @@ export default function AdminShell({
     } catch {
       // Non-blocking meta fetch
     }
-  }, [isLoginRoute, router]);
+  }, [isCleanUrl, isLoginRoute, router]);
 
   useEffect(() => {
     fetchShellMeta();
@@ -174,7 +198,7 @@ export default function AdminShell({
       if (typeof window !== "undefined") {
         window.sessionStorage.removeItem("tlc_admin_jwt_preview");
       }
-      router.replace("/AD_Admin/login");
+      router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
       router.refresh();
     } finally {
       setLoggingOut(false);
@@ -218,7 +242,7 @@ export default function AdminShell({
             </button>
           ) : (
             <Link
-              href="/AD_Admin"
+              href={resolveLink("/AD_Admin")}
               className="flex items-center gap-3 min-w-0 group"
               title="Return to Dashboard"
             >
@@ -274,15 +298,16 @@ export default function AdminShell({
               <span>Refresh</span>
             </button>
 
-            <Link
-              href="/"
+            <a
+              href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
               target="_blank"
+              rel="noopener noreferrer"
               className="flex-1 h-8 px-2.5 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-slate-200 hover:text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors"
               title="View live website in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5 text-[#FF7900]" />
               <span>Live Site</span>
-            </Link>
+            </a>
           </div>
         ) : (
           <div className="py-2.5 flex flex-col items-center gap-2 border-b border-white/5">
@@ -294,14 +319,15 @@ export default function AdminShell({
             >
               <RefreshCw className="w-4 h-4" />
             </button>
-            <Link
-              href="/"
+            <a
+              href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
               target="_blank"
+              rel="noopener noreferrer"
               className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FF7900] cursor-pointer transition-colors"
               title="Open public website in new tab"
             >
               <ExternalLink className="w-4 h-4" />
-            </Link>
+            </a>
           </div>
         )}
 
@@ -319,19 +345,19 @@ export default function AdminShell({
               </div>
             )}
             <Link
-              href="/AD_Admin"
+              href={resolveLink("/AD_Admin")}
               title={isMini ? "Dashboard (KPIs & Live CRM Feed)" : undefined}
               className={`group relative flex items-center ${
                 isMini ? "justify-center p-2.5 rounded-xl" : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
-                pathname === "/AD_Admin"
+                isDashboardActive
                   ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25"
                   : "text-slate-200 hover:bg-white/8 hover:text-white"
               }`}
             >
               <LayoutDashboard
                 className={`w-5 h-5 shrink-0 ${
-                  pathname === "/AD_Admin"
+                  isDashboardActive
                     ? "text-white"
                     : "text-[#FFC400]/90 group-hover:text-[#FFC400]"
                 }`}
@@ -359,19 +385,19 @@ export default function AdminShell({
 
             {/* Contact Inquiries */}
             <Link
-              href="/AD_Admin/contacts"
+              href={resolveLink("/AD_Admin/contacts")}
               title={isMini ? `Contact Inquiries (${badges.newContacts} new)` : undefined}
               className={`group relative flex items-center ${
                 isMini ? "justify-center p-2.5 rounded-xl" : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
-                pathname?.startsWith("/AD_Admin/contacts")
+                isContactsActive
                   ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25"
                   : "text-slate-200 hover:bg-white/8 hover:text-white"
               }`}
             >
               <MessageSquareText
                 className={`w-5 h-5 shrink-0 ${
-                  pathname?.startsWith("/AD_Admin/contacts")
+                  isContactsActive
                     ? "text-white"
                     : "text-[#FFC400]/90 group-hover:text-[#FFC400]"
                 }`}
@@ -393,7 +419,7 @@ export default function AdminShell({
                       ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
                       : "ml-2 min-w-5 h-5 px-1.5 text-[10.5px]"
                   } rounded-full font-num font-extrabold inline-flex items-center justify-center shrink-0 ${
-                    pathname?.startsWith("/AD_Admin/contacts")
+                    isContactsActive
                       ? "bg-white text-[#102E4D]"
                       : "bg-[#FFC400] text-[#001B33] shadow-xs"
                   }`}
@@ -409,7 +435,7 @@ export default function AdminShell({
                 className={`group relative flex items-center ${
                   isMini ? "justify-center p-2.5 rounded-xl" : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
-                  pathname?.startsWith("/AD_Admin/registrations")
+                  isRegistrationsActive
                     ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25"
                     : "text-slate-200 hover:bg-white/8 hover:text-white"
                 }`}
@@ -419,7 +445,7 @@ export default function AdminShell({
                 }}
               >
                 <Link
-                  href="/AD_Admin/registrations"
+                  href={resolveLink("/AD_Admin/registrations")}
                   className="flex items-center flex-1 min-w-0"
                   onClick={(e) => {
                     if (!isMini) {
@@ -430,7 +456,7 @@ export default function AdminShell({
                 >
                   <CalendarCheck2
                     className={`w-5 h-5 shrink-0 ${
-                      pathname?.startsWith("/AD_Admin/registrations")
+                      isRegistrationsActive
                         ? "text-white"
                         : "text-[#FFC400]/90 group-hover:text-[#FFC400]"
                     }`}
@@ -454,7 +480,7 @@ export default function AdminShell({
                         ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
                         : "ml-1.5 min-w-5 h-5 px-1.5 text-[10.5px]"
                     } rounded-full font-num font-extrabold inline-flex items-center justify-center shrink-0 ${
-                      pathname?.startsWith("/AD_Admin/registrations")
+                      isRegistrationsActive
                         ? "bg-white text-[#102E4D]"
                         : "bg-[#FFC400] text-[#001B33] shadow-xs"
                     }`}
@@ -489,7 +515,7 @@ export default function AdminShell({
                     return (
                       <Link
                         key={act.href}
-                        href={act.href}
+                        href={resolveLink(act.href)}
                         className="block px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors truncate"
                       >
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF7900] mr-2 shrink-0" />
@@ -515,7 +541,7 @@ export default function AdminShell({
                 className={`group relative flex items-center ${
                   isMini ? "justify-center p-2.5 rounded-xl" : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
-                  pathname?.startsWith("/AD_Admin/cms")
+                  isCmsActive
                     ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25"
                     : "text-slate-200 hover:bg-white/8 hover:text-white"
                 }`}
@@ -525,7 +551,7 @@ export default function AdminShell({
                 }}
               >
                 <Link
-                  href="/AD_Admin/cms"
+                  href={resolveLink("/AD_Admin/cms")}
                   className="flex items-center flex-1 min-w-0"
                   onClick={(e) => {
                     if (!isMini) {
@@ -536,7 +562,7 @@ export default function AdminShell({
                 >
                   <Layers
                     className={`w-5 h-5 shrink-0 ${
-                      pathname?.startsWith("/AD_Admin/cms")
+                      isCmsActive
                         ? "text-white"
                         : "text-[#FFC400]/90 group-hover:text-[#FFC400]"
                     }`}
@@ -580,7 +606,7 @@ export default function AdminShell({
                     return (
                       <Link
                         key={page.pageKey}
-                        href={`/AD_Admin/cms?page=${page.pageKey}`}
+                        href={resolveLink(`/AD_Admin/cms?page=${page.pageKey}`)}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors group/item"
                       >
                         <PageIcon className="w-3 h-3 text-[#FFC400]/80 group-hover/item:text-[#FFC400] shrink-0" />
