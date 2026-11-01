@@ -1,0 +1,37 @@
+{
+  "name": "the-leadership-covenant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Leadership Covenant — Learn • Develop • Lead • Transform. Official website.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview:cloudflare": "opennextjs-cloudflare preview",
+    "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "postinstall": "opennextjs-cloudflare build"
+  },
+  "dependencies": {
+    "framer-motion": "^12.43.0",
+    "lucide-react": "^1.48.0",
+    "next": "^16.4.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-icons": "^5.7.0"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.14",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16.4.3",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "wrangler": "^4.155.0"
+  }
+}

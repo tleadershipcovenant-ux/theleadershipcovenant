@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-num: var(--font-inter), "Inter", var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  /* Client Recommended Color Palette */
+  --color-mint-main: #D7F5EF;
+  --color-mint-light: #EFFBF8;
+  --color-icy-blue: #DDEFF7;
+  --color-deep-navy: #102E4D;
+  --color-midnight-navy: #001B33;
+  --color-orange-cta: #FF7900;
+  --color-orange-hover: #E56D00;
+  --color-golden-yellow: #FFC400;
+
+  /* Semantic Mappings */
+  --color-primary: #102E4D;
+  --color-primary-container: #001B33;
+  --color-secondary: #FF7900;
+  --color-secondary-container: #FFC400;
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-background: #EFFBF8;
+  --color-surface: #EFFBF8;
+  --color-on-surface: #102E4D;
+
+  --color-gold: #FFC400;
+  --color-gold-dark: #D4A300;
+  --color-gold-light: #FFE066;
+  --color-navy: #102E4D;
+  --color-navy-dark: #001B33;
+  --color-navy-light: #183F66;
+
+  --font-title-lg: "Plus Jakarta Sans";
+  --font-label-md: "Plus Jakarta Sans";
+  --font-label-lg: "Plus Jakarta Sans";
+  --font-badge-caps: "Plus Jakarta Sans";
+  --font-title-md: "Plus Jakarta Sans";
+  --font-headline-lg: "Playfair Display";
+  --font-body-sm: "Plus Jakarta Sans";
+  --font-display-hero: "Playfair Display";
+  --font-headline-md: "Playfair Display";
+  --font-body-lg: "Plus Jakarta Sans";
+  --font-display-hero-mobile: "Playfair Display";
+  --font-headline-sm: "Playfair Display";
+  --font-body-md: "Plus Jakarta Sans";
+}
+
+@layer utilities {
+  .text-title-lg {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+  }
+  .text-label-md {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .text-label-lg {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .text-title-md {
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .text-headline-lg {
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+  .text-body-sm {
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 400;
+  }
+  .text-display-hero {
+    font-size: 56px;
+    line-height: 64px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .text-headline-md {
+    font-size: 30px;
+    line-height: 38px;
+    font-weight: 600;
+  }
+  .text-body-lg {
+    font-size: 18px;
+    line-height: 28px;
+    font-weight: 400;
+  }
+  .text-headline-sm {
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+  .text-body-md {
+    font-size: 15px;
+    line-height: 24px;
+    font-weight: 400;
+  }
+  .font-num {
+    font-family: var(--font-num);
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: "lnum" 1, "tnum" 1;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Minimal, elegant & professional modal scrollbar */
+  .modal-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb, rgba(16, 46, 77, 0.22)) transparent;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  .modal-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .modal-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .modal-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb, rgba(16, 46, 77, 0.20));
+    border-radius: 9999px;
+  }
+  .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-hover, rgba(16, 46, 77, 0.45));
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}
+
+body {
+  position: relative;
+  background-color: #EFFBF8;
+  color: #102E4D;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+/* GPU-composited fixed ambient backdrop — avoids CPU scroll repaints from background-attachment: fixed */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #EFFBF8;
+  background-image:
+    radial-gradient(at 0% 0%, #DDEFF7 0px, transparent 50%),
+    radial-gradient(at 100% 0%, #D7F5EF 0px, transparent 50%),
+    radial-gradient(at 50% 100%, #DDEFF7 0px, transparent 50%),
+    linear-gradient(180deg, #EFFBF8 0%, #E8F8F4 50%, #EFFBF8 100%);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+::selection {
+  background-color: #FF7900;
+  color: #ffffff;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate3d(0%, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--marquee-duration, 38s) linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes cardSnap {
+  0% {
+    opacity: 0.9;
+    transform: translate3d(0, 5px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-card-snap {
+  animation: cardSnap 130ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-card-snap {
+    animation: none !important;
+  }
+}
+
+.mask-fade-x {
+  mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 3%, black 97%, transparent 100%);
+}

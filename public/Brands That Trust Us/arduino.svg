@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <!-- Arduino Icon -->
+  <circle cx="64" cy="64" r="56" fill="#00979C" />
+  <g fill="none" stroke="#FFF" strokeWidth="6" strokeLinecap="round">
+    <ellipse cx="44" cy="64" rx="18" ry="14" />
+    <ellipse cx="84" cy="64" rx="18" ry="14" />
+  </g>
+  <g fill="#FFF">
+    <!-- minus on left -->
+    <rect x="38" y="62" width="12" height="4" rx="2" />
+    <!-- plus on right -->
+    <rect x="78" y="62" width="12" height="4" rx="2" />
+    <rect x="82" y="58" width="4" height="12" rx="2" />
+  </g>
+</svg>

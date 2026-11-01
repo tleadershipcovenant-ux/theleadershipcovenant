@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <!-- Ahrefs Logo -->
+  <rect width="116" height="116" x="6" y="6" rx="28" fill="#1C64F2" />
+  <g transform="translate(24, 24) scale(0.62)">
+    <path fill="#FF6B00" d="M32 96L58 44 84 96H32z" />
+    <path fill="#FFF" d="M64 16L16 112h24l12-24h24l12 24h24L64 16zm-8 48l8-18 8 18H56z" />
+    <circle cx="102" cy="38" r="10" fill="#FF6B00" />
+  </g>
+</svg>
