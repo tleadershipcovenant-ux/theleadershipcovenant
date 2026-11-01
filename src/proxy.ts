@@ -95,17 +95,32 @@ function createRedirectResponse(
  * 6. Keeps the main website running seamlessly at `leadershipcovenant.com.pk` and `www.leadershipcovenant.com.pk`.
  */
 export async function proxy(request: NextRequest) {
-  // 1. Refresh Supabase session cookies
-  const response = await updateSession(request);
+  const hostname = getNormalizedHost(request);
+  const onAdminDomain = isAdminSubdomain(hostname);
+  const { pathname, search } = request.nextUrl;
+
+  // Check if Supabase session refresh is actually required.
+  // CRITICAL PERFORMANCE FIX: Skip external Supabase network calls for anonymous public page visits
+  // to prevent Cloudflare Worker subrequest timeouts and keep client-side navigation instantaneous.
+  const hasSupabaseCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+
+  const needsSessionRefresh =
+    onAdminDomain ||
+    pathname.startsWith("/AD_Admin") ||
+    pathname.startsWith("/api/admin") ||
+    hasSupabaseCookie;
+
+  // 1. Refresh Supabase session cookies only when relevant
+  const response = needsSessionRefresh
+    ? await updateSession(request)
+    : NextResponse.next();
 
   // Enterprise baseline security headers across all requests
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-
-  const hostname = getNormalizedHost(request);
-  const onAdminDomain = isAdminSubdomain(hostname);
-  const { pathname, search } = request.nextUrl;
 
   // 2. Protect /api/admin/* endpoints (both domains)
   if (pathname.startsWith("/api/admin")) {
