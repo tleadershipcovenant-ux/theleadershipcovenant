@@ -3,13 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import AnimatedCounter from "@/components/AnimatedCounter";
 import { SUMMIT_CONTENT } from "@/content/summit";
+import SummitVideoSlider from "@/components/summit/SummitVideoSlider";
 import {
   MdArrowForward,
-  MdGroups,
-  MdSchool,
-  MdWorkspacePremium,
   MdStar,
 } from "react-icons/md";
 import { FaQuoteLeft } from "react-icons/fa";
@@ -17,7 +14,7 @@ import { FaQuoteLeft } from "react-icons/fa";
 const SUMMIT_SPEAKERS = [
   {
     name: "Mr. Fazal Niazi",
-    role: "Keynote Speaker",
+    role: "Lead Facilitator",
     title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
     bio: "Leads the FranklinCovey Education practice across Pakistan, Türkiye, and Azerbaijan. An executive advisor partnering with school leaders on leadership cultures, student empowerment, and the 4DX operating system.",
     image: "/Submit/SP1.png",
@@ -26,71 +23,12 @@ const SUMMIT_SPEAKERS = [
   },
   {
     name: "Mr. Ubaid ur Rehman",
-    role: "Lead Facilitator",
+    role: "Event Facilitator",
     title: "Regional Manager, FranklinCovey Education North Region",
     bio: "Partners with educational leaders and faculties across the North Region to foster sustainable character-based environments. Leads the summit's intensive working sessions, goal scorecards, and institutional commitment pledges.",
     image: "/Submit/SP1.png",
     badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
     topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
-  },
-];
-
-const HIGHLIGHT_STATS = [
-  {
-    target: 200,
-    suffix: "+",
-    label: "Educators & Leaders",
-    description: "Gathered for intensive coaching, strategic planning, and peer exchange.",
-    icon: MdGroups,
-    tone: {
-      accentTop: "from-[#FFC400] to-[#E5A800]",
-      iconBox: "bg-[#FFC400]/15 text-[#FFC400] border-[#FFC400]/30",
-      accentNumber: "text-[#FFC400]",
-      cardBorder: "border-[#FFC400]/25",
-    },
-  },
-  {
-    target: 40,
-    suffix: "+",
-    label: "Schools Represented",
-    description: "Schools across Islamabad, Peshawar, and the North Region participated.",
-    icon: MdSchool,
-    tone: {
-      accentTop: "from-[#22C55E] to-[#16A34A]",
-      iconBox: "bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30",
-      accentNumber: "text-[#22C55E]",
-      cardBorder: "border-[#22C55E]/25",
-    },
-  },
-  {
-    target: 90,
-    suffix: " Days",
-    label: "Impact Roadmaps",
-    description: "Every team left with a written 90-day action plan ready for execution.",
-    icon: MdWorkspacePremium,
-    tone: {
-      accentTop: "from-[#FF7900] to-[#E56D00]",
-      iconBox: "bg-[#FF7900]/15 text-[#FF7900] border-[#FF7900]/30",
-      accentNumber: "text-[#FF7900]",
-      cardBorder: "border-[#FF7900]/25",
-    },
-  },
-];
-
-const SUMMIT_VIDEOS = [
-  {
-    title: "School Impact Summit — Event Highlights",
-    tag: "Keynotes & Sessions",
-    description:
-      "A look inside the room: keynote addresses, coaching corners, and leadership teams formulating 90-day whole-school action plans.",
-    embedUrl: "https://www.youtube.com/embed/e-zgk1VWN1s?si=C3m09Q0_5N-aGVJC",
-  },
-  {
-    title: "Leader Voices & Classroom Transformation",
-    tag: "Participant Reflections",
-    description:
-      "School heads and educators share firsthand how FranklinCovey Education leadership principles transformed student agency and staff culture.",
-    embedUrl: "https://www.youtube.com/embed/omlFZklTLV8?si=xl6BLeWru6bz2bG1",
   },
 ];
 
@@ -126,7 +64,7 @@ const PARTICIPANT_VOICES = [
 ];
 
 export default function SummitInteractiveSections() {
-  const { speakers, highlights, videos, voices } = SUMMIT_CONTENT;
+  const { speakers, videos, voices } = SUMMIT_CONTENT;
 
   return (
     <>
@@ -159,10 +97,7 @@ export default function SummitInteractiveSections() {
             <h2 className="font-serif font-extrabold text-2xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
               {speakers.heading}
             </h2>
-            <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
-            <p className="text-xs sm:text-sm text-slate-600 mt-2.5 max-w-xl mx-auto leading-relaxed">
-              Learn directly from certified FranklinCovey Education master facilitators who have coached thousands of educators.
-            </p>
+            <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-6xl mx-auto items-stretch">
@@ -177,14 +112,14 @@ export default function SummitInteractiveSections() {
                   delay: 0.08 * idx,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                whileHover={{ y: -5, transition: { duration: 0.18 } }}
+                whileHover={{ y: -4, transition: { duration: 0.18 } }}
                 className="rounded-3xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] shadow-md hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group transform-gpu cursor-default"
               >
                 {/* Top Colored Accent Stripe */}
                 <div className={`h-1.5 w-full bg-gradient-to-r ${spk.topAccent}`} />
 
                 <div className="flex flex-col sm:flex-row flex-1">
-                  {/* Speaker Image Presentation Area — Seamless Edge-to-Edge Fit */}
+                  {/* Speaker Image Presentation Area */}
                   <div className="w-full h-64 sm:h-auto sm:w-[38%] lg:w-[36%] relative overflow-hidden bg-[#C2F9D2] border-b sm:border-b-0 sm:border-r border-[#D7F5EF] flex items-end justify-center shrink-0">
                     <img
                       src={spk.image}
@@ -214,7 +149,7 @@ export default function SummitInteractiveSections() {
                         {spk.title}
                       </p>
 
-                      {/* Short Description / Bio */}
+                      {/* Bio */}
                       <p className="text-xs sm:text-[13px] text-slate-600 mt-3 leading-relaxed font-normal text-left">
                         {spk.bio}
                       </p>
@@ -228,93 +163,7 @@ export default function SummitInteractiveSections() {
       </section>
 
       {/* ────────────────────────────────────────────────────────── */}
-      {/* 6. HIGHLIGHTS FROM PAST EVENTS — ANIMATED COUNTER STATS    */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <section
-        className="w-full bg-[#001B33] text-white py-10 sm:py-14 relative overflow-hidden border-y border-white/10"
-        id="highlights"
-      >
-        {/* Ambient Glows */}
-        <div className="absolute -top-24 right-1/4 w-80 h-32 bg-[#FFC400]/15 rounded-full blur-3xl pointer-events-none transform-gpu" />
-        <div className="absolute -bottom-24 left-1/4 w-80 h-32 bg-[#FF7900]/15 rounded-full blur-3xl pointer-events-none transform-gpu" />
-
-        {/* Top Gold Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFC400] to-transparent opacity-90" />
-
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
-          >
-            <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FFC400] mb-2">
-              {highlights.eyebrow}
-            </p>
-            <h2 className="font-serif font-extrabold text-2xl sm:text-4xl text-white tracking-tight">
-              {highlights.heading}
-            </h2>
-            <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 max-w-5xl mx-auto items-stretch">
-            {HIGHLIGHT_STATS.map((stat, idx) => {
-              const Icon = stat.icon;
-              return (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-30px" }}
-                  transition={{
-                    duration: 0.45,
-                    delay: 0.08 * idx,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  whileHover={{ y: -4, transition: { duration: 0.16 } }}
-                  className={`relative overflow-hidden rounded-2xl bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm border ${stat.tone.cardBorder} p-4 sm:p-5 transition-all duration-300 flex flex-col items-center text-center shadow-lg group transform-gpu cursor-default`}
-                >
-                  {/* Top gradient accent line */}
-                  <div
-                    className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${stat.tone.accentTop}`}
-                  />
-
-                  {/* Icon Container */}
-                  <div
-                    className={`w-10 h-10 rounded-xl ${stat.tone.iconBox} border flex items-center justify-center mb-2.5 shadow-inner group-hover:scale-105 transition-transform duration-300`}
-                  >
-                    <Icon className="text-xl" />
-                  </div>
-
-                  {/* Number + Animated Counter + Suffix */}
-                  <div className="font-num font-extrabold text-2xl sm:text-[28px] lg:text-[30px] text-white tracking-tight leading-none flex items-baseline justify-center">
-                    <AnimatedCounter target={stat.target} duration={1.2} />
-                    <span
-                      className={`font-num text-xl sm:text-2xl font-extrabold ml-0.5 ${stat.tone.accentNumber}`}
-                    >
-                      {stat.suffix}
-                    </span>
-                  </div>
-
-                  {/* Label */}
-                  <div className="text-[11.5px] sm:text-xs font-semibold uppercase tracking-wider text-slate-300 mt-2 leading-snug">
-                    {stat.label}
-                  </div>
-
-                  {/* Description */}
-                  <p className="font-num text-xs text-slate-300/80 mt-1.5 leading-relaxed max-w-[260px]">
-                    {stat.description}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* 7. WATCH & RELIVE — EMBEDDED VIDEO PLAYERS                 */}
+      {/* 6. WATCH & RELIVE — EMBEDDED VIDEO PLAYERS                 */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
         className="w-full py-10 sm:py-14 relative overflow-hidden"
@@ -342,54 +191,8 @@ export default function SummitInteractiveSections() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 max-w-5xl mx-auto">
-            {SUMMIT_VIDEOS.map((video, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-30px" }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.1 * idx,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={{ y: -4, transition: { duration: 0.18 } }}
-                className="rounded-3xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group transform-gpu cursor-default"
-              >
-                {/* 16:9 Responsive Video Embed Container */}
-                <div className="relative aspect-video w-full bg-slate-950 overflow-hidden">
-                  <iframe
-                    className="w-full h-full border-0"
-                    src={video.embedUrl}
-                    title={video.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                    loading="lazy"
-                  />
-                </div>
-
-                {/* Video Information Body */}
-                <div className="p-4 sm:p-6 flex flex-col justify-between flex-1">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-[#FF7900] bg-[#FF7900]/10 border border-[#FF7900]/20 px-2.5 py-0.5 rounded-full">
-                        {video.tag}
-                      </span>
-                    </div>
-
-                    <h3 className="font-serif font-bold text-lg text-[#102E4D] group-hover:text-[#FF7900] transition-colors leading-snug">
-                      {video.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2 font-normal">
-                      {video.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+          {/* Interactive 3D Video Slider (Reference Matching) */}
+          <SummitVideoSlider />
         </div>
       </section>
 

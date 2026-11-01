@@ -24,42 +24,35 @@ export const SUMMIT_CONTENT = {
     secondaryCta: { label: "Who should attend?", href: "#audience" },
   },
   objectives: {
-    eyebrow: "Objective",
+    eyebrow: "",
     heading: "What this summit is for",
+    body: "The School Impact Summit 2026 brings together educational leaders and schools to discover meaningful practices, give voice to their journeys, and showcase the impact they are creating in their school communities. It is a platform to celebrate progress, exchange ideas, learn from shared experiences, and inspire a greater commitment to leadership and continuous improvement in education.",
     items: [
       {
-        title: "Clarify your school's wildest goal",
-        text: "Leave with one narrowly-defined, wildly important goal for the year and a scorecard to track it.",
+        title: "DISCOVER",
+        text: "Discover effective practices, fresh perspectives, and new possibilities in education.",
       },
       {
-        title: "Learn from schools doing it well",
-        text: "Hear candid case stories from schools across Pakistan that have moved the needle on student leadership.",
+        title: "VOICE",
+        text: "Give LiM schools and educators a platform to share their journeys, experiences, and learning.",
       },
       {
-        title: "Build your impact culture",
-        text: "Explore how trust, language and leadership roles turn staff and students into owners of the mission.",
-      },
-      {
-        title: "Connect with your community",
-        text: "Meet peers, coaches and facilitators from across the region, and become part of a growing network.",
+        title: "IMPACT",
+        text: "Showcase the meaningful difference that purposeful leadership and intentional action can make in school communities.",
       },
     ],
   },
   audience: {
-    eyebrow: "Who Should Attend?",
-    heading: "This day is built for you",
+    eyebrow: "",
+    heading: "Who Should Attend",
     pullQuote:
-      "“For education leaders who believe schools can be places where people grow, voices matter, and impact goes beyond academics.”",
+      "This day is built for educational leaders who believe schools can be places where people grow, voices matter, and impact goes beyond academics.",
     items: [
       { role: "School Owners & Directors", icon: "landmark" },
       { role: "Principals & School Heads", icon: "graduation" },
       { role: "Educators & Teacher Leaders", icon: "book" },
-      { role: "Well-being & Student Support Leaders", icon: "heart" },
-      { role: "Curriculum & Academic Leaders", icon: "compass" },
-      {
-        role: "Anyone committed to building stronger school cultures and brighter futures",
-        icon: "sprout",
-      },
+      { role: "Well-being & Student support Leaders", icon: "heart" },
+      { role: "Curriculum and Academic Leaders", icon: "compass" },
     ],
   },
   speakers: {
@@ -69,15 +62,17 @@ export const SUMMIT_CONTENT = {
       {
         initials: "FN",
         name: "Mr. Fazal Niazi",
-        title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye and Azerbaijan",
-        bio: "Leads the FranklinCovey Education practice across Pakistan, Türkiye and Azerbaijan, partnering with schools on leadership cultures and the 4DX operating system.",
+        role: "Lead Facilitator",
+        title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
+        bio: "Leads the FranklinCovey Education practice across Pakistan, Türkiye, and Azerbaijan. An executive advisor partnering with school leaders on leadership cultures, student empowerment, and the 4DX operating system.",
         gradient: "from-blue-600 to-indigo-800",
       },
       {
         initials: "UR",
         name: "Mr. Ubaid ur Rehman",
+        role: "Event Facilitator",
         title: "Regional Manager, FranklinCovey Education North Region",
-        bio: "Partners with schools across the North Region to build lasting leadership cultures and guides the summit's working sessions and commitments.",
+        bio: "Partners with educational leaders and faculties across the North Region to foster sustainable character-based environments. Leads the summit's intensive working sessions, goal scorecards, and institutional commitment pledges.",
         gradient: "from-amber-500 to-orange-700",
       },
     ],
