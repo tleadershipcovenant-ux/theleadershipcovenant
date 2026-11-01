@@ -19,6 +19,7 @@ function AdminLoginFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams?.get("next") || "/AD_Admin";
+  const isInactiveTimeout = searchParams?.get("reason") === "inactivity";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -103,6 +104,15 @@ function AdminLoginFormInner() {
 
           {/* Login Form Body */}
           <form onSubmit={handleSubmit} className="p-7 space-y-5">
+            {isInactiveTimeout && !error && (
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#FF7900]" />
+                <span>
+                  Your session was automatically locked after 15 minutes of inactivity for security. Please sign in to resume.
+                </span>
+              </div>
+            )}
+
             {error && (
               <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />

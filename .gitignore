@@ -38,6 +38,10 @@ yarn-error.log*
 /.data/
 /public/uploads/
 
+# internal database migration & test scripts
+/scripts/
+skills-lock.json
+
 # vercel
 .vercel
 

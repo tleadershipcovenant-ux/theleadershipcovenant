@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AdminShell from "@/components/admin/AdminShell";
+import AdminInactivityGuard from "@/components/admin/AdminInactivityGuard";
 
 export const metadata: Metadata = {
   title: "Executive Admin Portal | The Leadership Covenant",
@@ -21,6 +22,11 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <>
+      <AdminInactivityGuard />
+      <AdminShell>{children}</AdminShell>
+    </>
+  );
 }
 

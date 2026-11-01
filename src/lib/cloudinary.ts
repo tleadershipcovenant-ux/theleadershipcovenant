@@ -14,23 +14,30 @@ export interface CloudinaryUploadResult {
 }
 
 export function getCloudinaryConfig() {
-  let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "nrujj7vy").trim();
-  let apiKey = (process.env.CLOUDINARY_API_KEY || "649287278276623").trim();
-  let apiSecret = (process.env.CLOUDINARY_API_SECRET || "a7nBp2imhXQ3z4HJC-bpNNyoZJk").trim();
+  let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "").trim();
+  let apiKey = (process.env.CLOUDINARY_API_KEY || "").trim();
+  let apiSecret = (process.env.CLOUDINARY_API_SECRET || "").trim();
   const folder = (
     process.env.CLOUDINARY_FOLDER || "tlc_payment_screenshots"
   ).trim();
 
-  // Also support full CLOUDINARY_URL string e.g. cloudinary://649287278276623:a7nBp...@nrujj7vy
+  // Support full CLOUDINARY_URL string e.g. cloudinary://<key>:<secret>@<cloud_name>
   const cloudinaryUrl = (process.env.CLOUDINARY_URL || "").trim();
   if (cloudinaryUrl.startsWith("cloudinary://")) {
-    try {
-      const parsed = new URL(cloudinaryUrl);
-      apiKey = parsed.username || apiKey;
-      apiSecret = parsed.password || apiSecret;
-      cloudName = parsed.hostname || cloudName;
-    } catch {
-      // Ignored if invalid URL
+    const match = cloudinaryUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@([^/?#]+)/);
+    if (match) {
+      apiKey = match[1] || apiKey;
+      apiSecret = match[2] || apiSecret;
+      cloudName = match[3] || cloudName;
+    } else {
+      try {
+        const parsed = new URL(cloudinaryUrl);
+        apiKey = parsed.username || apiKey;
+        apiSecret = parsed.password || apiSecret;
+        cloudName = parsed.hostname || cloudName;
+      } catch {
+        // Ignored
+      }
     }
   }
 
