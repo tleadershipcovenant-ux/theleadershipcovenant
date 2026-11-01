@@ -14,14 +14,14 @@ export interface CloudinaryUploadResult {
 }
 
 export function getCloudinaryConfig() {
-  let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "").trim();
-  let apiKey = (process.env.CLOUDINARY_API_KEY || "").trim();
-  let apiSecret = (process.env.CLOUDINARY_API_SECRET || "").trim();
+  let cloudName = (process.env.CLOUDINARY_CLOUD_NAME || "nrujj7vy").trim();
+  let apiKey = (process.env.CLOUDINARY_API_KEY || "649287278276623").trim();
+  let apiSecret = (process.env.CLOUDINARY_API_SECRET || "a7nBp2imhXQ3z4HJC-bpNNyoZJk").trim();
   const folder = (
     process.env.CLOUDINARY_FOLDER || "tlc_payment_screenshots"
   ).trim();
 
-  // Also support full CLOUDINARY_URL string e.g. cloudinary://123456789:abcdef@mycloud
+  // Also support full CLOUDINARY_URL string e.g. cloudinary://649287278276623:a7nBp...@nrujj7vy
   const cloudinaryUrl = (process.env.CLOUDINARY_URL || "").trim();
   if (cloudinaryUrl.startsWith("cloudinary://")) {
     try {
@@ -34,16 +34,10 @@ export function getCloudinaryConfig() {
     }
   }
 
-  // If secret was provided in either key or secret
-  if (!apiSecret && apiKey === "a7nBp2imhXQ3z4HJC-bpNNyoZJk") {
-    apiSecret = "a7nBp2imhXQ3z4HJC-bpNNyoZJk";
-  }
-
   const isConfigured = Boolean(
     cloudName &&
       apiKey &&
       apiSecret &&
-      cloudName !== "TLC" && // Avoid disabled account placeholder
       !cloudName.includes("your-cloud-name") &&
       !apiKey.includes("your-cloudinary")
   );
