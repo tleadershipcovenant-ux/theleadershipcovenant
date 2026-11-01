@@ -195,25 +195,22 @@ function AdminLoginFormInner() {
           {/* Top Brand Accent Line */}
           <div className="h-1.5 w-full md:hidden bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
-          {/* LEFT PANEL: Logo & Executive Branding (Centered, No White Square) */}
+          {/* LEFT PANEL: Logo & Executive Branding (Centered with White Square Card) */}
           <div className="w-full md:w-5/12 bg-gradient-to-br from-[#001B33] via-[#08294A] to-[#041D35] p-6 sm:p-8 md:p-10 text-white flex flex-col justify-between items-center text-center relative overflow-hidden">
             {/* Top signature gradient line on desktop */}
             <div className="hidden md:block absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
             {/* Subtle brand glow behind logo */}
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-[#10B981]/20 blur-2xl pointer-events-none" />
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 w-44 h-44 rounded-full bg-[#10B981]/20 blur-2xl pointer-events-none" />
 
-            {/* Upper Content (Centered Logo with NO white background or square box) */}
+            {/* Upper Content (Centered Logo with White Square Card) */}
             <div className="relative z-10 flex flex-col items-center w-full">
-              {/* Natural Logo Placement (Transparent Background, No White Box) */}
-              <div className="relative mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+              {/* White Square Logo Card with Gold Border */}
+              <div className="w-20 h-20 sm:w-22 sm:h-22 md:w-24 md:h-24 rounded-2xl bg-white p-2.5 shadow-xl border-2 border-[#FFC400]/85 flex items-center justify-center mx-auto mb-3.5 sm:mb-4 overflow-hidden shrink-0">
                 <img
-                  src="/images/footerlogo-transparent.png"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/images/footerlogo.jpg";
-                  }}
+                  src="/Logo_For_Navbar_Fotter.png"
                   alt="The Leadership Covenant"
-                  className="h-16 sm:h-20 md:h-24 w-auto max-w-[200px] sm:max-w-[220px] object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
+                  className="w-full h-full object-contain"
                 />
               </div>
 
