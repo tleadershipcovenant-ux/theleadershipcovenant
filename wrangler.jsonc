@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "the-leadership-covenant",
   "main": ".open-next/worker.js",
-  "compatibility_date": "2024-12-30",
+  "compatibility_date": "2025-01-01",
   "compatibility_flags": [
     "nodejs_compat"
   ],
@@ -12,5 +12,12 @@
   },
   "build": {
     "command": "npx opennextjs-cloudflare build"
+  },
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://theleadershipcovenant.com",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://qyyipcbzualacxwfvsih.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
+    "CLOUDINARY_FOLDER": "tlc_payment_screenshots"
   }
 }
