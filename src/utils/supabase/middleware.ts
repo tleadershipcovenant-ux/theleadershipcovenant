@@ -30,8 +30,12 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser() - this refreshes the session
-  await supabase.auth.getUser();
+  // Refresh the session safely without crashing if Supabase database is unreachable or down
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // Non-blocking fallback: If Supabase database is offline, allow the request to proceed
+  }
 
   return supabaseResponse;
 }

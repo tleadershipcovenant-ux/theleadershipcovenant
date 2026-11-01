@@ -259,19 +259,28 @@ async function supabaseFetch<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/${restPath}`, {
-    ...init,
-    headers,
-    cache: "no-store",
-  });
+  // Strict 2.5s AbortController timeout so hung/paused Supabase requests never block the application
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Supabase error (${res.status}): ${errText}`);
+  try {
+    const res = await fetch(`${cfg.url}/rest/v1/${restPath}`, {
+      ...init,
+      headers,
+      signal: init.signal || controller.signal,
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      throw new Error(`Supabase error (${res.status}): ${errText}`);
+    }
+
+    const text = await res.text();
+    return (text ? JSON.parse(text) : null) as T;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const text = await res.text();
-  return (text ? JSON.parse(text) : null) as T;
 }
 
 export async function testSupabaseConnection(): Promise<{
@@ -306,8 +315,8 @@ export async function testSupabaseConnection(): Promise<{
       provider: "local_json",
       message:
         err instanceof Error
-          ? `Supabase keys detected, but query failed (${err.message}). Make sure you ran supabase/schema.sql in Supabase SQL Editor. Falling back to local store meanwhile.`
-          : "Supabase connection test failed.",
+          ? `Supabase paused or query failed (${err.message}). Safe zero-downtime local JSON store is currently handling requests.`
+          : "Supabase connection test failed. Local fallback active.",
     };
   }
 }
@@ -687,20 +696,30 @@ export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
       const rows = await supabaseFetch<CmsPageRecord[]>(
         `cms_pages?page_key=eq.${encodeURIComponent(key)}&select=*&limit=1`
       );
-      if (rows?.[0]) return rows[0];
-    } catch {
-      // Fallback to local DB
+      if (rows?.[0]) {
+        if (!memoryDb) {
+          memoryDb = buildSeedDb();
+        }
+        memoryDb.cms[key] = rows[0];
+        return rows[0];
+      }
+    } catch (err) {
+      console.warn(`[CMS] Supabase fetch failed for ${key}, using cached/local store:`, err);
     }
   }
 
-  const db = await readLocalDb();
-  if (db.cms[key]) return db.cms[key];
+  try {
+    const db = await readLocalDb();
+    if (db?.cms?.[key]) return db.cms[key];
+  } catch {
+    // Local DB read failure
+  }
 
   return {
     page_key: key,
     title: CMS_PAGE_TITLES[key],
     content: getDefaultCmsContent(key),
-    updated_by: "system-seed",
+    updated_by: "system-code-fallback",
     updated_at: new Date().toISOString(),
   };
 }
@@ -712,7 +731,7 @@ export async function getAllCmsPages(): Promise<Record<CmsPageKey, CmsPageRecord
       page_key: key,
       title: CMS_PAGE_TITLES[key],
       content: getDefaultCmsContent(key),
-      updated_by: "system-seed",
+      updated_by: "system-code-fallback",
       updated_at: new Date().toISOString(),
     };
   }
@@ -726,19 +745,27 @@ export async function getAllCmsPages(): Promise<Record<CmsPageKey, CmsPageRecord
       for (const row of rows || []) {
         if (ALL_CMS_KEYS.includes(row.page_key as CmsPageKey)) {
           result[row.page_key as CmsPageKey] = row;
+          if (!memoryDb) {
+            memoryDb = buildSeedDb();
+          }
+          memoryDb.cms[row.page_key] = row;
         }
       }
       return result;
-    } catch {
-      // Fallback to local DB
+    } catch (err) {
+      console.warn("[CMS] Supabase fetch all failed, using cached/local store:", err);
     }
   }
 
-  const db = await readLocalDb();
-  for (const key of ALL_CMS_KEYS) {
-    if (db.cms[key]) {
-      result[key] = db.cms[key];
+  try {
+    const db = await readLocalDb();
+    for (const key of ALL_CMS_KEYS) {
+      if (db?.cms?.[key]) {
+        result[key] = db.cms[key];
+      }
     }
+  } catch {
+    // Keep initialized code defaults
   }
   return result;
 }
@@ -757,6 +784,18 @@ export async function upsertCmsPage(
     updated_at: now,
   };
 
+  // Always update in-memory and local database first so edits are never lost
+  try {
+    const db = await readLocalDb();
+    db.cms[key] = record;
+    await writeLocalDb(db);
+  } catch {
+    if (!memoryDb) {
+      memoryDb = buildSeedDb();
+    }
+    memoryDb.cms[key] = record;
+  }
+
   const cfg = getSupabaseConfig();
   if (cfg.isConfigured) {
     try {
@@ -771,14 +810,12 @@ export async function upsertCmsPage(
         }
       );
       if (saved?.[0]) return saved[0];
-    } catch {
-      // Fallback to local DB
+    } catch (err) {
+      console.warn(`[CMS] Supabase upsert failed for ${key}, safely retained in local store:`, err);
+      return record;
     }
   }
 
-  const db = await readLocalDb();
-  db.cms[key] = record;
-  await writeLocalDb(db);
   return record;
 }
 
