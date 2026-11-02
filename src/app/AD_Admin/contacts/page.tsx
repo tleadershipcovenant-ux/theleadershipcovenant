@@ -1101,7 +1101,7 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* Modal Scrollable Body with Clean Alignment & Spacing */}
-            <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
+            <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
               {/* SECTION 1: Sender Profile (FROM) */}
               <div className="rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 p-3 sm:p-4 space-y-3 sm:space-y-3.5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-200/70">
@@ -1548,7 +1548,7 @@ export default function AdminContactsCrmPage() {
             {/* Form wrapping scrollable content + fixed pinned footer */}
             <form onSubmit={handleCreateInquiry} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Scrollable Form Body */}
-              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
                 {/* SECTION 1: Sender & Organization Profile */}
                 <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
                   <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
