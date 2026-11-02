@@ -41,6 +41,10 @@ import {
   CheckCheck,
   UserPlus,
   Layers,
+  Lock,
+  Unlock,
+  AlertCircle,
+  Eye,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type { LeadershipEvent } from "@/content/events";
@@ -158,6 +162,7 @@ function RegistrationsCrmInner() {
   const [saving, setSaving] = useState(false);
   const [uploadingProof, setUploadingProof] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isStatusUnlocked, setIsStatusUnlocked] = useState(false);
 
   // Fullscreen Screenshot Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -250,17 +255,26 @@ function RegistrationsCrmInner() {
     const list = tabFilteredByActivity;
     return {
       total: list.length,
-      secured: list.filter(
-        (r) => r.booking_mode === "secure_seat" || r.verification_status === "verified_confirmed"
+      confirmed: list.filter(
+        (r) => r.verification_status === "verified_confirmed"
       ).length,
-      reservations: list.filter(
-        (r) => r.booking_mode === "reserve_later" && r.verification_status !== "verified_confirmed"
-      ).length,
-      proofAwaiting: list.filter(
-        (r) => r.verification_status === "awaiting_verification" || (Boolean(r.screenshot_url) && r.verification_status !== "verified_confirmed")
+      adminReview: list.filter(
+        (r) =>
+          r.verification_status === "awaiting_verification" ||
+          (Boolean(r.screenshot_url) &&
+            r.verification_status !== "verified_confirmed" &&
+            r.verification_status !== "cancelled")
       ).length,
       pendingCallback: list.filter(
-        (r) => r.verification_status === "pending_callback"
+        (r) =>
+          r.verification_status === "pending_callback" ||
+          (!r.screenshot_url &&
+            r.booking_mode === "reserve_later" &&
+            r.verification_status !== "verified_confirmed" &&
+            r.verification_status !== "cancelled")
+      ).length,
+      cancelled: list.filter(
+        (r) => r.verification_status === "cancelled"
       ).length,
     };
   }, [tabFilteredByActivity]);
@@ -313,6 +327,7 @@ function RegistrationsCrmInner() {
     setEditTransactionRef(reg.transaction_ref || "");
     setEditFeeLabel(reg.fee_label || "");
     setEditNotes(reg.admin_notes || "");
+    setIsStatusUnlocked(false);
     setFeedback(null);
   };
 
@@ -541,38 +556,44 @@ function RegistrationsCrmInner() {
     URL.revokeObjectURL(url);
   };
 
-  // Colorful & Distinct Verification Badges
+  // Colorful & Distinct Verification Badges with Locked State
   const verificationBadge = (status: VerificationStatus) => {
     switch (status) {
       case "verified_confirmed":
         return {
           cls: "bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold shadow-2xs",
           dot: "bg-emerald-500",
-          label: "Confirmed Seated",
+          label: "Confirmed",
+          isLocked: true,
         };
       case "awaiting_verification":
         return {
           cls: "bg-sky-50 text-sky-800 border-sky-300 font-extrabold shadow-2xs",
           dot: "bg-sky-500",
-          label: "Verify Screenshot",
+          label: "Admin Review",
+          isLocked: false,
         };
       case "pending_callback":
         return {
-          cls: "bg-amber-50 text-amber-800 border-amber-300 font-bold",
+          cls: "bg-amber-50 text-amber-900 border-amber-300 font-bold shadow-2xs",
           dot: "bg-amber-500",
           label: "Pending Callback",
-        };
-      case "waitlisted":
-        return {
-          cls: "bg-purple-50 text-purple-800 border-purple-300 font-bold",
-          dot: "bg-purple-500",
-          label: "Waitlisted",
+          isLocked: false,
         };
       case "cancelled":
         return {
           cls: "bg-rose-50 text-rose-800 border-rose-300 font-bold",
           dot: "bg-rose-500",
           label: "Cancelled",
+          isLocked: true,
+        };
+      case "waitlisted":
+      default:
+        return {
+          cls: "bg-amber-50 text-amber-900 border-amber-300 font-bold shadow-2xs",
+          dot: "bg-amber-500",
+          label: "Pending Callback",
+          isLocked: false,
         };
     }
   };
@@ -737,47 +758,47 @@ function RegistrationsCrmInner() {
               </div>
             </div>
 
-            {/* Confirmed Seated (UBL Paid) */}
+            {/* Confirmed (Locked) */}
             <div className="rounded-xl p-2.5 bg-emerald-50/80 border border-emerald-200/90 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold text-emerald-800 block">Confirmed Seated</span>
-                <span className="font-num font-extrabold text-base text-emerald-800 leading-none">{kpiStats.secured}</span>
+                <span className="text-[10px] uppercase font-bold text-emerald-800 block">Confirmed</span>
+                <span className="font-num font-extrabold text-base text-emerald-900 leading-none">{kpiStats.confirmed}</span>
               </div>
               <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
                 <ShieldCheck className="w-4 h-4" />
               </div>
             </div>
 
-            {/* Provisional Reservations */}
-            <div className="rounded-xl p-2.5 bg-amber-50/80 border border-amber-200/90 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-amber-900 block">Reservations</span>
-                <span className="font-num font-extrabold text-base text-amber-900 leading-none">{kpiStats.reservations}</span>
-              </div>
-              <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center">
-                <CalendarCheck2 className="w-4 h-4" />
-              </div>
-            </div>
-
-            {/* Verify Proof Screenshot */}
+            {/* Admin Review (Screenshot Proof Uploaded) */}
             <div className="rounded-xl p-2.5 bg-sky-50/80 border border-sky-200/90 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold text-sky-800 block">Verify Proof</span>
-                <span className="font-num font-extrabold text-base text-sky-800 leading-none">{kpiStats.proofAwaiting}</span>
+                <span className="text-[10px] uppercase font-bold text-sky-800 block">Admin Review</span>
+                <span className="font-num font-extrabold text-base text-sky-800 leading-none">{kpiStats.adminReview}</span>
               </div>
               <div className="w-7 h-7 rounded-lg bg-sky-600 text-white flex items-center justify-center">
                 <ImageIcon className="w-3.5 h-3.5" />
               </div>
             </div>
 
-            {/* Pending Callback */}
-            <div className="rounded-xl p-2.5 bg-orange-50/80 border border-orange-200/90 flex items-center justify-between col-span-2 sm:col-span-1">
+            {/* Pending Callback (Reservations) */}
+            <div className="rounded-xl p-2.5 bg-amber-50/80 border border-amber-200/90 flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold text-orange-900 block">Pending Callback</span>
-                <span className="font-num font-extrabold text-base text-orange-900 leading-none">{kpiStats.pendingCallback}</span>
+                <span className="text-[10px] uppercase font-bold text-amber-900 block">Pending Callback</span>
+                <span className="font-num font-extrabold text-base text-amber-900 leading-none">{kpiStats.pendingCallback}</span>
               </div>
-              <div className="w-7 h-7 rounded-lg bg-[#FF7900] text-white flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center">
                 <Phone className="w-3.5 h-3.5" />
+              </div>
+            </div>
+
+            {/* Cancelled (Locked) */}
+            <div className="rounded-xl p-2.5 bg-rose-50/80 border border-rose-200/90 flex items-center justify-between col-span-2 sm:col-span-1">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-rose-900 block">Cancelled</span>
+                <span className="font-num font-extrabold text-base text-rose-900 leading-none">{kpiStats.cancelled}</span>
+              </div>
+              <div className="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center">
+                <Lock className="w-3.5 h-3.5" />
               </div>
             </div>
           </div>
@@ -884,7 +905,7 @@ function RegistrationsCrmInner() {
                   : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
               }`}
             >
-              All Bookings ({kpiStats.total})
+              All ({kpiStats.total})
             </button>
 
             <button
@@ -897,7 +918,7 @@ function RegistrationsCrmInner() {
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Confirmed Seated ({kpiStats.secured})</span>
+              <span>Confirmed ({kpiStats.confirmed})</span>
             </button>
 
             <button
@@ -910,7 +931,7 @@ function RegistrationsCrmInner() {
               }`}
             >
               <CalendarCheck2 className="w-3.5 h-3.5" />
-              <span>Reservations ({kpiStats.reservations})</span>
+              <span>Reservations ({kpiStats.pendingCallback})</span>
             </button>
           </div>
 
@@ -943,12 +964,11 @@ function RegistrationsCrmInner() {
               onChange={(e) => setVerificationFilter(e.target.value as "all" | VerificationStatus)}
               className="py-1.5 px-2.5 text-xs bg-white border border-slate-200 rounded-xl text-slate-700 font-semibold focus:outline-none focus:border-[#102E4D] cursor-pointer"
             >
-              <option value="all">All Verification</option>
-              <option value="verified_confirmed">Verified & Confirmed</option>
-              <option value="awaiting_verification">Verify Screenshot</option>
+              <option value="all">All Statuses</option>
+              <option value="awaiting_verification">Admin Review</option>
               <option value="pending_callback">Pending Callback</option>
-              <option value="waitlisted">Waitlisted</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="verified_confirmed">Confirmed (Locked)</option>
+              <option value="cancelled">Cancelled (Locked)</option>
             </select>
 
             {/* Sort Selector */}
@@ -1113,7 +1133,8 @@ function RegistrationsCrmInner() {
                       {/* Verification Pill */}
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${vBadge.cls}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${vBadge.dot}`} />
-                        {vBadge.label}
+                        <span>{vBadge.label}</span>
+                        {vBadge.isLocked && <Lock className="w-2.5 h-2.5 opacity-70 shrink-0" />}
                       </span>
                     </div>
                   </div>
@@ -1276,6 +1297,7 @@ function RegistrationsCrmInner() {
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${vBadge.dot}`} />
                           <span>{vBadge.label}</span>
+                          {vBadge.isLocked && <Lock className="w-2.5 h-2.5 opacity-70 shrink-0" />}
                         </span>
                       </td>
 
@@ -1341,58 +1363,68 @@ function RegistrationsCrmInner() {
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
             {/* Modal Header */}
-            <div className="bg-[#102E4D] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-2.5 shrink-0">
-              <div className="flex flex-wrap items-center gap-2 min-w-0">
-                {/* Reference ID Badge */}
-                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#FF7900] text-white font-num font-extrabold text-xs sm:text-sm tracking-wider shadow-sm shadow-[#FF7900]/30">
-                  <span className="text-orange-200 text-[10px] sm:text-xs font-sans font-bold">REF:</span>
-                  <span>#{selected.reference_code}</span>
+            {(() => {
+              const isRecordLocked =
+                (selected.verification_status === "verified_confirmed" ||
+                  selected.verification_status === "cancelled") &&
+                !isStatusUnlocked;
+
+              return (
+                <div className="bg-[#102E4D] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-2.5 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 min-w-0">
+                    {/* Reference ID Badge */}
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#FF7900] text-white font-num font-extrabold text-xs sm:text-sm tracking-wider shadow-sm shadow-[#FF7900]/30">
+                      <span className="text-orange-200 text-[10px] sm:text-xs font-sans font-bold">REF:</span>
+                      <span>#{selected.reference_code}</span>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selected.reference_code, "ref_modal")}
+                        className="ml-0.5 sm:ml-1 p-1 hover:bg-black/10 rounded transition-colors cursor-pointer"
+                        title="Copy Booking Reference"
+                      >
+                        {copiedKey === "ref_modal" ? (
+                          <Check className="w-3.5 h-3.5 text-white" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5 text-white/80" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Booking Mode Badge */}
+                    {(() => {
+                      const bStyle = bookingModeStyles(selected.booking_mode);
+                      return (
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold border inline-flex items-center gap-1.5 ${bStyle.pill}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
+                          <span>{bStyle.shortLabel}</span>
+                        </span>
+                      );
+                    })()}
+
+                    {/* Verification Status Badge */}
+                    {(() => {
+                      const vBadge = verificationBadge(selected.verification_status);
+                      return (
+                        <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold border inline-flex items-center gap-1.5 ${vBadge.cls}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${vBadge.dot}`} />
+                          <span>{vBadge.label}</span>
+                          {vBadge.isLocked && <Lock className="w-3 h-3 opacity-75 shrink-0" />}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => copyToClipboard(selected.reference_code, "ref_modal")}
-                    className="ml-0.5 sm:ml-1 p-1 hover:bg-black/10 rounded transition-colors cursor-pointer"
-                    title="Copy Booking Reference"
+                    onClick={() => setSelected(null)}
+                    className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                    title="Close"
                   >
-                    {copiedKey === "ref_modal" ? (
-                      <Check className="w-3.5 h-3.5 text-white" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-white/80" />
-                    )}
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-
-                {/* Booking Mode Badge */}
-                {(() => {
-                  const bStyle = bookingModeStyles(selected.booking_mode);
-                  return (
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold border inline-flex items-center gap-1.5 ${bStyle.pill}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
-                      <span>{bStyle.shortLabel}</span>
-                    </span>
-                  );
-                })()}
-
-                {/* Verification Status Badge */}
-                {(() => {
-                  const vBadge = verificationBadge(selected.verification_status);
-                  return (
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold border inline-flex items-center gap-1.5 ${vBadge.cls}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${vBadge.dot}`} />
-                      <span>{vBadge.label}</span>
-                    </span>
-                  );
-                })()}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+              );
+            })()}
 
             {/* Modal Scrollable Body */}
             <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
@@ -1638,78 +1670,223 @@ function RegistrationsCrmInner() {
                   </div>
                 )}
 
-                {/* Instant Verification Shortcut Button */}
-                {selected.verification_status !== "verified_confirmed" && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleSaveRecord({
-                        booking_mode: "secure_seat",
-                        verification_status: "verified_confirmed",
-                      })
-                    }
-                    className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Verify Payment & Confirm Seat Now</span>
-                  </button>
-                )}
+                {/* Admin Review Decision / Status Lock Controller */}
+                {(() => {
+                  const isRecordLocked =
+                    (selected.verification_status === "verified_confirmed" ||
+                      selected.verification_status === "cancelled") &&
+                    !isStatusUnlocked;
+
+                  if (isRecordLocked) {
+                    return selected.verification_status === "verified_confirmed" ? (
+                      <div className="rounded-xl p-3 sm:p-3.5 bg-emerald-50 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                        <div className="flex items-start sm:items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                            <Lock className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-xs sm:text-sm text-emerald-950 flex items-center gap-2 flex-wrap">
+                              <span>Seat Confirmed & Verified</span>
+                              <span className="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
+                                Status Locked
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-emerald-700 mt-0.5">
+                              Payment confirmed. This record is locked against accidental changes.
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsStatusUnlocked(true)}
+                          className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                        >
+                          <Unlock className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Unlock Status</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl p-3 sm:p-3.5 bg-rose-50 border border-rose-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                        <div className="flex items-start sm:items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0">
+                            <Lock className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-xs sm:text-sm text-rose-950 flex items-center gap-2 flex-wrap">
+                              <span>Registration Cancelled</span>
+                              <span className="text-[10px] bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
+                                Status Locked
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-rose-700 mt-0.5">
+                              This booking has been cancelled and locked.
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsStatusUnlocked(true)}
+                          className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 hover:bg-rose-100 text-rose-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                        >
+                          <Unlock className="w-3.5 h-3.5 text-rose-700" />
+                          <span>Unlock Status</span>
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="rounded-xl p-3 sm:p-3.5 bg-slate-50 border border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#102E4D] flex items-center gap-1.5">
+                          <Eye className="w-3.5 h-3.5 text-[#005696]" />
+                          <span>Admin Review Decision</span>
+                        </span>
+                        <span className="text-[10.5px] text-slate-500 font-medium">
+                          Select status to apply:
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {/* 1. Payment Done -> Confirm & Lock */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSaveRecord({
+                              booking_mode: "secure_seat",
+                              verification_status: "verified_confirmed",
+                            })
+                          }
+                          className="h-10 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                          title="Confirm bank payment and lock seat"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Payment Done (Confirm)</span>
+                        </button>
+
+                        {/* 2. Move to Reserved / Pending Callback */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleSaveRecord({
+                              booking_mode: "reserve_later",
+                              verification_status: "pending_callback",
+                            })
+                          }
+                          className="h-10 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                          title="Keep as provisional reservation for phone callback"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Reserve (Callback)</span>
+                        </button>
+
+                        {/* 3. Reject / Cancel & Lock */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Cancel registration for ${selected.full_name}? The record will be locked as Cancelled.`
+                              )
+                            ) {
+                              handleSaveRecord({
+                                verification_status: "cancelled",
+                              });
+                            }
+                          }}
+                          className="h-10 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                          title="Cancel registration and lock record"
+                        >
+                          <X className="w-4 h-4" />
+                          <span>Cancel & Lock</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* SECTION 5: CRM Controls (Booking Mode & Verification Status) */}
               <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Booking Mode */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
-                      Booking Mode
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5 h-10">
-                      <button
-                        type="button"
-                        onClick={() => setEditMode("secure_seat")}
-                        className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          editMode === "secure_seat"
-                            ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/30"
-                            : "bg-slate-50 text-slate-700 border-slate-200"
-                        }`}
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Secured Seat</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditMode("reserve_later")}
-                        className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          editMode === "reserve_later"
-                            ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-500/30"
-                            : "bg-slate-50 text-slate-700 border-slate-200"
-                        }`}
-                      >
-                        <CalendarCheck2 className="w-3.5 h-3.5" />
-                        <span>Reservation</span>
-                      </button>
-                    </div>
-                  </div>
+                {(() => {
+                  const isRecordLocked =
+                    (selected.verification_status === "verified_confirmed" ||
+                      selected.verification_status === "cancelled") &&
+                    !isStatusUnlocked;
 
-                  {/* Verification Status */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
-                      Verification Status
-                    </label>
-                    <select
-                      value={editVerification}
-                      onChange={(e) => setEditVerification(e.target.value as VerificationStatus)}
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white font-bold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
-                    >
-                      <option value="verified_confirmed">Verified & Confirmed</option>
-                      <option value="awaiting_verification">Awaiting Proof Verification</option>
-                      <option value="pending_callback">Pending Callback</option>
-                      <option value="waitlisted">Waitlisted</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </div>
-                </div>
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Booking Mode */}
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
+                          Booking Mode
+                        </label>
+                        <div className="grid grid-cols-2 gap-1.5 h-10">
+                          <button
+                            type="button"
+                            disabled={isRecordLocked}
+                            onClick={() => setEditMode("secure_seat")}
+                            className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                              isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                            } ${
+                              editMode === "secure_seat"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/30"
+                                : "bg-slate-50 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Secured Seat</span>
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isRecordLocked}
+                            onClick={() => setEditMode("reserve_later")}
+                            className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                              isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                            } ${
+                              editMode === "reserve_later"
+                                ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-500/30"
+                                : "bg-slate-50 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            <CalendarCheck2 className="w-3.5 h-3.5" />
+                            <span>Reservation</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Verification Status */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
+                            Verification Status
+                          </label>
+                          {isRecordLocked && (
+                            <span className="text-[10px] text-slate-400 font-semibold inline-flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-slate-400" />
+                              <span>Locked</span>
+                            </span>
+                          )}
+                        </div>
+                        <select
+                          disabled={isRecordLocked}
+                          value={editVerification}
+                          onChange={(e) => setEditVerification(e.target.value as VerificationStatus)}
+                          className={`w-full h-10 px-3 rounded-xl border border-slate-200 font-bold text-xs focus:outline-none focus:border-[#102E4D] ${
+                            isRecordLocked
+                              ? "bg-slate-100 text-slate-500 cursor-not-allowed"
+                              : "bg-white text-[#102E4D] cursor-pointer"
+                          }`}
+                        >
+                          <option value="awaiting_verification">Admin Review (Proof Uploaded)</option>
+                          <option value="pending_callback">Pending Callback (Reservation)</option>
+                          <option value="verified_confirmed">Confirmed (Seat Locked)</option>
+                          <option value="cancelled">Cancelled (Booking Locked)</option>
+                        </select>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* Transaction Ref */}
@@ -2066,9 +2243,10 @@ function RegistrationsCrmInner() {
                         }
                         className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white font-bold text-xs text-[#102E4D]"
                       >
-                        <option value="pending_callback">Pending Callback</option>
-                        <option value="awaiting_verification">Awaiting Proof Verification</option>
-                        <option value="verified_confirmed">Verified & Confirmed</option>
+                        <option value="pending_callback">Pending Callback (Reservation)</option>
+                        <option value="awaiting_verification">Admin Review (Proof Uploaded)</option>
+                        <option value="verified_confirmed">Confirmed (Seat Locked)</option>
+                        <option value="cancelled">Cancelled (Booking Locked)</option>
                       </select>
                     </div>
                   </div>

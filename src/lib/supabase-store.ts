@@ -699,7 +699,9 @@ export async function createActivityRegistration(input: {
     input.booking_mode === "secure_seat" ? "secure_seat" : "reserve_later";
   const defaultVerification: VerificationStatus =
     input.verification_status ||
-    (mode === "secure_seat" ? "awaiting_verification" : "pending_callback");
+    (mode === "secure_seat" || Boolean(input.screenshot_url)
+      ? "awaiting_verification"
+      : "pending_callback");
 
   // Ensure reference code is 100% unique across all existing records
   let resolvedRefCode = (input.reference_code || "").trim().toUpperCase();

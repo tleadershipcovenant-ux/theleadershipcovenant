@@ -1027,12 +1027,12 @@ export default function AdminDashboardPage() {
                       {isVerified ? (
                         <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-[#EFFBF8] text-[#10B981] border border-[#C8EFE6] hidden md:inline-flex items-center gap-1">
                           <CheckCircle2 className="w-2.5 h-2.5" />
-                          <span>Verified</span>
+                          <span>Confirmed</span>
                         </span>
                       ) : isAwaiting ? (
                         <span className="px-2 py-0.5 rounded-full text-[9.5px] font-bold bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3] hidden md:inline-flex items-center gap-1">
                           <ImageIcon className="w-2.5 h-2.5" />
-                          <span>Proof</span>
+                          <span>Admin Review</span>
                         </span>
                       ) : null}
 
