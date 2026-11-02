@@ -57,14 +57,14 @@ export const SUMMIT_CONTENT = {
   },
   speakers: {
     eyebrow: "Speakers & Facilitators",
-    heading: "Who you'll learn from",
+    heading: "Featuring Distinguished Voices from Education",
     items: [
       {
         initials: "FN",
         name: "Mr. Fazal Niazi",
         role: "Lead Facilitator",
         title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
-        bio: "Leads the FranklinCovey Education practice across Pakistan, Türkiye, and Azerbaijan. An executive advisor partnering with school leaders on leadership cultures, student empowerment, and the 4DX operating system.",
+        bio: "Leads strategic growth across Pakistan, Azerbaijan, and Turkey, driving teacher training, project management, and customer service initiatives. Also serves as Director of ARQAM Public School System and Founder of The Learning Space Official, advancing educational excellence and sustainable institutional growth.",
         gradient: "from-blue-600 to-indigo-800",
       },
       {
@@ -72,7 +72,7 @@ export const SUMMIT_CONTENT = {
         name: "Mr. Ubaid ur Rehman",
         role: "Event Facilitator",
         title: "Regional Manager, FranklinCovey Education North Region",
-        bio: "Partners with educational leaders and faculties across the North Region to foster sustainable character-based environments. Leads the summit's intensive working sessions, goal scorecards, and institutional commitment pledges.",
+        bio: "An education leader, leadership coach, and organizational development consultant with 10+ years of experience. Leads school transformation and leadership development across Northern Pakistan, while serving as a Visiting Lecturer at NUST and previously teaching at IMSciences, Peshawar.",
         gradient: "from-amber-500 to-orange-700",
       },
     ],
