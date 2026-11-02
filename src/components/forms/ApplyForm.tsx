@@ -500,9 +500,11 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
       }
 
       const refCode = formatBookingReference(
-        typeof json.id === "string"
+        typeof json.id === "string" && json.id.trim().length >= 4
           ? json.id
-          : String(Math.floor(10000 + Math.random() * 90000))
+          : `TLC-26-${Array.from(crypto.getRandomValues(new Uint8Array(5)))
+              .map((b) => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[b % 32])
+              .join("")}`
       );
 
       const nowFormatted = new Date().toLocaleString("en-US", {

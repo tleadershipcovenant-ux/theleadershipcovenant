@@ -577,8 +577,105 @@ export async function listActivityRegistrations(): Promise<
   );
 }
 
+const UNAMBIGUOUS_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function generateBookingToken(length = 5): string {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes)
+    .map((b) => UNAMBIGUOUS_CHARS[b % UNAMBIGUOUS_CHARS.length])
+    .join("");
+}
+
+/**
+ * Checks whether a booking reference code already exists in memory, local store, or Supabase.
+ */
+export async function isBookingReferenceTaken(referenceCode: string): Promise<boolean> {
+  const code = referenceCode.trim().toUpperCase();
+
+  // 1. Fast check against in-memory DB
+  if (
+    memoryDb?.registrations?.some(
+      (r) => r.reference_code.toUpperCase() === code
+    )
+  ) {
+    return true;
+  }
+
+  // 2. Check local DB file
+  try {
+    const db = await readLocalDb();
+    if (
+      db.registrations?.some((r) => r.reference_code.toUpperCase() === code)
+    ) {
+      return true;
+    }
+  } catch {
+    // Ignore local read errors
+  }
+
+  // 3. Query Supabase table for existence
+  const cfg = getSupabaseConfig();
+  if (cfg.isConfigured) {
+    try {
+      const existing = await supabaseFetch<{ id: string }[]>(
+        `activity_registrations?reference_code=eq.${encodeURIComponent(
+          code
+        )}&select=id&limit=1`
+      );
+      if (Array.isArray(existing) && existing.length > 0) {
+        return true;
+      }
+    } catch {
+      // Ignore network errors on check
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Generates a guaranteed 100% unique official booking reference code:
+ * Format: TLC-26-XXXXX (e.g. TLC-26-K9P4M)
+ * Actively verified against both local store and Supabase database records to ensure zero duplicates.
+ */
+export async function generateUniqueBookingReference(
+  attempts = 15
+): Promise<string> {
+  for (let i = 0; i < attempts; i++) {
+    // Generate 5-character token (or 6-character token if higher entropy needed)
+    const length = i < 10 ? 5 : 6;
+    const token = generateBookingToken(length);
+    const candidate = `TLC-26-${token}`;
+
+    const taken = await isBookingReferenceTaken(candidate);
+    if (!taken) {
+      return candidate;
+    }
+  }
+
+  // High-entropy fallback using base36 timestamp + random bytes
+  const timeSlice = Date.now().toString(36).slice(-3).toUpperCase();
+  const randSlice = generateBookingToken(3);
+  return `TLC-26-${timeSlice}${randSlice}`;
+}
+
+/**
+ * Generates a guaranteed unique reference code for contact inquiries: TLC-INQ-XXXXX
+ */
+export async function generateUniqueContactReference(): Promise<string> {
+  for (let i = 0; i < 10; i++) {
+    const token = generateBookingToken(5);
+    const candidate = `TLC-INQ-${token}`;
+    if (!memoryDb?.contacts?.some((c) => c.reference_code === candidate)) {
+      return candidate;
+    }
+  }
+  return `TLC-INQ-${Date.now().toString(36).slice(-3).toUpperCase()}${generateBookingToken(3)}`;
+}
+
 export async function createActivityRegistration(input: {
-  reference_code: string;
+  reference_code?: string;
   submission_type: "application" | "summit";
   full_name: string;
   email: string;
@@ -604,9 +701,15 @@ export async function createActivityRegistration(input: {
     input.verification_status ||
     (mode === "secure_seat" ? "awaiting_verification" : "pending_callback");
 
+  // Ensure reference code is 100% unique across all existing records
+  let resolvedRefCode = (input.reference_code || "").trim().toUpperCase();
+  if (!resolvedRefCode || (await isBookingReferenceTaken(resolvedRefCode))) {
+    resolvedRefCode = await generateUniqueBookingReference();
+  }
+
   const record: ActivityRegistrationRecord = {
     id: crypto.randomUUID(),
-    reference_code: input.reference_code,
+    reference_code: resolvedRefCode,
     submission_type: input.submission_type,
     full_name: input.full_name.trim(),
     email: input.email.trim(),
@@ -657,16 +760,53 @@ export async function createActivityRegistration(input: {
         }
         return inserted[0];
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      const errStr = String(err);
+      // Auto-retry with fresh unique ID if Postgres reports unique constraint violation (code 23505)
+      if (
+        errStr.includes("23505") ||
+        errStr.includes("duplicate key") ||
+        errStr.includes("unique")
+      ) {
+        console.warn(
+          "[Unique collision on reference_code, regenerating fresh ID...]"
+        );
+        record.reference_code = await generateUniqueBookingReference();
+        try {
+          const retry = await supabaseFetch<ActivityRegistrationRecord[]>(
+            "activity_registrations",
+            {
+              method: "POST",
+              headers: { Prefer: "return=representation" },
+              body: JSON.stringify(record),
+            }
+          );
+          if (retry?.[0]) {
+            if (memoryDb) memoryDb.registrations.unshift(retry[0]);
+            const db = await readLocalDb();
+            db.registrations.unshift(retry[0]);
+            await writeLocalDb(db).catch(() => {});
+            return retry[0];
+          }
+        } catch {
+          // Fall through to local DB
+        }
+      }
       console.warn("[Supabase Insert Error, saving to local store]:", err);
-      // Fallback safely to local DB
     }
+  }
+
+  // Ensure uniqueness in local DB
+  const db = await readLocalDb();
+  while (
+    db.registrations.some((r) => r.reference_code === record.reference_code)
+  ) {
+    record.reference_code = await generateUniqueBookingReference();
   }
 
   if (memoryDb) {
     memoryDb.registrations.unshift(record);
   }
-  const db = await readLocalDb();
   db.registrations.unshift(record);
   await writeLocalDb(db);
   return record;

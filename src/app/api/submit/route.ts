@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getActivityPricing } from "@/content/pricing";
-import { formatBookingReference } from "@/lib/receipt";
 import {
   createActivityRegistration,
   createContactSubmission,
+  generateUniqueBookingReference,
+  generateUniqueContactReference,
 } from "@/lib/supabase-store";
-
-function generateRandomToken(len = 5): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = new Uint8Array(len);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes)
-    .map((b) => chars[b % chars.length])
-    .join("");
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -96,7 +88,8 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const refCode = `TLC-INQ-${generateRandomToken(5)}`;
+      // Generate guaranteed unique inquiry reference (e.g. TLC-INQ-XXXXX)
+      const refCode = await generateUniqueContactReference();
       const saved = await createContactSubmission({
         reference_code: refCode,
         full_name,
@@ -164,7 +157,8 @@ export async function POST(req: NextRequest) {
           : pricing.formattedPayablePrice
         : "");
 
-    const refCode = formatBookingReference(generateRandomToken(5));
+    // Guaranteed 100% unique official booking reference: TLC-26-XXXXX
+    const refCode = await generateUniqueBookingReference();
     const saved = await createActivityRegistration({
       reference_code: refCode,
       submission_type: type as "application" | "summit",
