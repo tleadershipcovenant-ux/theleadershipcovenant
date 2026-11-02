@@ -37,40 +37,45 @@ const ACTIVITIES_SUBMENU = [
     label: "All Registrations",
     href: "/AD_Admin/registrations",
     exact: true,
+    dotColor: "bg-[#38BDF8]",
   },
   {
     label: "School Impact Summit 2026",
     href: "/AD_Admin/registrations?activity=school-impact-summit-2026",
     activityKey: "school-impact-summit-2026",
+    dotColor: "bg-[#FF7900]",
   },
   {
     label: "7 Habits of Highly Effective People",
     href: "/AD_Admin/registrations?activity=7-habits",
     activityKey: "7-habits",
+    dotColor: "bg-[#10B981]",
   },
   {
     label: "4 Disciplines of Execution (4DX)",
     href: "/AD_Admin/registrations?activity=4dx-for-educators",
     activityKey: "4dx-for-educators",
+    dotColor: "bg-[#FFC400]",
   },
   {
     label: "Leadership Camp Swat",
     href: "/AD_Admin/registrations?activity=leadership-camp-swat-2026",
     activityKey: "leadership-camp-swat-2026",
+    dotColor: "bg-[#A855F7]",
   },
 ];
 
 /* ─── CMS Pages Sub-List ─── */
 const CMS_PAGES_SUBMENU = [
-  { label: "Home Page", pageKey: "home", icon: Home },
-  { label: "Summit 2026", pageKey: "summit", icon: Calendar },
-  { label: "Services & Programs", pageKey: "services", icon: Briefcase },
-  { label: "Our Story & Vision", pageKey: "about", icon: BookOpen },
-  { label: "Activities Catalog", pageKey: "events", icon: Calendar },
-  { label: "Pricing & Discounts", pageKey: "pricing", icon: DollarSign },
-  { label: "Payment & Bank Accounts", pageKey: "payment", icon: CreditCard },
-  { label: "Forms & Microcopy", pageKey: "forms", icon: MessageSquare },
-  { label: "Global Site Settings", pageKey: "site", icon: Settings },
+  { label: "Home Page", pageKey: "home", icon: Home, iconColor: "text-[#38BDF8]" },
+  { label: "Summit 2026", pageKey: "summit", icon: Calendar, iconColor: "text-[#FF7900]" },
+  { label: "Services & Programs", pageKey: "services", icon: Briefcase, iconColor: "text-[#10B981]" },
+  { label: "Our Story & Vision", pageKey: "about", icon: BookOpen, iconColor: "text-[#FFC400]" },
+  { label: "Activities Catalog", pageKey: "events", icon: Calendar, iconColor: "text-[#818CF8]" },
+  { label: "Pricing & Discounts", pageKey: "pricing", icon: DollarSign, iconColor: "text-[#4ADE80]" },
+  { label: "Payment & Bank Accounts", pageKey: "payment", icon: CreditCard, iconColor: "text-[#2DD4BF]" },
+  { label: "Forms & Microcopy", pageKey: "forms", icon: MessageSquare, iconColor: "text-[#FBBF24]" },
+  { label: "Global Site Settings", pageKey: "site", icon: Settings, iconColor: "text-[#94A3B8]" },
 ];
 
 export default function AdminShell({
@@ -114,8 +119,8 @@ export default function AdminShell({
   // Mobile slide-over
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Accordion dropdown states: Activities open by default, CMS closed by default
-  const [activitiesOpen, setActivitiesOpen] = useState(true);
+  // Accordion dropdown states: Activities & CMS both closed by default on start
+  const [activitiesOpen, setActivitiesOpen] = useState(false);
   const [cmsPagesOpen, setCmsPagesOpen] = useState(false);
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -256,8 +261,9 @@ export default function AdminShell({
           {/* 1. OVERVIEW: DASHBOARD */}
           <div className="space-y-1">
             {!isMini && (
-              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
-                Overview
+              <div className="px-3 pb-1 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FFC400]" />
+                <span>Overview</span>
               </div>
             )}
             <Link
@@ -270,15 +276,15 @@ export default function AdminShell({
                   : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
                 isDashboardActive
-                  ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25 font-bold"
+                  ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
                   : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
               }`}
             >
               <LayoutDashboard
-                className={`w-5 h-5 shrink-0 ${
+                className={`w-5 h-5 shrink-0 transition-colors ${
                   isDashboardActive
                     ? "text-white"
-                    : "text-[#FFC400] group-hover:text-[#FF7900]"
+                    : "text-[#FFC400] group-hover:text-[#FFE066]"
                 }`}
               />
               {!isMini && (
@@ -292,8 +298,9 @@ export default function AdminShell({
           {/* 2. CUSTOMER CRM */}
           <div className="space-y-1">
             {!isMini && (
-              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
-                Customer CRM
+              <div className="px-3 pb-1 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8]" />
+                <span>Customer CRM</span>
               </div>
             )}
 
@@ -312,41 +319,36 @@ export default function AdminShell({
                   : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
                 isContactsActive
-                  ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25 font-bold"
+                  ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
                   : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
               }`}
             >
-              <MessageSquareText
-                className={`w-5 h-5 shrink-0 ${
-                  isContactsActive
-                    ? "text-white"
-                    : "text-[#FFC400] group-hover:text-[#FF7900]"
-                }`}
-              />
+              <div className="relative shrink-0 flex items-center justify-center">
+                <MessageSquareText
+                  className={`w-5 h-5 shrink-0 transition-colors ${
+                    isContactsActive
+                      ? "text-white"
+                      : "text-[#38BDF8] group-hover:text-[#67E8F9]"
+                  }`}
+                />
+                {badges.newContacts > 0 && (
+                  <span
+                    suppressHydrationWarning
+                    className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40"
+                    title={`${badges.newContacts} new contacts`}
+                  >
+                    {badges.newContacts}
+                  </span>
+                )}
+              </div>
               {!isMini && (
                 <span className="ml-3 text-xs sm:text-[13px] leading-snug truncate flex-1">
                   Contact Inquiries
                 </span>
               )}
-              {badges.newContacts > 0 && (
-                <span
-                  suppressHydrationWarning
-                  className={`${
-                    isMini
-                      ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
-                      : "ml-2 min-w-5 h-5 px-1.5 text-[10.5px]"
-                  } rounded-full font-num font-extrabold inline-flex items-center justify-center shrink-0 ${
-                    isContactsActive
-                      ? "bg-white text-[#102E4D]"
-                      : "bg-[#FFC400] text-[#001B33] shadow-xs"
-                  }`}
-                >
-                  {badges.newContacts}
-                </span>
-              )}
             </Link>
 
-            {/* Activity Registrations Button (With styled nested list) */}
+            {/* Activity Registrations Button (Closed by default, icon opens list) */}
             <div>
               <div
                 className={`group relative flex items-center ${
@@ -355,7 +357,7 @@ export default function AdminShell({
                     : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
                   isRegistrationsActive
-                    ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25 font-bold"
+                    ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
                     : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
                 }`}
                 onClick={() => {
@@ -363,47 +365,38 @@ export default function AdminShell({
                   else setActivitiesOpen(!activitiesOpen);
                 }}
               >
-                <Link
-                  href={resolveLink("/AD_Admin/registrations")}
-                  prefetch={true}
-                  className="flex items-center flex-1 min-w-0"
-                  onClick={(e) => {
-                    if (!isMini) {
-                      e.stopPropagation();
-                      setActivitiesOpen(true);
-                    }
-                  }}
-                >
-                  <CalendarCheck2
-                    className={`w-5 h-5 shrink-0 ${
-                      isRegistrationsActive
-                        ? "text-white"
-                        : "text-[#FFC400] group-hover:text-[#FF7900]"
-                    }`}
-                  />
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative shrink-0 flex items-center justify-center">
+                    <CalendarCheck2
+                      className={`w-5 h-5 shrink-0 transition-colors ${
+                        isRegistrationsActive
+                          ? "text-white"
+                          : "text-[#10B981] group-hover:text-[#34D399]"
+                      }`}
+                    />
+                    {badges.pendingRegistrations > 0 && (
+                      <span
+                        suppressHydrationWarning
+                        className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40"
+                        title={`${badges.pendingRegistrations} pending registrations`}
+                      >
+                        {badges.pendingRegistrations}
+                      </span>
+                    )}
+                  </div>
                   {!isMini && (
-                    <span className="ml-3 text-xs sm:text-[13px] leading-snug truncate">
+                    <Link
+                      href={resolveLink("/AD_Admin/registrations")}
+                      prefetch={true}
+                      className="ml-3 text-xs sm:text-[13px] leading-snug truncate hover:underline flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
                       Activity Registrations
-                    </span>
+                    </Link>
                   )}
-                </Link>
-
-                {badges.pendingRegistrations > 0 && (
-                  <span
-                    suppressHydrationWarning
-                    className={`${
-                      isMini
-                        ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
-                        : "ml-1.5 min-w-5 h-5 px-1.5 text-[10.5px]"
-                    } rounded-full font-num font-extrabold inline-flex items-center justify-center shrink-0 ${
-                      isRegistrationsActive
-                        ? "bg-white text-[#102E4D]"
-                        : "bg-[#FFC400] text-[#001B33] shadow-xs"
-                    }`}
-                  >
-                    {badges.pendingRegistrations}
-                  </span>
-                )}
+                </div>
 
                 {!isMini && (
                   <button
@@ -412,21 +405,22 @@ export default function AdminShell({
                       e.stopPropagation();
                       setActivitiesOpen(!activitiesOpen);
                     }}
-                    className="p-1 rounded text-slate-300 hover:text-white ml-1 cursor-pointer"
-                    title="Toggle activities list"
+                    className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 ml-1 cursor-pointer transition-colors"
+                    title={activitiesOpen ? "Collapse activities" : "Expand activities"}
+                    aria-label={activitiesOpen ? "Collapse activities" : "Expand activities"}
                   >
-                    {activitiesOpen ? (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    ) : (
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    )}
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-[#FFC400] transition-transform duration-200 ${
+                        activitiesOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
                   </button>
                 )}
               </div>
 
-              {/* Nested Activities Sub-Menu */}
+              {/* Nested Activities Sub-Menu (Closed on start) */}
               {!isMini && activitiesOpen && (
-                <div className="mt-1 ml-4 pl-3 border-l-2 border-[#FFC400]/25 space-y-0.5 py-1">
+                <div className="mt-1 ml-4 pl-3 border-l-2 border-[#10B981]/30 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                   {ACTIVITIES_SUBMENU.map((act) => {
                     return (
                       <Link
@@ -435,7 +429,9 @@ export default function AdminShell({
                         prefetch={true}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors truncate group/act"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900] group-hover/act:bg-[#FFC400] group-hover/act:scale-125 transition-transform shrink-0" />
+                        <span
+                          className={`w-2 h-2 rounded-full ${act.dotColor} group-hover/act:scale-125 transition-transform shadow-xs shrink-0`}
+                        />
                         <span className="truncate">{act.label}</span>
                       </Link>
                     );
@@ -448,8 +444,9 @@ export default function AdminShell({
           {/* 3. WEBSITE MANAGEMENT: CMS PORTAL */}
           <div className="space-y-1">
             {!isMini && (
-              <div className="px-3 pb-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
-                Website Management
+              <div className="px-3 pb-1 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FB7185]" />
+                <span>Website Management</span>
               </div>
             )}
 
@@ -461,7 +458,7 @@ export default function AdminShell({
                     : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
                   isCmsActive
-                    ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/25 font-bold"
+                    ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
                     : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
                 }`}
                 onClick={() => {
@@ -469,30 +466,29 @@ export default function AdminShell({
                   else setCmsPagesOpen(!cmsPagesOpen);
                 }}
               >
-                <Link
-                  href={resolveLink("/AD_Admin/cms")}
-                  prefetch={true}
-                  className="flex items-center flex-1 min-w-0"
-                  onClick={(e) => {
-                    if (!isMini) {
-                      e.stopPropagation();
-                      setCmsPagesOpen(true);
-                    }
-                  }}
-                >
-                  <Layers
-                    className={`w-5 h-5 shrink-0 ${
-                      isCmsActive
-                        ? "text-white"
-                        : "text-[#FFC400] group-hover:text-[#FF7900]"
-                    }`}
-                  />
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="relative shrink-0 flex items-center justify-center">
+                    <Layers
+                      className={`w-5 h-5 shrink-0 transition-colors ${
+                        isCmsActive
+                          ? "text-white"
+                          : "text-[#FB7185] group-hover:text-[#F43F5E]"
+                      }`}
+                    />
+                  </div>
                   {!isMini && (
-                    <span className="ml-3 text-xs sm:text-[13px] leading-snug truncate">
+                    <Link
+                      href={resolveLink("/AD_Admin/cms")}
+                      prefetch={true}
+                      className="ml-3 text-xs sm:text-[13px] leading-snug truncate hover:underline flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
                       Website CMS Portal
-                    </span>
+                    </Link>
                   )}
-                </Link>
+                </div>
 
                 {!isMini && (
                   <button
@@ -501,21 +497,22 @@ export default function AdminShell({
                       e.stopPropagation();
                       setCmsPagesOpen(!cmsPagesOpen);
                     }}
-                    className="p-1 rounded text-slate-300 hover:text-white ml-1 cursor-pointer"
-                    title="Toggle CMS pages list"
+                    className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 ml-1 cursor-pointer transition-colors"
+                    title={cmsPagesOpen ? "Collapse CMS pages" : "Expand CMS pages"}
+                    aria-label={cmsPagesOpen ? "Collapse CMS pages" : "Expand CMS pages"}
                   >
-                    {cmsPagesOpen ? (
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    ) : (
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    )}
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-[#FFC400] transition-transform duration-200 ${
+                        cmsPagesOpen ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
                   </button>
                 )}
               </div>
 
               {/* Nested CMS Pages Sub-List (Closed by default, opened by clicking icon or row) */}
               {!isMini && cmsPagesOpen && (
-                <div className="mt-1 ml-4 pl-3 border-l-2 border-[#FFC400]/25 space-y-0.5 py-1">
+                <div className="mt-1 ml-4 pl-3 border-l-2 border-[#FB7185]/30 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                   {CMS_PAGES_SUBMENU.map((page) => {
                     const PageIcon = page.icon;
                     return (
@@ -525,7 +522,9 @@ export default function AdminShell({
                         prefetch={true}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors group/item truncate"
                       >
-                        <PageIcon className="w-3 h-3 text-[#FFC400] group-hover/item:text-[#FF7900] shrink-0" />
+                        <PageIcon
+                          className={`w-3.5 h-3.5 ${page.iconColor} group-hover/item:scale-115 transition-transform shrink-0`}
+                        />
                         <span className="truncate">{page.label}</span>
                       </Link>
                     );
