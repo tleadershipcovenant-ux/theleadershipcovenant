@@ -90,7 +90,7 @@ function createRedirectResponse(
  * 1. Manages multi-host routing for `admin.leadershipcovenant.com.pk` (clean URLs).
  * 2. Maps admin subdomain root `/` to `/AD_Admin`.
  * 3. Maps clean admin pages: `/login`, `/registrations`, `/contacts`, `/cms`.
- * 4. Guards `/api/admin/*` endpoints and verifies 15-minute inactivity session expiration.
+ * 4. Guards `/api/admin/*` endpoints and verifies 30-minute inactivity session expiration.
  * 5. Refreshes Supabase SSR sessions.
  * 6. Keeps the main website running seamlessly at `leadershipcovenant.com.pk` and `www.leadershipcovenant.com.pk`.
  */
@@ -145,7 +145,7 @@ export async function proxy(request: NextRequest) {
         {
           ok: false,
           error:
-            "Unauthorized — session expired due to 15 minutes of inactivity or missing token.",
+            "Unauthorized — session expired due to 30 minutes of inactivity or missing token.",
         },
         {
           status: 401,
@@ -204,7 +204,7 @@ export async function proxy(request: NextRequest) {
       pathname.startsWith("/cms/");
 
     if (!session) {
-      // Session missing or expired after 15 min inactivity -> redirect to /login
+      // Session missing or expired after 30 min inactivity -> redirect to /login
       const loginUrl = new URL("/login", request.url);
       if (rawToken) {
         loginUrl.searchParams.set("reason", "inactivity");

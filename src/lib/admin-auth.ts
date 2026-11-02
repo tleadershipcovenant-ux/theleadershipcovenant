@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 export const ADMIN_COOKIE_NAME = "tlc_admin_jwt";
-// Strict 15-minute inactivity session timeout as requested
-export const SESSION_INACTIVITY_SECONDS = 15 * 60; // 15 minutes (900 seconds)
+// Strict 30-minute inactivity session timeout as requested
+export const SESSION_INACTIVITY_SECONDS = 30 * 60; // 30 minutes (1800 seconds)
 
 export interface AdminJwtPayload {
   sub: string;
@@ -112,7 +112,7 @@ export async function verifyAdminWithSupabase(
 }
 
 /**
- * Signs an HS256 JWT token with strict 15-minute inactivity tracking.
+ * Signs an HS256 JWT token with strict 30-minute inactivity tracking.
  */
 export async function signAdminJwt(email: string): Promise<{
   token: string;
@@ -150,7 +150,7 @@ export async function signAdminJwt(email: string): Promise<{
 }
 
 /**
- * Verifies an HS256 JWT token signature and checks for 15-minute inactivity.
+ * Verifies an HS256 JWT token signature and checks for 30-minute inactivity.
  */
 export async function verifyAdminJwt(
   token?: string | null
@@ -177,12 +177,12 @@ export async function verifyAdminJwt(
     const payload = JSON.parse(payloadJson) as AdminJwtPayload;
     const now = Math.floor(Date.now() / 1000);
 
-    // Strict 15-minute check: either expired by exp OR by lastActive
+    // Strict 30-minute check: either expired by exp OR by lastActive
     if (!payload.exp || payload.exp <= now) {
       return null;
     }
     if (payload.lastActive && now - payload.lastActive > SESSION_INACTIVITY_SECONDS) {
-      return null; // Session expired due to 15 min inactivity
+      return null; // Session expired due to 30 min inactivity
     }
     if (payload.role !== "super_admin") {
       return null;

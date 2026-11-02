@@ -306,7 +306,7 @@ function AdminLoginFormInner() {
                 <div className="mb-4 sm:mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#FF7900]" />
                   <span>
-                    Your session was automatically closed after 15 minutes of
+                    Your session was automatically closed after 30 minutes of
                     inactivity for your protection. Please sign in again.
                   </span>
                 </div>
@@ -430,7 +430,7 @@ function AdminLoginFormInner() {
 
                 {/* Security Helper Note */}
                 <div className="pt-0.5 text-[11px] text-slate-500 font-medium">
-                  Protected by 15-minute inactivity auto-logout for security.
+                  Protected by 30-minute inactivity auto-logout for security.
                 </div>
 
                 {/* Submit Button */}

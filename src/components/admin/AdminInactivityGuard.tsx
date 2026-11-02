@@ -4,8 +4,9 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ShieldAlert, RefreshCw, LogOut } from "lucide-react";
 
-const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // Strict 30-minute inactivity timeout
 const WARNING_THRESHOLD_MS = 60 * 1000; // Show warning in last 60 seconds
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000; // Refresh JWT every 10 min during active usage
 
 export default function AdminInactivityGuard() {
   const router = useRouter();
@@ -15,7 +16,9 @@ export default function AdminInactivityGuard() {
 
   const [showWarning, setShowWarning] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(60);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const lastActivityRef = useRef<number>(Date.now());
+  const lastRefreshRef = useRef<number>(Date.now());
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogout = useCallback(async () => {
@@ -24,24 +27,51 @@ export default function AdminInactivityGuard() {
     } catch {
       // Ignored
     }
+
     if (typeof window !== "undefined") {
-      sessionStorage.removeItem("tlc_admin_jwt_preview");
+      try {
+        sessionStorage.removeItem("tlc_admin_jwt_preview");
+        sessionStorage.removeItem("tlc_admin_dashboard_cache");
+        localStorage.removeItem("tlc_admin_dashboard_cache");
+      } catch {
+        // Ignored
+      }
     }
-    router.replace(
-      isCleanUrl
-        ? "/login?reason=inactivity"
-        : "/AD_Admin/login?reason=inactivity"
-    );
-    router.refresh();
+
+    const targetUrl = isCleanUrl
+      ? "/login?reason=inactivity"
+      : "/AD_Admin/login?reason=inactivity";
+
+    if (typeof window !== "undefined") {
+      window.location.replace(targetUrl);
+    } else {
+      router.replace(targetUrl);
+      router.refresh();
+    }
   }, [isCleanUrl, router]);
 
-  const resetActivity = useCallback(() => {
+  const pingRefreshSession = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await fetch("/api/admin/auth/refresh", { method: "POST" });
+      lastRefreshRef.current = Date.now();
+    } catch {
+      // Ignored
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  const resetActivity = useCallback((pingServer = false) => {
     lastActivityRef.current = Date.now();
     if (showWarning) {
       setShowWarning(false);
       setSecondsRemaining(60);
     }
-  }, [showWarning]);
+    if (pingServer) {
+      pingRefreshSession();
+    }
+  }, [showWarning, pingRefreshSession]);
 
   useEffect(() => {
     if (isLoginPage) return;
@@ -61,7 +91,13 @@ export default function AdminInactivityGuard() {
       if (!throttleTimeout) {
         throttleTimeout = setTimeout(() => {
           throttleTimeout = null;
-          resetActivity();
+          resetActivity(false);
+
+          // Periodically slide JWT forward on active use
+          const now = Date.now();
+          if (now - lastRefreshRef.current >= REFRESH_INTERVAL_MS) {
+            pingRefreshSession();
+          }
         }, 1000);
       }
     };
@@ -70,6 +106,7 @@ export default function AdminInactivityGuard() {
       window.addEventListener(event, onUserAction, { passive: true });
     });
 
+    // Check inactivity every 1s
     const checkInterval = setInterval(() => {
       const elapsed = Date.now() - lastActivityRef.current;
       const remainingMs = INACTIVITY_TIMEOUT_MS - elapsed;
@@ -85,15 +122,30 @@ export default function AdminInactivityGuard() {
       }
     }, 1000);
 
+    // Immediate check on tab focus / wake from sleep
+    const onVisibilityOrFocusChange = () => {
+      if (document.visibilityState === "visible") {
+        const elapsed = Date.now() - lastActivityRef.current;
+        if (elapsed >= INACTIVITY_TIMEOUT_MS) {
+          handleLogout();
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityOrFocusChange);
+    window.addEventListener("focus", onVisibilityOrFocusChange);
+
     return () => {
       activityEvents.forEach((event) => {
         window.removeEventListener(event, onUserAction);
       });
       clearInterval(checkInterval);
+      document.removeEventListener("visibilitychange", onVisibilityOrFocusChange);
+      window.removeEventListener("focus", onVisibilityOrFocusChange);
       if (throttleTimeout) clearTimeout(throttleTimeout);
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
     };
-  }, [isLoginPage, resetActivity, handleLogout]);
+  }, [isLoginPage, resetActivity, handleLogout, pingRefreshSession]);
 
   if (!showWarning || isLoginPage) return null;
 
@@ -108,7 +160,7 @@ export default function AdminInactivityGuard() {
           Session Inactivity Warning
         </h3>
         <p className="text-sm text-slate-600 mt-2">
-          You have been inactive for nearly 15 minutes. For security, your admin
+          You have been inactive for nearly 30 minutes. For security, your admin
           session will automatically lock in:
         </p>
 
@@ -119,11 +171,12 @@ export default function AdminInactivityGuard() {
         <div className="flex flex-col sm:flex-row gap-3 mt-2">
           <button
             type="button"
-            onClick={resetActivity}
-            className="flex-1 py-3 px-4 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            disabled={isRefreshing}
+            onClick={() => resetActivity(true)}
+            className="flex-1 py-3 px-4 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-60"
           >
-            <RefreshCw className="w-4 h-4 text-[#FFC400]" />
-            <span>Stay Signed In</span>
+            <RefreshCw className={`w-4 h-4 text-[#FFC400] ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>{isRefreshing ? "Renewing…" : "Stay Signed In"}</span>
           </button>
           <button
             type="button"

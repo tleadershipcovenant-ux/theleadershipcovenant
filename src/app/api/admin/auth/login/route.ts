@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     // 3. Clear rate limit on successful authentication
     clearRateLimit(req, "admin_login");
 
-    // 4. Issue cryptographically signed Admin JWT with 15-minute inactivity session
+    // 4. Issue cryptographically signed Admin JWT with 30-minute inactivity session
     const verifiedEmail = authResult.email || email;
     const { token, payload } = await signAdminJwt(verifiedEmail);
 
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       },
       issuedAt: new Date(payload.iat * 1000).toISOString(),
       expiresAt: new Date(payload.exp * 1000).toISOString(),
-      inactivityTimeoutMinutes: 15,
+      inactivityTimeoutMinutes: 30,
     });
 
     const host =
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
       sameSite: "lax",
       path: "/",
       domain: isLeadershipDomain ? ".leadershipcovenant.com.pk" : undefined,
-      maxAge: SESSION_INACTIVITY_SECONDS, // Strict 15-minute inactivity session
+      maxAge: SESSION_INACTIVITY_SECONDS, // Strict 30-minute inactivity session
     });
 
     return res;
