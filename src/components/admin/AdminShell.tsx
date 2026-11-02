@@ -185,7 +185,7 @@ export default function AdminShell({
 
         {/* Brand Header */}
         <div
-          className={`px-3.5 py-4 border-b border-white/10 flex items-center ${
+          className={`px-3.5 py-4 border-b border-white/10 flex items-center shrink-0 ${
             isMini ? "flex-col justify-center gap-2" : "justify-between gap-2.5"
           }`}
         >
@@ -249,7 +249,7 @@ export default function AdminShell({
 
         {/* Navigation Content Area — Scrollable without visible scrollbar */}
         <nav
-          className={`flex-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+          className={`flex-1 min-h-0 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
             isMini ? "px-2 py-3.5 space-y-3" : "px-3.5 py-4 space-y-5"
           }`}
         >
@@ -602,7 +602,7 @@ export default function AdminShell({
 
   /* ──────────────────────────── Main Shell Layout ──────────────────────────── */
   return (
-    <div className="min-h-screen bg-[#F3FAF8] text-[#102E4D] flex relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#F3FAF8] text-[#102E4D] relative">
       {/* MOBILE FLOATING LEFT BUTTON (WHEN DRAWER IS CLOSED ON MOBILE) */}
       {!mobileOpen && (
         <button
@@ -622,9 +622,9 @@ export default function AdminShell({
         </button>
       )}
 
-      {/* DESKTOP LOCKED VERTICAL LEFT SIDEBAR */}
+      {/* DESKTOP FIXED VERTICAL LEFT SIDEBAR — 100% LOCKED IN VIEWPORT AT ALL TIMES */}
       <aside
-        className={`hidden lg:block shrink-0 sticky top-0 h-screen z-30 transition-[width] duration-300 ease-out overflow-hidden ${
+        className={`hidden lg:flex flex-col fixed top-0 left-0 bottom-0 h-screen z-30 transition-[width] duration-300 ease-out overflow-hidden shadow-2xl ${
           expanded ? "w-72 xl:w-80" : "w-20"
         }`}
       >
@@ -644,8 +644,12 @@ export default function AdminShell({
         </div>
       )}
 
-      {/* MAIN CONTENT AREA ON THE RIGHT */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      {/* MAIN CONTENT AREA ON THE RIGHT — SCROLLS FREELY ACROSS ALL SECTIONS WHILE SIDEBAR STAYS FIXED */}
+      <div
+        className={`min-h-screen flex flex-col transition-[padding] duration-300 ease-out ${
+          expanded ? "lg:pl-72 xl:pl-80" : "lg:pl-20"
+        }`}
+      >
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
           {children}
         </main>
