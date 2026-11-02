@@ -838,17 +838,17 @@ export default function ContactSection() {
                     )}
                   </AnimatePresence>
 
-                  {/* Quick Topic Chips */}
+                  {/* Quick Topic Chips - Aligned Grid for Mobile & Desktop */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
                         Quick Topic Selection
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-400 hidden sm:inline-block">
                         Tap to prefill interest
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                       {QUICK_TOPICS.map((topic) => {
                         const isSelected = formData.interest === topic.value;
                         return (
@@ -862,13 +862,13 @@ export default function ContactSection() {
                               });
                               setInterestDropdownOpen(false);
                             }}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                            className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border text-center flex items-center justify-center min-h-[38px] ${
                               isSelected
-                                ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D] shadow-xs scale-102"
+                                ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D] shadow-xs"
                                 : "bg-[#EFFBF8] text-[#102E4D] border-[#D7F5EF] hover:bg-[#D7F5EF] hover:border-[#C8EFE6]"
                             }`}
                           >
-                            {topic.label}
+                            <span className="truncate">{topic.label}</span>
                           </button>
                         );
                       })}
@@ -1078,14 +1078,9 @@ export default function ContactSection() {
                         }`}
                       />
 
-                      <div className="flex items-center gap-2 min-w-0 pr-2">
-                        <span className="text-sm font-bold text-[#102E4D] truncate">
-                          {selectedInterestMeta.label}
-                        </span>
-                        <span className="text-[10.5px] font-semibold text-slate-500 hidden sm:inline-block">
-                          • {selectedInterestMeta.tag}
-                        </span>
-                      </div>
+                      <span className="text-sm font-bold text-[#102E4D] truncate pr-2">
+                        {selectedInterestMeta.label}
+                      </span>
 
                       <ChevronDown
                         className={`w-4 h-4 text-slate-400 absolute right-3 transition-transform duration-200 ${
@@ -1094,7 +1089,7 @@ export default function ContactSection() {
                       />
                     </button>
 
-                    {/* Compact Floating Dropdown Menu */}
+                    {/* Compact Floating Dropdown Menu with Colorful Custom Scrollbar */}
                     <AnimatePresence>
                       {interestDropdownOpen && (
                         <motion.div
@@ -1103,15 +1098,14 @@ export default function ContactSection() {
                           exit={{ opacity: 0, y: 4, scale: 0.99 }}
                           transition={{ duration: 0.15 }}
                           role="listbox"
-                          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-[#C8EFE6] shadow-[0_12px_32px_-8px_rgba(0,27,51,0.18)] overflow-hidden max-h-64 overflow-y-auto divide-y divide-slate-100"
+                          style={{
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#10B981 #EFFBF8",
+                          }}
+                          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-[#C8EFE6] shadow-[0_12px_32px_-8px_rgba(0,27,51,0.18)] overflow-hidden max-h-56 overflow-y-auto divide-y divide-slate-100 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#059669] hover:[&::-webkit-scrollbar-thumb]:to-[#E56D00]"
                         >
                           {INTEREST_OPTIONS.map((opt) => {
                             const isSelected = formData.interest === opt.value;
-                            const meta = INTEREST_DETAILS[opt.value] || {
-                              label: opt.label,
-                              tag: "Programme",
-                              badgeColor: "bg-slate-50 text-slate-700 border-slate-200",
-                            };
 
                             return (
                               <button
@@ -1126,20 +1120,13 @@ export default function ContactSection() {
                                   });
                                   setInterestDropdownOpen(false);
                                 }}
-                                className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2.5 transition-colors cursor-pointer text-xs sm:text-sm ${
+                                className={`w-full text-left px-4 py-2.5 flex items-center justify-between gap-3 transition-colors cursor-pointer text-xs sm:text-sm ${
                                   isSelected
                                     ? "bg-[#EFFBF8] text-[#102E4D] font-extrabold"
                                     : "hover:bg-[#F8FCFB] text-slate-700 font-medium"
                                 }`}
                               >
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="truncate">{opt.label}</span>
-                                  <span
-                                    className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded border ${meta.badgeColor} hidden sm:inline-block shrink-0`}
-                                  >
-                                    {meta.tag}
-                                  </span>
-                                </div>
+                                <span className="truncate">{opt.label}</span>
 
                                 {isSelected && (
                                   <Check className="w-4 h-4 text-[#10B981] shrink-0" />
