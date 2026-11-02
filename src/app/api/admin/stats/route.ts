@@ -9,10 +9,34 @@ import {
   testSupabaseConnection,
 } from "@/lib/supabase-store";
 
+// In-memory deduplication cache so simultaneous dashboard + shell calls don't double-query DB
+let cachedStats: {
+  payload: Record<string, unknown>;
+  timestamp: number;
+} | null = null;
+const CACHE_TTL_MS = 2500; // 2.5 seconds cache window for instant multi-component response
+
 export async function GET(req: NextRequest) {
   const session = await authenticateAdminRequest(req);
   if (!session) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(req.url);
+  const forceFresh = url.searchParams.get("fresh") === "1";
+  const now = Date.now();
+
+  if (!forceFresh && cachedStats && now - cachedStats.timestamp < CACHE_TTL_MS) {
+    return NextResponse.json({
+      ...cachedStats.payload,
+      systemHealth: {
+        ...(cachedStats.payload.systemHealth as Record<string, unknown>),
+        jwt: {
+          email: session.email,
+          expiresAt: new Date(session.exp * 1000).toISOString(),
+        },
+      },
+    });
   }
 
   const [contacts, registrations, eventsCms, supabaseHealth] = await Promise.all([
@@ -114,7 +138,7 @@ export async function GET(req: NextRequest) {
     (a, b) => b.total - a.total
   );
 
-  return NextResponse.json({
+  const payload = {
     ok: true,
     contactStats,
     registrationStats,
@@ -134,6 +158,13 @@ export async function GET(req: NextRequest) {
         expiresAt: new Date(session.exp * 1000).toISOString(),
       },
     },
-  });
-}
+  };
 
+  // Save in micro-cache
+  cachedStats = {
+    payload,
+    timestamp: now,
+  };
+
+  return NextResponse.json(payload);
+}

@@ -27,7 +27,6 @@ export default function Navbar() {
             // Hysteresis buffer zone:
             // Scroll down past 32px -> smoothly collapse upper info top bar
             // Scroll up below 14px -> smoothly restore upper info top bar
-            // This completely eliminates layout thrashing & stutter when scrolling back up
             if (!prev && y > 32) return true;
             if (prev && y < 14) return false;
             return prev;
@@ -52,10 +51,11 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transform-gpu will-change-transform">
-      {/* 1. Professional Upper Top Bar — Midnight Navy (#001B33) (Clean, Executive, No Badges) */}
+    // Fixed, locked navbar permanently anchored to the top of the viewport across all pages
+    <header className="fixed top-0 left-0 right-0 z-[100] w-full">
+      {/* 1. Professional Upper Top Bar — Midnight Navy (#001B33) */}
       <div
-        className={`w-full bg-[#001B33] text-white/90 border-b overflow-hidden transition-[height,opacity] duration-300 ease-in-out transform-gpu will-change-[height,opacity] hidden md:block ${
+        className={`w-full bg-[#001B33] text-white/90 border-b overflow-hidden transition-[height,opacity] duration-300 ease-in-out hidden md:block ${
           isScrolled
             ? "h-0 opacity-0 pointer-events-none border-transparent"
             : "h-9 opacity-100 border-white/10"
@@ -91,20 +91,20 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 2. Main Navigation Bar */}
+      {/* 2. Main Navigation Bar — Locked & Visible when scrolling with all pages */}
       <div
-        className={`w-full bg-white border-b border-slate-200/90 transition-[height,box-shadow] duration-300 ease-in-out transform-gpu will-change-[height,box-shadow] ${
+        className={`w-full bg-white border-b border-slate-200/90 transition-[height,box-shadow] duration-300 ease-in-out ${
           isScrolled
-            ? "h-[60px] md:h-[68px] shadow-sm"
+            ? "h-[60px] md:h-[68px] shadow-md"
             : "h-[68px] md:h-[76px] shadow-xs"
         }`}
       >
         <div className="max-w-[1280px] h-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-          {/* Logo & Brand Identity (Refined & Professional Logo Size) */}
+          {/* Logo & Brand Identity */}
           <Link href="/" className="flex items-center gap-3 sm:gap-3.5 group min-w-0">
             <div
-              className={`relative shrink-0 flex items-center justify-center transition-transform duration-300 ease-out transform-gpu w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 lg:w-14 lg:h-14 ${
-                isScrolled ? "scale-90 md:scale-92" : "scale-100"
+              className={`relative shrink-0 flex items-center justify-center transition-transform duration-300 ease-out w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 lg:w-14 lg:h-14 ${
+                isScrolled ? "scale-95" : "scale-100"
               }`}
             >
               <img

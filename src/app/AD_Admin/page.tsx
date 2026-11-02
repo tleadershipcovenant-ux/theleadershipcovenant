@@ -72,16 +72,38 @@ interface DashboardData {
 }
 
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<DashboardData | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = window.sessionStorage.getItem("tlc_admin_dashboard_cache");
+        if (cached) return JSON.parse(cached);
+      } catch {
+        // Fallback
+      }
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(false);
 
-  const loadDashboard = useCallback(async () => {
-    setLoading(true);
+  const loadDashboard = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setLoading(true);
     try {
-      const res = await fetch("/api/admin/stats", { cache: "no-store" });
+      const res = await fetch(`/api/admin/stats${isRefresh ? "?fresh=1" : ""}`, {
+        cache: "no-store",
+      });
       if (res.ok) {
         const json = await res.json();
         setData(json);
+        if (typeof window !== "undefined") {
+          try {
+            window.sessionStorage.setItem(
+              "tlc_admin_dashboard_cache",
+              JSON.stringify(json)
+            );
+          } catch {
+            // Storage quota or error
+          }
+        }
       }
     } finally {
       setLoading(false);
@@ -164,7 +186,7 @@ export default function AdminDashboardPage() {
             </Link>
             <button
               type="button"
-              onClick={loadDashboard}
+              onClick={() => loadDashboard(true)}
               className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer"
               title="Refresh dashboard"
             >

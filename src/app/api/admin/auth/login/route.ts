@@ -10,7 +10,6 @@ import {
   recordFailedAttempt,
   clearRateLimit,
 } from "@/lib/rate-limit";
-import { createClient } from "@/utils/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -51,7 +50,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Authenticate user directly against Supabase Auth
+    // 2. Authenticate user directly against Supabase Auth (Single fast round-trip)
     const authResult = await verifyAdminWithSupabase(email, password);
     if (!authResult.ok) {
       const failInfo = recordFailedAttempt(req, {
@@ -76,18 +75,7 @@ export async function POST(req: NextRequest) {
     // 3. Clear rate limit on successful authentication
     clearRateLimit(req, "admin_login");
 
-    // 4. Refresh/set SSR Supabase session cookies
-    try {
-      const supabase = await createClient();
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-    } catch {
-      // Non-critical if SSR cookies are bypassed
-    }
-
-    // 5. Issue cryptographically signed Admin JWT with 15-minute inactivity session
+    // 4. Issue cryptographically signed Admin JWT with 15-minute inactivity session
     const verifiedEmail = authResult.email || email;
     const { token, payload } = await signAdminJwt(verifiedEmail);
 

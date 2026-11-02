@@ -200,7 +200,6 @@ function AdminLoginFormInner() {
       }
 
       router.replace(safeDestination);
-      router.refresh();
     } catch (err: unknown) {
       setError(
         err instanceof Error
