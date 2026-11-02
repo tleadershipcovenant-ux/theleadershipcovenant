@@ -140,14 +140,14 @@ export default function SummitInteractiveSections() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
+            className="text-center max-w-3xl mx-auto mb-2 sm:mb-3 transform-gpu"
           >
             <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
               <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
               <span>{videos.eyebrow}</span>
               <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
             </div>
-            <h2 className="font-serif font-extrabold text-2xl sm:text-4xl text-[#102E4D] tracking-tight">
+            <h2 className="font-serif font-extrabold text-2xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
               {videos.heading}
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />

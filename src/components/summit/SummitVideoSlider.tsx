@@ -85,7 +85,7 @@ export default function SummitVideoSlider() {
   };
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto py-2 sm:py-6 select-none">
+    <div className="relative w-full max-w-6xl mx-auto pt-0 pb-2 sm:pt-1 sm:pb-4 select-none">
       {/* ────────────────────────────────────────────────────────── */}
       {/* 3D Coverflow Slider Presentation Track                      */}
       {/* ────────────────────────────────────────────────────────── */}
