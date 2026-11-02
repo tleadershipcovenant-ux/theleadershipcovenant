@@ -22,13 +22,13 @@ import {
   Calendar,
   Tag,
   CheckCheck,
-  Flame,
   MessageSquare,
+  ArrowUpDown,
+  Filter,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type {
   ContactCrmStatus,
-  ContactPriority,
   ContactSubmissionRecord,
 } from "@/lib/supabase-store";
 
@@ -40,7 +40,7 @@ const STATUS_TABS: Array<{
   {
     id: "all",
     label: "All Inquiries",
-    activeClass: "bg-[#102E4D] text-white",
+    activeClass: "bg-[#102E4D] text-white shadow-xs",
   },
   {
     id: "new",
@@ -121,22 +121,20 @@ export default function AdminContactsCrmPage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Filters & Sorting
+  // Filters & Sorting (Priority removed as requested)
   const [statusFilter, setStatusFilter] = useState<"all" | ContactCrmStatus>("all");
-  const [priorityFilter, setPriorityFilter] = useState<"all" | ContactPriority>("all");
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priority" | "name">("newest");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name" | "status">("newest");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Details Modal Inspector State
   const [selected, setSelected] = useState<ContactSubmissionRecord | null>(null);
   const [editStatus, setEditStatus] = useState<ContactCrmStatus>("new");
-  const [editPriority, setEditPriority] = useState<ContactPriority>("normal");
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Manual Add Modal State
+  // Create Inquiry Modal State
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addingInquiry, setAddingInquiry] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -145,7 +143,7 @@ export default function AdminContactsCrmPage() {
     phone: "",
     organization: "",
     interest: "school-impact-summit",
-    priority: "normal" as ContactPriority,
+    crm_status: "new" as ContactCrmStatus,
     message: "",
     admin_notes: "",
   });
@@ -187,7 +185,6 @@ export default function AdminContactsCrmPage() {
   const openInspector = (record: ContactSubmissionRecord) => {
     setSelected(record);
     setEditStatus(record.crm_status);
-    setEditPriority(record.priority);
     setEditNotes(record.admin_notes || "");
     setFeedback(null);
   };
@@ -204,7 +201,6 @@ export default function AdminContactsCrmPage() {
     const q = searchQuery.trim().toLowerCase();
     const result = contacts.filter((c) => {
       if (statusFilter !== "all" && c.crm_status !== statusFilter) return false;
-      if (priorityFilter !== "all" && c.priority !== priorityFilter) return false;
       if (!q) return true;
       return (
         c.full_name.toLowerCase().includes(q) ||
@@ -224,23 +220,17 @@ export default function AdminContactsCrmPage() {
       if (sortBy === "oldest") {
         return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       }
-      if (sortBy === "priority") {
-        const priorityScore: Record<ContactPriority, number> = {
-          urgent: 4,
-          high: 3,
-          normal: 2,
-          low: 1,
-        };
-        return (priorityScore[b.priority] || 0) - (priorityScore[a.priority] || 0);
-      }
       if (sortBy === "name") {
         return a.full_name.localeCompare(b.full_name);
+      }
+      if (sortBy === "status") {
+        return a.crm_status.localeCompare(b.crm_status);
       }
       return 0;
     });
 
     return result;
-  }, [contacts, statusFilter, priorityFilter, searchQuery, sortBy]);
+  }, [contacts, statusFilter, searchQuery, sortBy]);
 
   const counts = useMemo(() => {
     const total = contacts.length;
@@ -256,7 +246,6 @@ export default function AdminContactsCrmPage() {
       responded: respondedCount,
       archived: archivedCount,
       respondedPercent: total > 0 ? Math.round((respondedCount / total) * 100) : 0,
-      newPercent: total > 0 ? Math.round((newCount / total) * 100) : 0,
     };
   }, [contacts]);
 
@@ -272,7 +261,6 @@ export default function AdminContactsCrmPage() {
         body: JSON.stringify({
           id: selected.id,
           crm_status: targetStatus,
-          priority: editPriority,
           admin_notes: editNotes,
         }),
       });
@@ -283,7 +271,7 @@ export default function AdminContactsCrmPage() {
         );
         setSelected(json.contact);
         setEditStatus(json.contact.crm_status);
-        setFeedback("Inquiry CRM details updated successfully!");
+        setFeedback("Inquiry details updated successfully!");
         setTimeout(() => setFeedback(null), 3000);
       }
     } finally {
@@ -326,13 +314,13 @@ export default function AdminContactsCrmPage() {
           phone: "",
           organization: "",
           interest: "school-impact-summit",
-          priority: "normal",
+          crm_status: "new",
           message: "",
           admin_notes: "",
         });
         openInspector(json.contact);
       } else {
-        alert(json.error || "Failed to log contact inquiry.");
+        alert(json.error || "Failed to create inquiry.");
       }
     } finally {
       setAddingInquiry(false);
@@ -348,7 +336,6 @@ export default function AdminContactsCrmPage() {
       "Organization",
       "Interest / Topic",
       "CRM Status",
-      "Priority",
       "Message",
       "Admin Notes",
       "Submitted At",
@@ -362,7 +349,6 @@ export default function AdminContactsCrmPage() {
       c.organization,
       c.interest,
       c.crm_status,
-      c.priority,
       c.message.replace(/\r?\n/g, " "),
       (c.admin_notes || "").replace(/\r?\n/g, " "),
       c.created_at,
@@ -417,51 +403,32 @@ export default function AdminContactsCrmPage() {
     }
   };
 
-  // Priority visual themes
-  const priorityStyles = (p: ContactPriority) => {
-    switch (p) {
-      case "urgent":
-        return "bg-rose-50 text-rose-700 border-rose-200 font-extrabold";
-      case "high":
-        return "bg-amber-50 text-amber-800 border-amber-200 font-bold";
-      case "normal":
-        return "bg-sky-50 text-sky-700 border-sky-200 font-semibold";
-      case "low":
-        return "bg-slate-50 text-slate-600 border-slate-200 font-medium";
-    }
-  };
-
   return (
     <div className="space-y-4 pb-8 max-w-[1600px] mx-auto">
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* 1. COMPACT PROFESSIONAL HEADER & LIGHT KPI STRIP                     */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-2xs space-y-4">
-        {/* Main Title Bar */}
+        {/* Main Title Bar (Inbound Communications CRM tag removed) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-serif font-extrabold text-xl sm:text-2xl text-[#102E4D] tracking-tight">
-                Contact Inquiries CRM
-              </h1>
-              <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] border border-[#C8EFE6] text-[10.5px] font-bold uppercase tracking-wider">
-                Portal Leads
-              </span>
-            </div>
+            <h1 className="font-serif font-extrabold text-xl sm:text-2xl text-[#102E4D] tracking-tight">
+              Contact Inquiries CRM
+            </h1>
             <p className="text-xs text-slate-500 mt-0.5">
               Review, qualify, and track responses to all school, corporate, and parent inquiries.
             </p>
           </div>
 
-          {/* Quick Action Toolbar Buttons */}
+          {/* Quick Action Toolbar Buttons (Log Inquiry changed to Create Inquiry) */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setAddModalOpen(true)}
-              className="h-8.5 px-3 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+              className="h-8.5 px-3.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Log Inquiry</span>
+              <span>Create Inquiry</span>
             </button>
             <button
               type="button"
@@ -624,12 +591,13 @@ export default function AdminContactsCrmPage() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 2. FILTER & VIEW CONTROL BAR                                        */}
+      {/* 2. REFINED FILTER MENU & TOOLBAR                                    */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="rounded-xl bg-white border border-slate-200/80 p-2.5 sm:p-3 shadow-2xs space-y-2.5">
+      <div className="rounded-2xl bg-white border border-slate-200/90 p-3 sm:p-3.5 shadow-2xs space-y-3">
+        {/* Row 1: Status Filter Tabs & Layout Switcher */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
             {STATUS_TABS.map((tab) => {
               const active = statusFilter === tab.id;
               return (
@@ -640,12 +608,12 @@ export default function AdminContactsCrmPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                     active
                       ? tab.activeClass
-                      : "bg-slate-50 hover:bg-slate-100 text-slate-700"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-transparent"
                   }`}
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={`font-num px-1.5 py-0.2 rounded-full text-[10px] ${
+                    className={`font-num px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
                       active
                         ? "bg-white/20 text-white"
                         : "bg-white text-slate-600 border border-slate-200"
@@ -660,6 +628,9 @@ export default function AdminContactsCrmPage() {
 
           {/* List vs Grid Switcher */}
           <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
+            <span className="text-[11px] font-bold text-slate-400 hidden sm:inline">
+              View:
+            </span>
             <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200">
               <button
                 type="button"
@@ -691,56 +662,46 @@ export default function AdminContactsCrmPage() {
           </div>
         </div>
 
-        {/* Search, Priority Filter, and Sort Controls */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 pt-2 border-t border-slate-100 text-xs">
+        {/* Row 2: Search Input & Sort Menu */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2.5 border-t border-slate-100 text-xs">
           {/* Search Box */}
-          <div className="relative lg:col-span-6">
+          <div className="relative flex-1 w-full">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
-              placeholder="Search sender, school, topic, email, ref code…"
+              placeholder="Search by sender name, school, topic, email, or ref code…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
+              className="w-full pl-8 pr-7 py-2 rounded-xl border border-slate-200 bg-slate-50/60 focus:bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-3 h-3" />
               </button>
             )}
           </div>
 
-          {/* Priority Filter */}
-          <div className="relative lg:col-span-3">
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as "all" | ContactPriority)}
-              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D]"
-            >
-              <option value="all">Priority: All</option>
-              <option value="urgent">Urgent</option>
-              <option value="high">High</option>
-              <option value="normal">Normal</option>
-              <option value="low">Low</option>
-            </select>
-          </div>
-
-          {/* Sort By Dropdown */}
-          <div className="relative lg:col-span-3">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D]"
-            >
-              <option value="newest">Sort: Newest</option>
-              <option value="oldest">Sort: Oldest</option>
-              <option value="priority">Sort: Priority</option>
-              <option value="name">Sort: Name (A-Z)</option>
-            </select>
+          {/* Sort By Menu */}
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <span className="text-[11px] font-bold text-slate-400 hidden lg:inline">
+              Sort:
+            </span>
+            <div className="relative w-full sm:w-48">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D] cursor-pointer"
+              >
+                <option value="newest">🕒 Newest Received</option>
+                <option value="oldest">⏳ Oldest First</option>
+                <option value="name">🔤 Sender Name (A-Z)</option>
+                <option value="status">📊 By CRM Status</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -757,13 +718,25 @@ export default function AdminContactsCrmPage() {
         <div className="p-12 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
           <div className="font-bold text-sm text-[#102E4D]">No inquiries found</div>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
+            {searchQuery || statusFilter !== "all"
               ? "No records matched your filters."
               : "Inquiries submitted via /contact will appear here automatically."}
           </p>
+          {(searchQuery || statusFilter !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+              className="mt-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : viewMode === "grid" ? (
-        /* ── GRID / CARD VIEW (PROPER WIDTH 3-COL ON DESKTOP, FULL TAG DETAILS) ── */
+        /* ── GRID / CARD VIEW (PROPER WIDTH 3-COL, FULL TAG VISIBILITY, NO PRIORITY) ── */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
           {filteredContacts.map((c) => {
             const st = statusStyles(c.crm_status);
@@ -782,27 +755,18 @@ export default function AdminContactsCrmPage() {
                 <div className={`h-1.5 w-full bg-gradient-to-r ${st.borderTop}`} />
 
                 <div className="p-4 space-y-3 flex-1">
-                  {/* Top Line: Ref code + Status badge + Priority */}
+                  {/* Top Line: Ref code + Status badge */}
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-num font-extrabold text-[11px] text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/70 inline-flex items-center gap-1">
                       #{c.reference_code}
                     </span>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${priorityStyles(
-                          c.priority
-                        )}`}
-                      >
-                        {c.priority}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${st.pill}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
-                        {st.label}
-                      </span>
-                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${st.pill}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                      {st.label}
+                    </span>
                   </div>
 
                   {/* Sender Profile: Avatar + Name + Organization */}
@@ -823,7 +787,7 @@ export default function AdminContactsCrmPage() {
                     </div>
                   </div>
 
-                  {/* Tag Details (Full width visible, no truncate clipping) */}
+                  {/* Tag Details (Proper width visible, no clip) */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#EFFBF8] text-[#005696] font-bold text-[11px] border border-[#C8EFE6]">
                       <Tag className="w-3 h-3 text-[#FF7900] shrink-0" />
@@ -895,14 +859,15 @@ export default function AdminContactsCrmPage() {
           })}
         </div>
       ) : (
-        /* ── COMPACT LIST VIEW (NO HORIZONTAL SCROLLING ON STANDARD SCREENS) ── */
+        /* ── COMPACT LIST VIEW (NO HORIZONTAL SCROLLING, NO PRIORITY) ── */
         <div className="rounded-2xl bg-white border border-slate-200/90 shadow-2xs overflow-hidden">
           <table className="w-full text-left border-collapse text-xs table-fixed">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600">
-                <th className="py-2.5 px-3.5 w-[16%]">Ref & Status</th>
-                <th className="py-2.5 px-3.5 w-[34%]">Sender & Organization</th>
-                <th className="py-2.5 px-3.5 w-[26%]">Interest & Priority</th>
+                <th className="py-2.5 px-3.5 w-[18%]">Ref & Status</th>
+                <th className="py-2.5 px-3.5 w-[36%]">Sender & Contact</th>
+                <th className="py-2.5 px-3.5 w-[22%]">School / Organization</th>
+                <th className="py-2.5 px-3.5 w-[24%]">Interest Topic</th>
                 <th className="py-2.5 px-3.5 w-[12%]">Received</th>
                 <th className="py-2.5 px-3.5 w-[12%] text-right">Actions</th>
               </tr>
@@ -920,7 +885,7 @@ export default function AdminContactsCrmPage() {
                     onClick={() => openInspector(c)}
                     className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                   >
-                    {/* Ref code & Status stacked cleanly */}
+                    {/* Ref code & Status stacked */}
                     <td className="py-2.5 px-3.5">
                       <div className="space-y-1">
                         <span className="font-num font-extrabold text-[11px] text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/70 inline-block">
@@ -937,7 +902,7 @@ export default function AdminContactsCrmPage() {
                       </div>
                     </td>
 
-                    {/* Sender Details & School stacked */}
+                    {/* Sender Details */}
                     <td className="py-2.5 px-3.5">
                       <div className="flex items-center gap-2.5">
                         <div
@@ -949,30 +914,29 @@ export default function AdminContactsCrmPage() {
                           <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate">
                             {c.full_name}
                           </div>
-                          <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                            <span className="text-slate-400">•</span>
-                            <span className="truncate">{c.organization || "Independent"}</span>
-                            <span className="text-slate-400">•</span>
-                            <span className="text-slate-400 truncate">{c.email}</span>
+                          <div className="text-[11px] text-slate-400 truncate">
+                            {c.email}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    {/* Interest & Priority */}
+                    {/* School / Organization */}
                     <td className="py-2.5 px-3.5">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[10.5px] border border-[#C8EFE6] truncate max-w-[170px]" title={topicLabel}>
-                          {topicLabel}
-                        </span>
-                        <span
-                          className={`px-1.5 py-0.2 rounded-full text-[9.5px] uppercase font-bold border ${priorityStyles(
-                            c.priority
-                          )}`}
-                        >
-                          {c.priority}
-                        </span>
+                      <div className="flex items-center gap-1.5 text-slate-700 font-medium truncate">
+                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{c.organization || "Independent"}</span>
                       </div>
+                    </td>
+
+                    {/* Interest Topic */}
+                    <td className="py-2.5 px-3.5">
+                      <span
+                        className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[10.5px] border border-[#C8EFE6] truncate max-w-[180px] inline-block"
+                        title={topicLabel}
+                      >
+                        {topicLabel}
+                      </span>
                     </td>
 
                     {/* Received Date */}
@@ -1029,7 +993,7 @@ export default function AdminContactsCrmPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 4. MODAL: INQUIRY DETAILS INSPECTOR                                 */}
+      {/* 4. MODAL: INQUIRY DETAILS INSPECTOR (NO PRIORITY)                  */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
@@ -1090,7 +1054,7 @@ export default function AdminContactsCrmPage() {
               </button>
             </div>
 
-            {/* Modal Scrollable Body with Clean Spacing */}
+            {/* Modal Scrollable Body */}
             <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
               {/* SECTION 1: Contact Information Channels */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1197,68 +1161,34 @@ export default function AdminContactsCrmPage() {
                 </div>
               </div>
 
-              {/* SECTION 3: CRM Status & Priority Selection */}
+              {/* SECTION 3: CRM Status Selection (Priority removed) */}
               <div className="space-y-2 pt-1 border-t border-slate-100">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
-                  Workflow Status & Priority
+                  Workflow Status
                 </span>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[11px] font-semibold text-slate-500 block mb-1">
-                      Status Stage:
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {(["new", "in_progress", "responded", "archived"] as ContactCrmStatus[]).map(
-                        (st) => {
-                          const active = editStatus === st;
-                          const info = statusStyles(st);
-                          return (
-                            <button
-                              key={st}
-                              type="button"
-                              onClick={() => setEditStatus(st)}
-                              className={`p-2 rounded-lg border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-1.5 ${
-                                active
-                                  ? "bg-[#102E4D] text-white border-[#102E4D]"
-                                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 rounded-full ${info.dot}`} />
-                              <span>{info.label}</span>
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-semibold text-slate-500 block mb-1">
-                      Priority Level:
-                    </label>
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {(["urgent", "high", "normal", "low"] as ContactPriority[]).map(
-                        (pr) => {
-                          const active = editPriority === pr;
-                          return (
-                            <button
-                              key={pr}
-                              type="button"
-                              onClick={() => setEditPriority(pr)}
-                              className={`p-2 rounded-lg border text-xs font-bold capitalize text-left transition-all cursor-pointer ${
-                                active
-                                  ? "bg-[#005696] text-white border-[#005696]"
-                                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
-                              }`}
-                            >
-                              <span>{pr}</span>
-                            </button>
-                          );
-                        }
-                      )}
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(["new", "in_progress", "responded", "archived"] as ContactCrmStatus[]).map(
+                    (st) => {
+                      const active = editStatus === st;
+                      const info = statusStyles(st);
+                      return (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setEditStatus(st)}
+                          className={`p-2 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-2 ${
+                            active
+                              ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs"
+                              : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+                          }`}
+                        >
+                          <span className={`w-2 h-2 rounded-full ${info.dot}`} />
+                          <span>{info.label}</span>
+                        </button>
+                      );
+                    }
+                  )}
                 </div>
               </div>
 
@@ -1354,7 +1284,7 @@ export default function AdminContactsCrmPage() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 5. MANUAL ADD INBOUND INQUIRY MODAL                                 */}
+      {/* 5. CREATE INQUIRY MODAL (Full Admin Support, No Priority)           */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {addModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
@@ -1368,12 +1298,12 @@ export default function AdminContactsCrmPage() {
 
             <div className="bg-[#102E4D] text-white px-5 py-3.5 flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFC400]">
-                  Offline / Walk-in Lead
-                </span>
                 <h3 className="font-bold text-base text-white">
-                  Log Inbound Contact Inquiry
+                  Create Contact Inquiry
                 </h3>
+                <p className="text-[11px] text-slate-300">
+                  Log a walk-in, phone call, or new direct organization inquiry.
+                </p>
               </div>
               <button
                 type="button"
@@ -1474,29 +1404,28 @@ export default function AdminContactsCrmPage() {
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Priority
+                    Initial Status
                   </label>
                   <select
-                    value={addForm.priority}
+                    value={addForm.crm_status}
                     onChange={(e) =>
                       setAddForm({
                         ...addForm,
-                        priority: e.target.value as ContactPriority,
+                        crm_status: e.target.value as ContactCrmStatus,
                       })
                     }
                     className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold text-xs text-slate-700"
                   >
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                    <option value="low">Low</option>
+                    <option value="new">New / Unread</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="responded">Responded</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Inquiry Message / Notes
+                  Inquiry Message / Request Details
                 </label>
                 <textarea
                   rows={2}
@@ -1506,6 +1435,21 @@ export default function AdminContactsCrmPage() {
                     setAddForm({ ...addForm, message: e.target.value })
                   }
                   className="w-full p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#102E4D]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Internal Admin Notes (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Follow-up promised by Friday"
+                  value={addForm.admin_notes}
+                  onChange={(e) =>
+                    setAddForm({ ...addForm, admin_notes: e.target.value })
+                  }
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#102E4D]"
                 />
               </div>
 
@@ -1520,10 +1464,10 @@ export default function AdminContactsCrmPage() {
                 <button
                   type="submit"
                   disabled={addingInquiry}
-                  className="px-4 py-1.5 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                  className="px-4 py-1.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-xs"
                 >
-                  <Save className="w-3.5 h-3.5 text-[#FFC400]" />
-                  <span>{addingInquiry ? "Saving…" : "Create Inquiry"}</span>
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{addingInquiry ? "Creating…" : "Create Inquiry"}</span>
                 </button>
               </div>
             </form>
