@@ -13,23 +13,17 @@ import {
   CheckCircle2,
   Clock,
   Archive,
-  Sparkles,
   Save,
-  ExternalLink,
   LayoutGrid,
   List,
   Copy,
   Check,
   Plus,
-  Filter,
-  ArrowUpDown,
-  MessageSquare,
   Calendar,
-  AlertCircle,
   Tag,
-  Share2,
-  Flame,
   CheckCheck,
+  Flame,
+  MessageSquare,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type {
@@ -41,48 +35,42 @@ import type {
 const STATUS_TABS: Array<{
   id: "all" | ContactCrmStatus;
   label: string;
-  color: string;
-  activeBg: string;
+  activeClass: string;
 }> = [
   {
     id: "all",
     label: "All Inquiries",
-    color: "#102E4D",
-    activeBg: "bg-[#102E4D] text-white",
+    activeClass: "bg-[#102E4D] text-white",
   },
   {
     id: "new",
     label: "New / Unread",
-    color: "#FF7900",
-    activeBg: "bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white",
+    activeClass: "bg-[#FF7900] text-white shadow-xs",
   },
   {
     id: "in_progress",
     label: "In Progress",
-    color: "#D97706",
-    activeBg: "bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white",
+    activeClass: "bg-[#D97706] text-white shadow-xs",
   },
   {
     id: "responded",
     label: "Responded",
-    color: "#059669",
-    activeBg: "bg-gradient-to-r from-[#10B981] to-[#059669] text-white",
+    activeClass: "bg-[#059669] text-white shadow-xs",
   },
   {
     id: "archived",
     label: "Archived",
-    color: "#64748B",
-    activeBg: "bg-slate-700 text-white",
+    activeClass: "bg-slate-700 text-white shadow-xs",
   },
 ];
 
-const AVATAR_GRADIENTS = [
-  "from-amber-400 to-orange-500 text-white",
-  "from-emerald-400 to-teal-600 text-white",
-  "from-sky-400 to-blue-600 text-white",
-  "from-violet-400 to-purple-600 text-white",
-  "from-rose-400 to-pink-600 text-white",
-  "from-cyan-400 to-teal-500 text-white",
+const AVATAR_COLORS = [
+  "bg-amber-100 text-amber-800 border-amber-300",
+  "bg-emerald-100 text-emerald-800 border-emerald-300",
+  "bg-sky-100 text-sky-800 border-sky-300",
+  "bg-violet-100 text-violet-800 border-violet-300",
+  "bg-rose-100 text-rose-800 border-rose-300",
+  "bg-teal-100 text-teal-800 border-teal-300",
 ];
 
 function getAvatarColor(name: string) {
@@ -90,8 +78,7 @@ function getAvatarColor(name: string) {
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % AVATAR_GRADIENTS.length;
-  return AVATAR_GRADIENTS[index];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
 function getInitials(name: string) {
@@ -120,6 +107,13 @@ function getRelativeTimeString(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+function formatTopicName(topic: string): string {
+  if (!topic) return "General Inquiry";
+  return topic
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function AdminContactsCrmPage() {
@@ -208,7 +202,7 @@ export default function AdminContactsCrmPage() {
 
   const filteredContacts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    let result = contacts.filter((c) => {
+    const result = contacts.filter((c) => {
       if (statusFilter !== "all" && c.crm_status !== statusFilter) return false;
       if (priorityFilter !== "all" && c.priority !== priorityFilter) return false;
       if (!q) return true;
@@ -254,7 +248,6 @@ export default function AdminContactsCrmPage() {
     const inProgressCount = contacts.filter((c) => c.crm_status === "in_progress").length;
     const respondedCount = contacts.filter((c) => c.crm_status === "responded").length;
     const archivedCount = contacts.filter((c) => c.crm_status === "archived").length;
-    const urgentCount = contacts.filter((c) => c.priority === "urgent" || c.priority === "high").length;
 
     return {
       all: total,
@@ -262,7 +255,6 @@ export default function AdminContactsCrmPage() {
       in_progress: inProgressCount,
       responded: respondedCount,
       archived: archivedCount,
-      urgent: urgentCount,
       respondedPercent: total > 0 ? Math.round((respondedCount / total) * 100) : 0,
       newPercent: total > 0 ? Math.round((newCount / total) * 100) : 0,
     };
@@ -291,41 +283,11 @@ export default function AdminContactsCrmPage() {
         );
         setSelected(json.contact);
         setEditStatus(json.contact.crm_status);
-        setFeedback("Inquiry CRM details successfully updated!");
+        setFeedback("Inquiry CRM details updated successfully!");
         setTimeout(() => setFeedback(null), 3000);
       }
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleQuickStatusChange = async (
-    record: ContactSubmissionRecord,
-    newStatus: ContactCrmStatus,
-    e: React.MouseEvent
-  ) => {
-    e.stopPropagation();
-    try {
-      const res = await fetch("/api/admin/contacts", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: record.id,
-          crm_status: newStatus,
-        }),
-      });
-      const json = await res.json();
-      if (res.ok && json.contact) {
-        setContacts((prev) =>
-          prev.map((item) => (item.id === record.id ? json.contact : item))
-        );
-        if (selected?.id === record.id) {
-          setSelected(json.contact);
-          setEditStatus(newStatus);
-        }
-      }
-    } catch {
-      // Ignored
     }
   };
 
@@ -426,10 +388,10 @@ export default function AdminContactsCrmPage() {
     switch (s) {
       case "new":
         return {
-          pill: "bg-gradient-to-r from-orange-50 to-amber-50 text-[#E56D00] border-orange-200",
-          dot: "bg-[#FF7900] shadow-sm shadow-[#FF7900]/50",
-          label: "New / Unread",
-          borderTop: "from-[#FF7900] to-[#FFC400]",
+          pill: "bg-orange-50 text-[#E56D00] border-orange-200/80",
+          dot: "bg-[#FF7900]",
+          label: "New",
+          borderTop: "from-[#FF7900] to-[#FF9E40]",
         };
       case "in_progress":
         return {
@@ -443,14 +405,14 @@ export default function AdminContactsCrmPage() {
           pill: "bg-emerald-50 text-emerald-800 border-emerald-200",
           dot: "bg-emerald-500",
           label: "Responded",
-          borderTop: "from-emerald-400 to-teal-600",
+          borderTop: "from-emerald-400 to-teal-500",
         };
       case "archived":
         return {
           pill: "bg-slate-100 text-slate-700 border-slate-200",
           dot: "bg-slate-400",
           label: "Archived",
-          borderTop: "from-slate-400 to-slate-600",
+          borderTop: "from-slate-400 to-slate-500",
         };
     }
   };
@@ -459,64 +421,61 @@ export default function AdminContactsCrmPage() {
   const priorityStyles = (p: ContactPriority) => {
     switch (p) {
       case "urgent":
-        return "bg-rose-100 text-rose-700 border-rose-300 font-extrabold";
+        return "bg-rose-50 text-rose-700 border-rose-200 font-extrabold";
       case "high":
-        return "bg-orange-100 text-orange-800 border-orange-300 font-bold";
+        return "bg-amber-50 text-amber-800 border-amber-200 font-bold";
       case "normal":
         return "bg-sky-50 text-sky-700 border-sky-200 font-semibold";
       case "low":
-        return "bg-slate-100 text-slate-600 border-slate-200 font-medium";
+        return "bg-slate-50 text-slate-600 border-slate-200 font-medium";
     }
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-8 max-w-[1600px] mx-auto">
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 1. HERO & EXECUTIVE CRM STATS SUMMARY                                */}
+      {/* 1. COMPACT PROFESSIONAL HEADER & LIGHT KPI STRIP                     */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="rounded-3xl bg-white border border-[#C8EFE6]/80 p-5 sm:p-7 shadow-sm space-y-6 relative overflow-hidden">
-        {/* Subtle decorative background gradient */}
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-gradient-to-br from-[#FFC400]/10 via-[#FF7900]/5 to-transparent blur-2xl pointer-events-none" />
-
-        {/* Top Header Row */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+      <div className="rounded-2xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-2xs space-y-4">
+        {/* Main Title Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EFFBF8] border border-[#C8EFE6] text-[#005696] text-[11px] font-extrabold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#FF7900]" />
-              <span>Inbound Communications CRM</span>
+            <div className="flex items-center gap-2">
+              <h1 className="font-serif font-extrabold text-xl sm:text-2xl text-[#102E4D] tracking-tight">
+                Contact Inquiries CRM
+              </h1>
+              <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] border border-[#C8EFE6] text-[10.5px] font-bold uppercase tracking-wider">
+                Portal Leads
+              </span>
             </div>
-            <h1 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#102E4D] tracking-tight">
-              Contact Us Inquiries CRM
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
-              Track, qualify, and respond to school leadership, corporate partners,
-              and parent inquiries submitted through public portal contact forms.
+            <p className="text-xs text-slate-500 mt-0.5">
+              Review, qualify, and track responses to all school, corporate, and parent inquiries.
             </p>
           </div>
 
           {/* Quick Action Toolbar Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setAddModalOpen(true)}
-              className="h-10 px-4 rounded-xl bg-gradient-to-r from-[#FF7900] via-[#FF6D00] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs font-extrabold inline-flex items-center gap-2 shadow-md shadow-[#FF7900]/20 transition-all active:scale-[0.98] cursor-pointer"
+              className="h-8.5 px-3 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               <span>Log Inquiry</span>
             </button>
             <button
               type="button"
               onClick={handleExportCsv}
               disabled={filteredContacts.length === 0}
-              className="h-10 px-4 rounded-xl border border-slate-200 hover:border-[#102E4D] bg-white text-[#102E4D] text-xs font-bold inline-flex items-center gap-2 shadow-2xs hover:shadow-xs transition-all cursor-pointer disabled:opacity-50"
+              className="h-8.5 px-3 rounded-lg border border-slate-200 hover:border-slate-300 bg-white text-slate-700 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
-              <Download className="w-4 h-4 text-[#FF7900]" />
+              <Download className="w-3.5 h-3.5 text-slate-500" />
               <span>Export CSV</span>
             </button>
             <button
               type="button"
               onClick={loadContacts}
-              className="h-10 px-4 rounded-xl bg-[#001B33] hover:bg-[#102E4D] text-white text-xs font-bold inline-flex items-center gap-2 shadow-sm transition-all cursor-pointer active:scale-[0.98]"
+              className="h-8.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-[0.98]"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 text-[#FFC400] ${loading ? "animate-spin" : ""}`}
@@ -526,172 +485,151 @@ export default function AdminContactsCrmPage() {
           </div>
         </div>
 
-        {/* 5 Colorful KPI Highlight Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2 relative z-10">
+        {/* Light Compact KPI Metric Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-1">
           {/* Total Inquiries */}
-          <div
+          <button
+            type="button"
             onClick={() => setStatusFilter("all")}
-            className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer ${
               statusFilter === "all"
-                ? "bg-[#102E4D] text-white border-[#102E4D] shadow-md ring-2 ring-[#FF7900]/40"
-                : "bg-[#F8FCFB] hover:bg-white text-slate-800 border-slate-200/80 hover:border-[#102E4D]/40"
+                ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
+                : "bg-slate-50/70 hover:bg-slate-100/70 text-slate-800 border-slate-200/70"
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider ${statusFilter === "all" ? "text-slate-300" : "text-slate-500"}`}>
-                Total Pipeline
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className={statusFilter === "all" ? "text-slate-300" : "text-slate-500"}>
+                Total
               </span>
-              <MessageSquare className={`w-4 h-4 ${statusFilter === "all" ? "text-[#FFC400]" : "text-[#005696]"}`} />
+              <MessageSquare className={`w-3.5 h-3.5 ${statusFilter === "all" ? "text-[#FFC400]" : "text-slate-400"}`} />
             </div>
-            <div className="font-num font-extrabold text-2xl sm:text-3xl tracking-tight">
+            <div className="font-num font-extrabold text-xl sm:text-2xl mt-0.5">
               {counts.all}
             </div>
-            <div className={`text-[10.5px] mt-1 font-medium ${statusFilter === "all" ? "text-slate-300" : "text-slate-500"}`}>
-              All inbound submissions
-            </div>
-          </div>
+          </button>
 
           {/* New / Unread */}
-          <div
+          <button
+            type="button"
             onClick={() => setStatusFilter("new")}
-            className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+            className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
               statusFilter === "new"
-                ? "bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white border-[#FF7900] shadow-md ring-2 ring-[#FF7900]/50"
-                : "bg-orange-50/70 hover:bg-orange-50 text-orange-950 border-orange-200"
+                ? "bg-[#FF7900] text-white border-[#FF7900] shadow-xs ring-2 ring-[#FF7900]/40"
+                : "bg-orange-50/50 hover:bg-orange-50 text-orange-950 border-orange-200/70"
             }`}
           >
             {counts.new > 0 && (
-              <span className="absolute top-2.5 right-2.5 flex h-2.5 w-2.5">
+              <span className="absolute top-2 right-2 flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-600" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-600" />
               </span>
             )}
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider ${statusFilter === "new" ? "text-orange-100" : "text-orange-700"}`}>
-                New Unread
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className={statusFilter === "new" ? "text-orange-100" : "text-orange-700"}>
+                New
               </span>
             </div>
-            <div className="font-num font-extrabold text-2xl sm:text-3xl tracking-tight">
+            <div className="font-num font-extrabold text-xl sm:text-2xl mt-0.5">
               {counts.new}
             </div>
-            <div className={`text-[10.5px] mt-1 font-semibold ${statusFilter === "new" ? "text-orange-100" : "text-orange-600"}`}>
-              {counts.newPercent}% awaiting response
-            </div>
-          </div>
+          </button>
 
           {/* In Progress */}
-          <div
+          <button
+            type="button"
             onClick={() => setStatusFilter("in_progress")}
-            className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer ${
               statusFilter === "in_progress"
-                ? "bg-gradient-to-br from-amber-500 to-amber-700 text-white border-amber-600 shadow-md ring-2 ring-amber-400"
-                : "bg-amber-50/60 hover:bg-amber-50 text-amber-950 border-amber-200"
+                ? "bg-[#D97706] text-white border-[#D97706] shadow-xs ring-2 ring-amber-400/40"
+                : "bg-amber-50/50 hover:bg-amber-50 text-amber-950 border-amber-200/70"
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider ${statusFilter === "in_progress" ? "text-amber-100" : "text-amber-700"}`}>
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className={statusFilter === "in_progress" ? "text-amber-100" : "text-amber-700"}>
                 In Progress
               </span>
-              <Clock className={`w-4 h-4 ${statusFilter === "in_progress" ? "text-amber-200" : "text-amber-600"}`} />
+              <Clock className={`w-3.5 h-3.5 ${statusFilter === "in_progress" ? "text-amber-200" : "text-amber-500"}`} />
             </div>
-            <div className="font-num font-extrabold text-2xl sm:text-3xl tracking-tight">
+            <div className="font-num font-extrabold text-xl sm:text-2xl mt-0.5">
               {counts.in_progress}
             </div>
-            <div className={`text-[10.5px] mt-1 font-semibold ${statusFilter === "in_progress" ? "text-amber-100" : "text-amber-700"}`}>
-              Follow-ups & callbacks
-            </div>
-          </div>
+          </button>
 
           {/* Responded */}
-          <div
+          <button
+            type="button"
             onClick={() => setStatusFilter("responded")}
-            className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+            className={`p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer ${
               statusFilter === "responded"
-                ? "bg-gradient-to-br from-emerald-600 to-teal-800 text-white border-emerald-700 shadow-md ring-2 ring-emerald-400"
-                : "bg-emerald-50/60 hover:bg-emerald-50 text-emerald-950 border-emerald-200"
+                ? "bg-[#059669] text-white border-[#059669] shadow-xs ring-2 ring-emerald-400/40"
+                : "bg-emerald-50/50 hover:bg-emerald-50 text-emerald-950 border-emerald-200/70"
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider ${statusFilter === "responded" ? "text-emerald-100" : "text-emerald-700"}`}>
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className={statusFilter === "responded" ? "text-emerald-100" : "text-emerald-700"}>
                 Responded
               </span>
-              <CheckCheck className={`w-4 h-4 ${statusFilter === "responded" ? "text-emerald-200" : "text-emerald-600"}`} />
+              <CheckCheck className={`w-3.5 h-3.5 ${statusFilter === "responded" ? "text-emerald-200" : "text-emerald-600"}`} />
             </div>
-            <div className="font-num font-extrabold text-2xl sm:text-3xl tracking-tight">
+            <div className="font-num font-extrabold text-xl sm:text-2xl mt-0.5">
               {counts.responded}
             </div>
-            <div className={`text-[10.5px] mt-1 font-semibold ${statusFilter === "responded" ? "text-emerald-100" : "text-emerald-700"}`}>
-              {counts.respondedPercent}% resolution rate
-            </div>
-          </div>
+          </button>
 
-          {/* Archived / High Priority */}
-          <div
+          {/* Archived */}
+          <button
+            type="button"
             onClick={() => setStatusFilter("archived")}
-            className={`col-span-2 sm:col-span-1 p-3.5 rounded-2xl border transition-all cursor-pointer ${
+            className={`col-span-2 sm:col-span-1 p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer ${
               statusFilter === "archived"
-                ? "bg-slate-800 text-white border-slate-900 shadow-md ring-2 ring-slate-400"
-                : "bg-slate-50 hover:bg-slate-100/80 text-slate-800 border-slate-200"
+                ? "bg-slate-700 text-white border-slate-800 shadow-xs ring-2 ring-slate-400/40"
+                : "bg-slate-50 hover:bg-slate-100/70 text-slate-800 border-slate-200/70"
             }`}
           >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider ${statusFilter === "archived" ? "text-slate-300" : "text-slate-500"}`}>
+            <div className="flex items-center justify-between text-[11px] font-bold">
+              <span className={statusFilter === "archived" ? "text-slate-300" : "text-slate-500"}>
                 Archived
               </span>
-              <Archive className={`w-4 h-4 ${statusFilter === "archived" ? "text-slate-300" : "text-slate-500"}`} />
+              <Archive className={`w-3.5 h-3.5 ${statusFilter === "archived" ? "text-slate-300" : "text-slate-400"}`} />
             </div>
-            <div className="font-num font-extrabold text-2xl sm:text-3xl tracking-tight">
+            <div className="font-num font-extrabold text-xl sm:text-2xl mt-0.5">
               {counts.archived}
             </div>
-            <div className={`text-[10.5px] mt-1 font-medium ${statusFilter === "archived" ? "text-slate-300" : "text-slate-500"}`}>
-              {counts.urgent} urgent flagged
-            </div>
-          </div>
+          </button>
         </div>
 
-        {/* Visual Pipeline Conversion Bar */}
-        <div className="pt-2">
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#FF7900]" /> Unread ({counts.new})
-              <span className="w-2 h-2 rounded-full bg-[#F59E0B] ml-2" /> In Progress ({counts.in_progress})
-              <span className="w-2 h-2 rounded-full bg-[#10B981] ml-2" /> Responded ({counts.responded})
-            </span>
-            <span className="font-num text-[#102E4D]">{counts.respondedPercent}% Resolved</span>
-          </div>
-          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
-            <div
-              style={{ width: `${counts.all > 0 ? (counts.new / counts.all) * 100 : 0}%` }}
-              className="bg-[#FF7900] transition-all duration-500"
-              title="New / Unread"
-            />
-            <div
-              style={{ width: `${counts.all > 0 ? (counts.in_progress / counts.all) * 100 : 0}%` }}
-              className="bg-[#F59E0B] transition-all duration-500"
-              title="In Progress"
-            />
-            <div
-              style={{ width: `${counts.all > 0 ? (counts.responded / counts.all) * 100 : 0}%` }}
-              className="bg-[#10B981] transition-all duration-500"
-              title="Responded"
-            />
-            <div
-              style={{ width: `${counts.all > 0 ? (counts.archived / counts.all) * 100 : 0}%` }}
-              className="bg-slate-300 transition-all duration-500"
-              title="Archived"
-            />
-          </div>
+        {/* Thin conversion pipeline line */}
+        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
+          <div
+            style={{ width: `${counts.all > 0 ? (counts.new / counts.all) * 100 : 0}%` }}
+            className="bg-[#FF7900] transition-all duration-300"
+            title={`New (${counts.new})`}
+          />
+          <div
+            style={{ width: `${counts.all > 0 ? (counts.in_progress / counts.all) * 100 : 0}%` }}
+            className="bg-[#F59E0B] transition-all duration-300"
+            title={`In Progress (${counts.in_progress})`}
+          />
+          <div
+            style={{ width: `${counts.all > 0 ? (counts.responded / counts.all) * 100 : 0}%` }}
+            className="bg-[#10B981] transition-all duration-300"
+            title={`Responded (${counts.responded})`}
+          />
+          <div
+            style={{ width: `${counts.all > 0 ? (counts.archived / counts.all) * 100 : 0}%` }}
+            className="bg-slate-300 transition-all duration-300"
+            title={`Archived (${counts.archived})`}
+          />
         </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 2. CONTROLS TOOLBAR (SEARCH, TABS, FILTERS & GRID/LIST SWITCHER)     */}
+      {/* 2. FILTER & VIEW CONTROL BAR                                        */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-white border border-[#C8EFE6]/80 p-3 sm:p-4 shadow-2xs space-y-3">
-        {/* Status Tabs and Grid/List Toggle Row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Scrollable Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="rounded-xl bg-white border border-slate-200/80 p-2.5 sm:p-3 shadow-2xs space-y-2.5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+          {/* Status Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
             {STATUS_TABS.map((tab) => {
               const active = statusFilter === tab.id;
               return (
@@ -699,18 +637,18 @@ export default function AdminContactsCrmPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
-                  className={`px-3 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap inline-flex items-center gap-2 transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                     active
-                      ? tab.activeBg + " shadow-xs ring-1 ring-black/5"
-                      : "bg-[#EFFBF8] text-[#102E4D] hover:bg-[#D7F5EF]"
+                      ? tab.activeClass
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700"
                   }`}
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={`font-num px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                    className={`font-num px-1.5 py-0.2 rounded-full text-[10px] ${
                       active
-                        ? "bg-white/90 text-[#001B33]"
-                        : "bg-white text-slate-700 border border-slate-200/60"
+                        ? "bg-white/20 text-white"
+                        : "bg-white text-slate-600 border border-slate-200"
                     }`}
                   >
                     {counts[tab.id]}
@@ -721,52 +659,49 @@ export default function AdminContactsCrmPage() {
           </div>
 
           {/* List vs Grid Switcher */}
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
-            <span className="text-[11px] font-bold text-slate-400 hidden sm:inline">
-              Layout:
-            </span>
-            <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-1.5 shrink-0 self-end md:self-auto">
+            <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200">
               <button
                 type="button"
                 onClick={() => handleSetViewMode("grid")}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-white text-[#102E4D] shadow-xs"
+                    ? "bg-white text-[#102E4D] shadow-2xs"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
                 title="Card Grid View"
               >
                 <LayoutGrid className="w-3.5 h-3.5 text-[#FF7900]" />
-                <span className="hidden sm:inline">Cards</span>
+                <span className="text-[11px]">Cards</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleSetViewMode("list")}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-white text-[#102E4D] shadow-xs"
+                    ? "bg-white text-[#102E4D] shadow-2xs"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
                 title="Table List View"
               >
                 <List className="w-3.5 h-3.5 text-[#005696]" />
-                <span className="hidden sm:inline">Table</span>
+                <span className="text-[11px]">List</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Search, Priority Filter, and Sort Controls */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 pt-2 border-t border-slate-100 text-xs">
           {/* Search Box */}
           <div className="relative lg:col-span-6">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
-              placeholder="Search sender, email, school, topic, ref code…"
+              placeholder="Search sender, school, topic, email, ref code…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 rounded-xl border border-[#C8EFE6] bg-[#EFFBF8]/40 focus:bg-white text-xs font-semibold text-[#102E4D] focus:outline-none focus:border-[#102E4D] transition-colors"
+              className="w-full pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
             />
             {searchQuery && (
               <button
@@ -774,7 +709,7 @@ export default function AdminContactsCrmPage() {
                 onClick={() => setSearchQuery("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             )}
           </div>
@@ -784,13 +719,13 @@ export default function AdminContactsCrmPage() {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value as "all" | ContactPriority)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D]"
             >
-              <option value="all">⚡ All Priorities</option>
-              <option value="urgent">🔥 Urgent Priority</option>
-              <option value="high">🟠 High Priority</option>
-              <option value="normal">🔵 Normal Priority</option>
-              <option value="low">⚪ Low Priority</option>
+              <option value="all">Priority: All</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
             </select>
           </div>
 
@@ -799,79 +734,61 @@ export default function AdminContactsCrmPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+              className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D]"
             >
-              <option value="newest">🕒 Newest Received</option>
-              <option value="oldest">⏳ Oldest First</option>
-              <option value="priority">🔥 Priority (Highest)</option>
-              <option value="name">🔤 Name (A → Z)</option>
+              <option value="newest">Sort: Newest</option>
+              <option value="oldest">Sort: Oldest</option>
+              <option value="priority">Sort: Priority</option>
+              <option value="name">Sort: Name (A-Z)</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 3. CONTENT AREA: GRID VIEW OR LIST VIEW                             */}
+      {/* 3. CONTENT AREA: GRID VIEW OR COMPACT LIST VIEW                    */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {loading && contacts.length === 0 ? (
-        <div className="p-16 rounded-3xl bg-white border border-[#C8EFE6] text-center space-y-3">
-          <RefreshCw className="w-8 h-8 text-[#FF7900] animate-spin mx-auto" />
-          <div className="font-bold text-sm text-[#102E4D]">
-            Loading Contact Us Inquiries…
-          </div>
-          <p className="text-xs text-slate-400">Connecting to secure CRM data store</p>
+        <div className="p-12 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
+          <RefreshCw className="w-6 h-6 text-[#FF7900] animate-spin mx-auto" />
+          <div className="font-bold text-xs text-slate-700">Loading Contact Inquiries…</div>
         </div>
       ) : filteredContacts.length === 0 ? (
-        <div className="p-16 rounded-3xl bg-white border border-[#C8EFE6] text-center space-y-3">
-          <Sparkles className="w-10 h-10 text-[#FF7900] mx-auto opacity-70" />
-          <div className="font-serif font-bold text-base text-[#102E4D]">
-            No matching Contact Inquiries found
-          </div>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+        <div className="p-12 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
+          <div className="font-bold text-sm text-[#102E4D]">No inquiries found</div>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
             {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
-              ? "Try adjusting your search query, status tab, or priority filters."
-              : "Inquiries submitted through the /contact page and home contact form will automatically arrive here."}
+              ? "No records matched your filters."
+              : "Inquiries submitted via /contact will appear here automatically."}
           </p>
-          {(searchQuery || statusFilter !== "all" || priorityFilter !== "all") && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-                setPriorityFilter("all");
-              }}
-              className="px-4 py-2 rounded-xl bg-[#EFFBF8] hover:bg-[#D7F5EF] text-[#005696] text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer"
-            >
-              Reset All Filters
-            </button>
-          )}
         </div>
       ) : viewMode === "grid" ? (
-        /* ── GRID / CARD VIEW ── */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+        /* ── GRID / CARD VIEW (PROPER WIDTH 3-COL ON DESKTOP, FULL TAG DETAILS) ── */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
           {filteredContacts.map((c) => {
             const st = statusStyles(c.crm_status);
-            const avatarGrad = getAvatarColor(c.full_name);
+            const avatarColor = getAvatarColor(c.full_name);
             const initials = getInitials(c.full_name);
             const relativeTime = getRelativeTimeString(c.created_at);
+            const topicLabel = formatTopicName(c.interest);
 
             return (
               <div
                 key={c.id}
                 onClick={() => openInspector(c)}
-                className="group relative rounded-3xl bg-white border border-slate-200/90 hover:border-[#102E4D]/40 shadow-xs hover:shadow-lg transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-pointer"
+                className="group relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer"
               >
                 {/* Status-colored Top Edge Strip */}
                 <div className={`h-1.5 w-full bg-gradient-to-r ${st.borderTop}`} />
 
-                <div className="p-4 sm:p-5 space-y-3.5 flex-1">
-                  {/* Card Header: Ref code + Status badge + Priority */}
+                <div className="p-4 space-y-3 flex-1">
+                  {/* Top Line: Ref code + Status badge + Priority */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-num font-extrabold text-xs text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded-lg border border-orange-200/60 inline-flex items-center gap-1">
+                    <span className="font-num font-extrabold text-[11px] text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/70 inline-flex items-center gap-1">
                       #{c.reference_code}
                     </span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${priorityStyles(
                           c.priority
@@ -889,50 +806,55 @@ export default function AdminContactsCrmPage() {
                   </div>
 
                   {/* Sender Profile: Avatar + Name + Organization */}
-                  <div className="flex items-start gap-3 pt-1">
+                  <div className="flex items-start gap-2.5">
                     <div
-                      className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-serif font-black text-xs shrink-0 shadow-xs`}
+                      className={`w-9 h-9 rounded-xl border ${avatarColor} flex items-center justify-center font-bold text-xs shrink-0`}
                     >
                       {initials}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate group-hover:text-[#FF7900] transition-colors">
+                      <h3 className="font-bold text-sm text-[#102E4D] truncate group-hover:text-[#FF7900] transition-colors">
                         {c.full_name}
                       </h3>
                       <div className="flex items-center gap-1 text-[11px] text-slate-500 truncate mt-0.5">
-                        <Building2 className="w-3 h-3 text-[#005696] shrink-0" />
+                        <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                         <span className="truncate">{c.organization || "Independent"}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Topic / Interest Tag */}
-                  <div>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#EDF6FB] text-[#005696] font-extrabold text-[11px] capitalize border border-[#D0E6F5]">
-                      <Tag className="w-3 h-3 text-[#FF7900]" />
-                      <span className="truncate">{c.interest.replace(/-/g, " ")}</span>
+                  {/* Tag Details (Full width visible, no truncate clipping) */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#EFFBF8] text-[#005696] font-bold text-[11px] border border-[#C8EFE6]">
+                      <Tag className="w-3 h-3 text-[#FF7900] shrink-0" />
+                      <span>{topicLabel}</span>
                     </span>
+
+                    {c.email && (
+                      <span className="text-[11px] text-slate-400 truncate max-w-[200px]" title={c.email}>
+                        {c.email}
+                      </span>
+                    )}
                   </div>
 
                   {/* Inquiry Message Snippet */}
-                  <div className="relative rounded-2xl bg-[#F8FCFB] border border-[#C8EFE6]/60 p-3 text-xs text-slate-600 line-clamp-3 leading-relaxed group-hover:bg-[#EFFBF8]/50 transition-colors">
-                    <MessageSquare className="w-3.5 h-3.5 text-slate-300 absolute right-2.5 top-2.5" />
+                  <div className="rounded-xl bg-slate-50/80 border border-slate-200/60 p-2.5 text-xs text-slate-600 line-clamp-2 leading-relaxed">
                     <span className="italic">“{c.message}”</span>
                   </div>
 
-                  {/* Internal Admin Note Indicator (if any) */}
+                  {/* Internal Admin Note (if any) */}
                   {c.admin_notes && (
-                    <div className="text-[11px] font-medium text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-xl px-2.5 py-1.5 flex items-start gap-1.5">
-                      <span className="shrink-0 font-bold">📝 Note:</span>
+                    <div className="text-[10.5px] font-medium text-amber-900 bg-amber-50/90 border border-amber-200/70 rounded-lg px-2.5 py-1 flex items-start gap-1">
+                      <span className="shrink-0 font-bold">Note:</span>
                       <span className="truncate">{c.admin_notes}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Card Footer: Timestamps & Quick Action Buttons */}
-                <div className="px-4 sm:px-5 py-3 bg-[#FAFDFD] border-t border-slate-100 flex items-center justify-between gap-2">
+                {/* Card Footer: Timestamp & Action Buttons */}
+                <div className="px-4 py-2.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between gap-2">
                   <div className="text-[11px] text-slate-400 font-num flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
+                    <Calendar className="w-3 h-3 text-slate-400" />
                     <span>{relativeTime}</span>
                   </div>
 
@@ -944,7 +866,7 @@ export default function AdminContactsCrmPage() {
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-7 h-7 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                        className="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white flex items-center justify-center transition-colors border border-emerald-200"
                         title="Chat on WhatsApp"
                       >
                         <FaWhatsapp className="w-3.5 h-3.5" />
@@ -954,7 +876,7 @@ export default function AdminContactsCrmPage() {
                       href={`mailto:${c.email}?subject=${encodeURIComponent(
                         `Re: Inquiry #${c.reference_code} — The Leadership Covenant`
                       )}`}
-                      className="w-7 h-7 rounded-lg bg-[#102E4D]/10 hover:bg-[#102E4D] text-[#102E4D] hover:text-white flex items-center justify-center transition-colors shadow-2xs"
+                      className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-[#102E4D] text-slate-700 hover:text-white flex items-center justify-center transition-colors border border-slate-200"
                       title="Send Email"
                     >
                       <Mail className="w-3.5 h-3.5" />
@@ -973,180 +895,169 @@ export default function AdminContactsCrmPage() {
           })}
         </div>
       ) : (
-        /* ── LIST / TABLE VIEW ── */
-        <div className="rounded-3xl bg-white border border-[#C8EFE6]/90 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto scroll-smooth overscroll-x-contain">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-[#EFFBF8] border-b border-[#C8EFE6] text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D]">
-                  <th className="py-3.5 px-4">Reference</th>
-                  <th className="py-3.5 px-4">Sender Details</th>
-                  <th className="py-3.5 px-4">School / Organization</th>
-                  <th className="py-3.5 px-4">Interest Topic</th>
-                  <th className="py-3.5 px-4">Priority</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Received</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredContacts.map((c) => {
-                  const st = statusStyles(c.crm_status);
-                  const avatarGrad = getAvatarColor(c.full_name);
-                  const initials = getInitials(c.full_name);
+        /* ── COMPACT LIST VIEW (NO HORIZONTAL SCROLLING ON STANDARD SCREENS) ── */
+        <div className="rounded-2xl bg-white border border-slate-200/90 shadow-2xs overflow-hidden">
+          <table className="w-full text-left border-collapse text-xs table-fixed">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600">
+                <th className="py-2.5 px-3.5 w-[16%]">Ref & Status</th>
+                <th className="py-2.5 px-3.5 w-[34%]">Sender & Organization</th>
+                <th className="py-2.5 px-3.5 w-[26%]">Interest & Priority</th>
+                <th className="py-2.5 px-3.5 w-[12%]">Received</th>
+                <th className="py-2.5 px-3.5 w-[12%] text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredContacts.map((c) => {
+                const st = statusStyles(c.crm_status);
+                const avatarColor = getAvatarColor(c.full_name);
+                const initials = getInitials(c.full_name);
+                const topicLabel = formatTopicName(c.interest);
 
-                  return (
-                    <tr
-                      key={c.id}
-                      onClick={() => openInspector(c)}
-                      className="hover:bg-[#EFFBF8]/50 transition-colors cursor-pointer group"
-                    >
-                      {/* Ref code */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="font-num font-extrabold text-[#FF7900] bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200/80">
+                return (
+                  <tr
+                    key={c.id}
+                    onClick={() => openInspector(c)}
+                    className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                  >
+                    {/* Ref code & Status stacked cleanly */}
+                    <td className="py-2.5 px-3.5">
+                      <div className="space-y-1">
+                        <span className="font-num font-extrabold text-[11px] text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/70 inline-block">
                           #{c.reference_code}
                         </span>
-                      </td>
-
-                      {/* Sender Details */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className={`w-8 h-8 rounded-xl bg-gradient-to-br ${avatarGrad} flex items-center justify-center font-serif font-black text-[10px] shrink-0`}
+                        <div>
+                          <span
+                            className={`px-2 py-0.2 rounded-full border text-[9.5px] font-bold uppercase inline-flex items-center gap-1 ${st.pill}`}
                           >
-                            {initials}
+                            <span className={`w-1 h-1 rounded-full ${st.dot}`} />
+                            {st.label}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Sender Details & School stacked */}
+                    <td className="py-2.5 px-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-7 h-7 rounded-lg border ${avatarColor} flex items-center justify-center font-bold text-[10px] shrink-0`}
+                        >
+                          {initials}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate">
+                            {c.full_name}
                           </div>
-                          <div>
-                            <div className="font-bold text-[#102E4D] group-hover:text-[#FF7900] transition-colors">
-                              {c.full_name}
-                            </div>
-                            <div className="text-[11px] text-slate-500 font-medium">
-                              {c.email}
-                            </div>
+                          <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                            <span className="text-slate-400">•</span>
+                            <span className="truncate">{c.organization || "Independent"}</span>
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-400 truncate">{c.email}</span>
                           </div>
                         </div>
-                      </td>
+                      </div>
+                    </td>
 
-                      {/* Organization */}
-                      <td className="py-3.5 px-4 font-semibold text-slate-700">
-                        <div className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-[#005696] shrink-0" />
-                          <span>{c.organization || "Independent"}</span>
-                        </div>
-                      </td>
-
-                      {/* Interest Topic */}
-                      <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-1 rounded-lg bg-[#EDF6FB] text-[#005696] font-bold capitalize text-[11px] inline-block max-w-[180px] truncate">
-                          {c.interest.replace(/-/g, " ")}
+                    {/* Interest & Priority */}
+                    <td className="py-2.5 px-3.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[10.5px] border border-[#C8EFE6] truncate max-w-[170px]" title={topicLabel}>
+                          {topicLabel}
                         </span>
-                      </td>
-
-                      {/* Priority */}
-                      <td className="py-3.5 px-4">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border ${priorityStyles(
+                          className={`px-1.5 py-0.2 rounded-full text-[9.5px] uppercase font-bold border ${priorityStyles(
                             c.priority
                           )}`}
                         >
                           {c.priority}
                         </span>
-                      </td>
+                      </div>
+                    </td>
 
-                      {/* Status */}
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase whitespace-nowrap inline-flex items-center gap-1.5 ${st.pill}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
-                          {st.label}
-                        </span>
-                      </td>
+                    {/* Received Date */}
+                    <td className="py-2.5 px-3.5 font-num text-slate-500 text-[11px]">
+                      <div>{new Date(c.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+                      <div className="text-[10px] text-slate-400">
+                        {getRelativeTimeString(c.created_at)}
+                      </div>
+                    </td>
 
-                      {/* Received Date */}
-                      <td className="py-3.5 px-4 font-num text-slate-500 whitespace-nowrap text-[11px]">
-                        <div>{new Date(c.created_at).toLocaleDateString()}</div>
-                        <div className="text-[10px] text-slate-400">
-                          {getRelativeTimeString(c.created_at)}
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td
-                        className="py-3.5 px-4 text-right whitespace-nowrap"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center justify-end gap-1.5">
-                          {c.phone && (
-                            <a
-                              href={`https://wa.me/${c.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                                `Assalam-o-Alaikum ${c.full_name}, thank you for contacting The Leadership Covenant (Ref #${c.reference_code}).`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-7 h-7 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white flex items-center justify-center transition-colors"
-                              title="Chat on WhatsApp"
-                            >
-                              <FaWhatsapp className="w-3.5 h-3.5" />
-                            </a>
-                          )}
+                    {/* Actions */}
+                    <td
+                      className="py-2.5 px-3.5 text-right whitespace-nowrap"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-end gap-1.5">
+                        {c.phone && (
                           <a
-                            href={`mailto:${c.email}?subject=${encodeURIComponent(
-                              `Re: Inquiry #${c.reference_code} — The Leadership Covenant`
+                            href={`https://wa.me/${c.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                              `Assalam-o-Alaikum ${c.full_name}, thank you for contacting The Leadership Covenant (Ref #${c.reference_code}).`
                             )}`}
-                            className="w-7 h-7 rounded-lg bg-[#102E4D]/10 hover:bg-[#102E4D] text-[#102E4D] hover:text-white flex items-center justify-center transition-colors"
-                            title="Send Email"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-6.5 h-6.5 rounded-md bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white flex items-center justify-center transition-colors border border-emerald-200"
+                            title="Chat on WhatsApp"
                           >
-                            <Mail className="w-3.5 h-3.5" />
+                            <FaWhatsapp className="w-3 h-3" />
                           </a>
-                          <button
-                            type="button"
-                            onClick={() => openInspector(c)}
-                            className="px-3 py-1.5 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[11px] font-bold cursor-pointer"
-                          >
-                            Manage
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        )}
+                        <a
+                          href={`mailto:${c.email}?subject=${encodeURIComponent(
+                            `Re: Inquiry #${c.reference_code} — The Leadership Covenant`
+                          )}`}
+                          className="w-6.5 h-6.5 rounded-md bg-slate-100 hover:bg-[#102E4D] text-slate-600 hover:text-white flex items-center justify-center transition-colors border border-slate-200"
+                          title="Send Email"
+                        >
+                          <Mail className="w-3 h-3" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => openInspector(c)}
+                          className="px-2.5 py-1 rounded-md bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold cursor-pointer"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 4. MODAL: INQUIRY DETAILS INSPECTOR & CRM WORKFLOW                  */}
+      {/* 4. MODAL: INQUIRY DETAILS INSPECTOR                                 */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
-          {/* Dimmed backdrop with smooth blur */}
+          {/* Dimmed backdrop */}
           <div
-            className="fixed inset-0 bg-[#001B33]/65 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
             onClick={() => setSelected(null)}
           />
 
           {/* Centered Modal Card */}
-          <div className="relative z-10 w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-[#C8EFE6] my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[92vh]">
-            {/* Colorful top gradient header strip */}
-            <div className="h-2 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+            {/* Top gradient accent line */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
             {/* Modal Header */}
-            <div className="bg-[#001B33] text-white px-5 sm:px-7 py-4 sm:py-5 flex items-center justify-between gap-3 shrink-0">
+            <div className="bg-[#102E4D] text-white px-5 py-4 flex items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${getAvatarColor(
+                  className={`w-9 h-9 rounded-xl border ${getAvatarColor(
                     selected.full_name
-                  )} flex items-center justify-center font-serif font-black text-sm shrink-0 shadow-sm`}
+                  )} flex items-center justify-center font-bold text-xs shrink-0`}
                 >
                   {getInitials(selected.full_name)}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-num text-[11px] font-extrabold uppercase tracking-wider text-[#FFC400]">
-                      Inquiry #{selected.reference_code}
+                    <span className="font-num text-[11px] font-bold text-[#FFC400]">
+                      #{selected.reference_code}
                     </span>
                     <button
                       type="button"
@@ -1157,185 +1068,147 @@ export default function AdminContactsCrmPage() {
                       title="Copy Reference Code"
                     >
                       {copiedKey === "ref_modal" ? (
-                        <Check className="w-3.5 h-3.5 text-[#10B981]" />
+                        <Check className="w-3 h-3 text-[#10B981]" />
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <Copy className="w-3 h-3" />
                       )}
                     </button>
                   </div>
-                  <h2 className="font-serif font-bold text-lg sm:text-xl text-white truncate">
+                  <h2 className="font-bold text-base text-white truncate">
                     {selected.full_name}
                   </h2>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setSelected(null)}
-                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-                  title="Close Inspector"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Modal Scrollable Body */}
-            <div className="p-5 sm:p-7 space-y-6 overflow-y-auto flex-1 text-xs sm:text-sm">
-              {/* SECTION 1: Sender & Direct Communication Channels */}
-              <div className="space-y-2">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                  Contact Information & Channels
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {/* Email Channel */}
-                  <div className="p-3.5 rounded-2xl bg-[#EFFBF8] border border-[#C8EFE6] space-y-1.5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] font-bold text-[#005696]">
-                        <span className="flex items-center gap-1.5">
-                          <Mail className="w-3.5 h-3.5" /> Email
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(selected.email, "email_modal")}
-                          className="text-slate-400 hover:text-[#005696]"
-                          title="Copy Email"
-                        >
-                          {copiedKey === "email_modal" ? (
-                            <Check className="w-3 h-3 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                      </div>
-                      <div className="font-bold text-[#102E4D] truncate mt-1 text-xs">
-                        {selected.email}
-                      </div>
-                    </div>
-                    <a
-                      href={`mailto:${selected.email}?subject=${encodeURIComponent(
-                        `Re: Inquiry #${selected.reference_code} — The Leadership Covenant`
-                      )}`}
-                      className="mt-2 py-1.5 px-2.5 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors"
-                    >
-                      <Mail className="w-3 h-3 text-[#FFC400]" />
-                      <span>Compose Email</span>
-                    </a>
-                  </div>
-
-                  {/* Phone & WhatsApp Channel */}
-                  <div className="p-3.5 rounded-2xl bg-[#F0FDF4] border border-[#BBF7D0] space-y-1.5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] font-bold text-[#16A34A]">
-                        <span className="flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5" /> Phone / WhatsApp
-                        </span>
-                        {selected.phone && (
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard(selected.phone, "phone_modal")}
-                            className="text-slate-400 hover:text-emerald-700"
-                            title="Copy Phone"
-                          >
-                            {copiedKey === "phone_modal" ? (
-                              <Check className="w-3 h-3 text-emerald-600" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
-                          </button>
-                        )}
-                      </div>
-                      <div className="font-num font-bold text-[#102E4D] truncate mt-1 text-xs">
-                        {selected.phone || "Not provided"}
-                      </div>
-                    </div>
-                    {selected.phone ? (
-                      <a
-                        href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                          `Assalam-o-Alaikum ${selected.full_name}, thank you for contacting The Leadership Covenant regarding your inquiry (Ref #${selected.reference_code}). How may we assist your institution?`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 py-1.5 px-2.5 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
-                      >
-                        <FaWhatsapp className="w-3.5 h-3.5" />
-                        <span>Chat on WhatsApp</span>
-                      </a>
-                    ) : (
-                      <span className="mt-2 text-[11px] text-slate-400 italic">No phone given</span>
-                    )}
-                  </div>
-
-                  {/* School / Organization Card */}
-                  <div className="p-3.5 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] space-y-1.5 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] font-bold text-[#D97706]">
-                        <span className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5" /> School / Org
-                        </span>
-                      </div>
-                      <div className="font-bold text-[#102E4D] truncate mt-1 text-xs">
-                        {selected.organization || "Independent / Individual"}
-                      </div>
-                    </div>
-                    <div className="mt-2 text-[10.5px] text-slate-500 font-num flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
-                      <span>{new Date(selected.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 2: Inquiry Content & Message */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                    Inquiry Message & Discussion Topic
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-[#EDF6FB] text-[#005696] font-extrabold text-[11px] capitalize border border-[#D0E6F5]">
-                    Interest: {selected.interest.replace(/-/g, " ")}
-                  </span>
-                </div>
-
-                <div className="relative rounded-2xl bg-slate-50 border border-slate-200 p-4 sm:p-5 text-slate-700 leading-relaxed space-y-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-[11px] text-slate-400 font-num">
-                    <span>Submitted on: {new Date(selected.created_at).toLocaleString()}</span>
+            {/* Modal Scrollable Body with Clean Spacing */}
+            <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
+              {/* SECTION 1: Contact Information Channels */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {/* Email */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <Mail className="w-3 h-3 text-[#005696]" /> Email
+                    </span>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard(selected.message, "msg_modal")}
-                      className="text-[#005696] hover:underline inline-flex items-center gap-1 font-semibold"
+                      onClick={() => copyToClipboard(selected.email, "email_modal")}
+                      className="text-slate-400 hover:text-slate-600"
                     >
-                      {copiedKey === "msg_modal" ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-600" /> Copied
-                        </>
+                      {copiedKey === "email_modal" ? (
+                        <Check className="w-3 h-3 text-emerald-600" />
                       ) : (
-                        <>
-                          <Copy className="w-3 h-3" /> Copy Message
-                        </>
+                        <Copy className="w-3 h-3" />
                       )}
                     </button>
                   </div>
-                  <p className="whitespace-pre-wrap font-sans text-xs sm:text-sm text-[#001B33]">
-                    {selected.message}
-                  </p>
+                  <div className="font-semibold text-slate-800 text-xs truncate" title={selected.email}>
+                    {selected.email}
+                  </div>
+                </div>
+
+                {/* Phone / WhatsApp */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-[#16A34A]" /> Phone
+                    </span>
+                    {selected.phone && (
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(selected.phone, "phone_modal")}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        {copiedKey === "phone_modal" ? (
+                          <Check className="w-3 h-3 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <div className="font-num font-semibold text-slate-800 text-xs truncate">
+                    {selected.phone || "Not provided"}
+                  </div>
+                </div>
+
+                {/* Organization */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                  <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
+                    <Building2 className="w-3 h-3 text-[#FF7900]" /> School / Org
+                  </div>
+                  <div className="font-semibold text-slate-800 text-xs truncate" title={selected.organization}>
+                    {selected.organization || "Independent"}
+                  </div>
                 </div>
               </div>
 
-              {/* SECTION 3: CRM Status & Priority Selection Chips */}
-              <div className="space-y-3 pt-2 border-t border-slate-100">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] block">
-                  CRM Workflow Status & Priority
+              {/* Direct Quick Launch Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href={`mailto:${selected.email}?subject=${encodeURIComponent(
+                    `Re: Inquiry #${selected.reference_code} — The Leadership Covenant`
+                  )}`}
+                  className="py-1.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#FFC400]" />
+                  <span>Send Email</span>
+                </a>
+                {selected.phone && (
+                  <a
+                    href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                      `Assalam-o-Alaikum ${selected.full_name}, thank you for contacting The Leadership Covenant (Ref #${selected.reference_code}).`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="py-1.5 px-3 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    <FaWhatsapp className="w-3.5 h-3.5" />
+                    <span>WhatsApp Chat</span>
+                  </a>
+                )}
+              </div>
+
+              {/* SECTION 2: Message Quote & Topic Tag */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                    Inquiry Message
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[11px] border border-[#C8EFE6]">
+                    Topic: {formatTopicName(selected.interest)}
+                  </span>
+                </div>
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-slate-800 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap">
+                  {selected.message}
+                </div>
+                <div className="text-[10.5px] text-slate-400 font-num">
+                  Submitted: {new Date(selected.created_at).toLocaleString()}
+                </div>
+              </div>
+
+              {/* SECTION 3: CRM Status & Priority Selection */}
+              <div className="space-y-2 pt-1 border-t border-slate-100">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
+                  Workflow Status & Priority
                 </span>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Status Options */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-600 block">
-                      Current Stage:
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-500 block mb-1">
+                      Status Stage:
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {(["new", "in_progress", "responded", "archived"] as ContactCrmStatus[]).map(
                         (st) => {
                           const active = editStatus === st;
@@ -1345,13 +1218,13 @@ export default function AdminContactsCrmPage() {
                               key={st}
                               type="button"
                               onClick={() => setEditStatus(st)}
-                              className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-2 ${
+                              className={`p-2 rounded-lg border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-1.5 ${
                                 active
-                                  ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/40"
+                                  ? "bg-[#102E4D] text-white border-[#102E4D]"
                                   : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                               }`}
                             >
-                              <span className={`w-2 h-2 rounded-full ${info.dot}`} />
+                              <span className={`w-1.5 h-1.5 rounded-full ${info.dot}`} />
                               <span>{info.label}</span>
                             </button>
                           );
@@ -1360,12 +1233,11 @@ export default function AdminContactsCrmPage() {
                     </div>
                   </div>
 
-                  {/* Priority Options */}
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-slate-600 block">
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-500 block mb-1">
                       Priority Level:
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {(["urgent", "high", "normal", "low"] as ContactPriority[]).map(
                         (pr) => {
                           const active = editPriority === pr;
@@ -1374,15 +1246,13 @@ export default function AdminContactsCrmPage() {
                               key={pr}
                               type="button"
                               onClick={() => setEditPriority(pr)}
-                              className={`p-2.5 rounded-xl border text-xs font-bold capitalize text-left transition-all cursor-pointer flex items-center justify-between ${
+                              className={`p-2 rounded-lg border text-xs font-bold capitalize text-left transition-all cursor-pointer ${
                                 active
-                                  ? "bg-[#005696] text-white border-[#005696] shadow-xs ring-2 ring-sky-300"
+                                  ? "bg-[#005696] text-white border-[#005696]"
                                   : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
                               }`}
                             >
                               <span>{pr}</span>
-                              {pr === "urgent" && <span>🔥</span>}
-                              {pr === "high" && <span>⚡</span>}
                             </button>
                           );
                         }
@@ -1393,21 +1263,20 @@ export default function AdminContactsCrmPage() {
               </div>
 
               {/* SECTION 4: Internal CRM Notes */}
-              <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="space-y-1.5 pt-1 border-t border-slate-100">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D]">
-                    Internal CRM Notes & Log
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                    Internal Notes
                   </label>
-                  <span className="text-[11px] text-slate-400">Visible to admins only</span>
+                  <span className="text-[10px] text-slate-400">Admin private log</span>
                 </div>
 
-                {/* Quick note snippet helpers */}
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {[
-                    "📞 Spoke on phone — interested in teacher training",
-                    "💬 Sent brochure via WhatsApp",
-                    "📅 Meeting scheduled for next Tuesday",
-                    "✅ Fully answered & resolved",
+                    "📞 Spoke on phone",
+                    "💬 Sent WhatsApp info",
+                    "📅 Meeting booked",
+                    "✅ Resolved",
                   ].map((snippet) => (
                     <button
                       key={snippet}
@@ -1415,7 +1284,7 @@ export default function AdminContactsCrmPage() {
                       onClick={() =>
                         setEditNotes((prev) => (prev ? `${prev}\n• ${snippet}` : `• ${snippet}`))
                       }
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-medium transition-colors cursor-pointer"
+                      className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-medium transition-colors cursor-pointer"
                     >
                       + {snippet}
                     </button>
@@ -1423,39 +1292,39 @@ export default function AdminContactsCrmPage() {
                 </div>
 
                 <textarea
-                  rows={3}
-                  placeholder="Record callback details, dates, or team action items…"
+                  rows={2}
+                  placeholder="Add notes, follow-up callbacks, or action items…"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-[#C8EFE6] bg-[#EFFBF8]/30 focus:bg-white text-xs sm:text-sm text-[#102E4D] focus:outline-none focus:border-[#102E4D] transition-colors leading-relaxed"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white text-xs text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
                 />
               </div>
 
-              {/* Feedback toast banner */}
+              {/* Feedback toast */}
               {feedback && (
-                <div className="p-3.5 rounded-2xl bg-[#DCFCE7] text-[#15803D] text-xs font-bold flex items-center gap-2 border border-[#86EFAC] animate-in fade-in duration-150">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#16A34A]" />
+                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-1.5 border border-emerald-200">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                   <span>{feedback}</span>
                 </div>
               )}
             </div>
 
             {/* Modal Footer Controls */}
-            <div className="px-5 sm:px-7 py-4 bg-[#F8FCFB] border-t border-[#C8EFE6] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleDeleteRecord(selected.id)}
-                className="w-full sm:w-auto h-10 px-4 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-bold inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                className="h-8.5 px-3 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Inquiry</span>
+                <span>Delete</span>
               </button>
 
-              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
-                  className="w-full sm:w-auto h-10 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer text-center"
+                  className="h-8.5 px-3 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1463,20 +1332,20 @@ export default function AdminContactsCrmPage() {
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord("responded")}
-                  className="w-full sm:w-auto h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
-                  title="Save and set status to Responded"
+                  className="h-8.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  title="Mark as Responded and Save"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
-                  <span>Save as Responded</span>
+                  <span>Responded</span>
                 </button>
                 <button
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord()}
-                  className="w-full sm:w-auto h-10 px-5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs font-extrabold inline-flex items-center justify-center gap-2 shadow-md shadow-[#FF7900]/25 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.98]"
+                  className="h-8.5 px-4 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>{saving ? "Saving…" : "Save Changes"}</span>
+                  <span>{saving ? "Saving…" : "Save"}</span>
                 </button>
               </div>
             </div>
@@ -1490,35 +1359,35 @@ export default function AdminContactsCrmPage() {
       {addModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-[#001B33]/65 backdrop-blur-xs"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs"
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-[#C8EFE6] my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="h-2 w-full bg-gradient-to-r from-[#FF7900] to-[#FFC400]" />
+          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="h-1.5 w-full bg-[#FF7900]" />
 
-            <div className="bg-[#001B33] text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-[#102E4D] text-white px-5 py-3.5 flex items-center justify-between">
               <div>
-                <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-[#FFC400]">
-                  Offline / Phone Lead Log
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFC400]">
+                  Offline / Walk-in Lead
                 </span>
-                <h3 className="font-serif font-bold text-lg text-white">
+                <h3 className="font-bold text-base text-white">
                   Log Inbound Contact Inquiry
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setAddModalOpen(false)}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+                className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateInquiry} className="p-6 space-y-4 text-xs sm:text-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleCreateInquiry} className="p-5 space-y-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Full Name *
                   </label>
                   <input
@@ -1529,12 +1398,12 @@ export default function AdminContactsCrmPage() {
                     onChange={(e) =>
                       setAddForm({ ...addForm, full_name: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-semibold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Email Address *
                   </label>
                   <input
@@ -1545,15 +1414,15 @@ export default function AdminContactsCrmPage() {
                     onChange={(e) =>
                       setAddForm({ ...addForm, email: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-semibold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
-                    Phone / WhatsApp Number
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Phone / WhatsApp
                   </label>
                   <input
                     type="tel"
@@ -1562,29 +1431,29 @@ export default function AdminContactsCrmPage() {
                     onChange={(e) =>
                       setAddForm({ ...addForm, phone: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-semibold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     School / Organization
                   </label>
                   <input
                     type="text"
-                    placeholder="Roots Millennium / Beaconhouse"
+                    placeholder="Beaconhouse / Roots"
                     value={addForm.organization}
                     onChange={(e) =>
                       setAddForm({ ...addForm, organization: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-semibold text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
                     Interest Topic
                   </label>
                   <select
@@ -1592,7 +1461,7 @@ export default function AdminContactsCrmPage() {
                     onChange={(e) =>
                       setAddForm({ ...addForm, interest: e.target.value })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold text-xs text-slate-700"
                   >
                     <option value="school-impact-summit">School Impact Summit</option>
                     <option value="teacher-training">Teacher Believed In Me</option>
@@ -1604,8 +1473,8 @@ export default function AdminContactsCrmPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
-                    Initial Priority
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Priority
                   </label>
                   <select
                     value={addForm.priority}
@@ -1615,10 +1484,10 @@ export default function AdminContactsCrmPage() {
                         priority: e.target.value as ContactPriority,
                       })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 font-bold text-xs text-[#102E4D]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold text-xs text-slate-700"
                   >
                     <option value="normal">Normal</option>
-                    <option value="high">High Priority</option>
+                    <option value="high">High</option>
                     <option value="urgent">Urgent</option>
                     <option value="low">Low</option>
                   </select>
@@ -1626,34 +1495,34 @@ export default function AdminContactsCrmPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-[#102E4D] mb-1">
-                  Inquiry Message / Lead Details
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Inquiry Message / Notes
                 </label>
                 <textarea
-                  rows={3}
-                  placeholder="Details of what the person is requesting or inquired about…"
+                  rows={2}
+                  placeholder="Details of inquiry or phone call conversation…"
                   value={addForm.message}
                   onChange={(e) =>
                     setAddForm({ ...addForm, message: e.target.value })
                   }
-                  className="w-full p-3 rounded-xl border border-slate-200 text-xs text-[#102E4D] focus:outline-none focus:border-[#102E4D]"
+                  className="w-full p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#102E4D]"
                 />
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setAddModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={addingInquiry}
-                  className="px-5 py-2.5 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-extrabold inline-flex items-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+                  className="px-4 py-1.5 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                 >
-                  <Save className="w-4 h-4 text-[#FFC400]" />
+                  <Save className="w-3.5 h-3.5 text-[#FFC400]" />
                   <span>{addingInquiry ? "Saving…" : "Create Inquiry"}</span>
                 </button>
               </div>
