@@ -5,11 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { SUMMIT_CONTENT } from "@/content/summit";
 import SummitVideoSlider from "@/components/summit/SummitVideoSlider";
-import {
-  MdArrowForward,
-  MdStar,
-} from "react-icons/md";
-import { FaQuoteLeft } from "react-icons/fa";
+import { MdArrowForward } from "react-icons/md";
 
 const SUMMIT_SPEAKERS = [
   {
@@ -32,39 +28,8 @@ const SUMMIT_SPEAKERS = [
   },
 ];
 
-const PARTICIPANT_VOICES = [
-  {
-    quote:
-      "We came back from the last event with a goal, a scorecard, and the energy to actually follow through. For the first time, our leadership plan survived the semester.",
-    topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
-    quoteColor: "text-[#102E4D]",
-    tag: "School Leadership",
-  },
-  {
-    quote:
-      "The coaching day gave our leadership team a common language. Six months later, students are still actively leading their own classroom goals.",
-    topAccent: "from-[#16A34A] via-[#15803D] to-[#22C55E]",
-    quoteColor: "text-[#16A34A]",
-    tag: "Culture Shift",
-  },
-  {
-    quote:
-      "I have attended many educational conferences. This was the first one where I walked away having already made concrete strategic decisions with my team.",
-    topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
-    quoteColor: "text-[#FF7900]",
-    tag: "Team Execution",
-  },
-  {
-    quote:
-      "The case studies were refreshingly honest: real schools, real setbacks, and real numbers. That is why our team trusts and implements their frameworks.",
-    topAccent: "from-[#2563EB] via-[#1D4ED8] to-[#60A5FA]",
-    quoteColor: "text-[#2563EB]",
-    tag: "Practical Rigor",
-  },
-];
-
 export default function SummitInteractiveSections() {
-  const { speakers, videos, voices } = SUMMIT_CONTENT;
+  const { speakers, videos } = SUMMIT_CONTENT;
 
   return (
     <>
@@ -186,98 +151,11 @@ export default function SummitInteractiveSections() {
               {videos.heading}
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
-            <p className="text-xs sm:text-sm text-slate-600 mt-2.5 max-w-xl mx-auto leading-relaxed">
-              Watch official highlight reels and participant reflections from our previous educational leadership summits.
-            </p>
+            
           </motion.div>
 
           {/* Interactive 3D Video Slider (Reference Matching) */}
           <SummitVideoSlider />
-        </div>
-      </section>
-
-      {/* ────────────────────────────────────────────────────────── */}
-      {/* 8. PARTICIPANT VOICES — COMPACT TESTIMONIAL CARDS          */}
-      {/* ────────────────────────────────────────────────────────── */}
-      <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden"
-        id="voices"
-      >
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
-
-        {/* Ambient GPU blur accents */}
-        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#D7F5EF]/50 blur-3xl pointer-events-none transform-gpu" />
-        <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-[#DDEFF7]/50 blur-3xl pointer-events-none transform-gpu" />
-
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
-          >
-            <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-              <span>{voices.eyebrow}</span>
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-            </div>
-            <h2 className="font-serif font-extrabold text-2xl sm:text-4xl text-[#102E4D] tracking-tight">
-              {voices.heading}
-            </h2>
-            <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
-            <p className="text-xs sm:text-sm text-slate-600 mt-2.5 max-w-xl mx-auto leading-relaxed">
-              Reflections from educators and school leaders who joined our previous FranklinCovey Education sessions.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-5 max-w-4xl mx-auto items-stretch">
-            {PARTICIPANT_VOICES.map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-30px" }}
-                transition={{
-                  duration: 0.45,
-                  delay: 0.08 * idx,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={{ y: -4, transition: { duration: 0.16 } }}
-                className="rounded-2xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group transform-gpu cursor-default"
-              >
-                {/* Top Colored Accent Stripe */}
-                <div className={`h-1 w-full bg-gradient-to-r ${item.topAccent}`} />
-
-                <div className="p-4 sm:p-6 flex flex-col justify-between flex-1">
-                  {/* Header Row: Quote Icon + Rating & Category Tag */}
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center bg-slate-50 border border-slate-100 ${item.quoteColor} shadow-2xs group-hover:scale-105 transition-transform`}
-                    >
-                      <FaQuoteLeft className="text-xs" />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-0.5 text-[#FFC400] text-xs">
-                        {[...Array(5)].map((_, i) => (
-                          <MdStar key={i} />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 bg-slate-100/80 px-2 py-0.5 rounded-md border border-slate-200/60">
-                        {item.tag}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Testimonial Quote Message */}
-                  <p className="font-serif italic text-xs sm:text-[13.5px] text-slate-700 leading-relaxed font-normal">
-                    &ldquo;{item.quote}&rdquo;
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 

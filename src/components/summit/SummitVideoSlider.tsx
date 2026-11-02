@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { MdChevronLeft, MdChevronRight, MdClose } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
 
@@ -83,8 +83,6 @@ export default function SummitVideoSlider() {
     if (diff === total - 1 || diff === -1) return "prev";
     return "hidden";
   };
-
-  const activeVideo = SUMMIT_VIDEOS[currentIndex];
 
   return (
     <div className="relative w-full max-w-6xl mx-auto py-2 sm:py-6 select-none">
@@ -192,32 +190,9 @@ export default function SummitVideoSlider() {
       </div>
 
       {/* ────────────────────────────────────────────────────────── */}
-      {/* Active Video Meta Information & Pagination Dots            */}
+      {/* Pagination Dots Indicator                                  */}
       {/* ────────────────────────────────────────────────────────── */}
-      <div className="mt-4 sm:mt-6 text-center max-w-2xl mx-auto px-4">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeVideo.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-            className="flex flex-col items-center"
-          >
-            {/* Video Title */}
-            <h3 className="font-serif font-extrabold text-lg sm:text-xl md:text-2xl text-[#102E4D] leading-snug">
-              {activeVideo.title}
-            </h3>
-
-            {/* Video Description */}
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-1.5 max-w-xl mx-auto">
-              {activeVideo.description}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Carousel Dots Indicator */}
-        <div className="flex items-center justify-center gap-2 mt-4 sm:mt-5">
+      <div className="flex items-center justify-center gap-2 mt-3 sm:mt-4">
           {SUMMIT_VIDEOS.map((_, i) => (
             <button
               key={i}
@@ -235,7 +210,6 @@ export default function SummitVideoSlider() {
             />
           ))}
         </div>
-      </div>
     </div>
   );
 }
