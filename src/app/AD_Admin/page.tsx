@@ -476,16 +476,16 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         {/* Left Column (lg:col-span-7): Activity Enrollment Analytics Bar Visualizer */}
         <div className="lg:col-span-7 h-full rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
-                <BarChart3 className="w-4 h-4" />
+          <div className="px-3.5 sm:px-4.5 py-3 sm:py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between shrink-0 gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+              <span className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </span>
-              <div className="min-w-0">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-serif font-bold text-xs sm:text-base text-[#102E4D] truncate leading-tight">
                   Activity Enrollment Analytics
                 </h3>
-                <p className="text-[10.5px] text-slate-500 truncate">
+                <p className="text-[10px] sm:text-[10.5px] text-slate-500 truncate">
                   Live capacity and registrations across active programs
                 </p>
               </div>
@@ -493,10 +493,10 @@ export default function AdminDashboardPage() {
             <Link
               href="/AD_Admin/registrations"
               prefetch={true}
-              className="text-xs font-extrabold text-[#FF7900] hover:text-[#102E4D] inline-flex items-center gap-1 transition-colors shrink-0"
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC6200] text-white text-[10.5px] sm:text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-1 sm:gap-1.5 shadow-sm shadow-[#FF7900]/25 transition-all active:scale-95 shrink-0 whitespace-nowrap"
             >
-              <span>View CRM</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span><span className="hidden xs:inline sm:inline">View </span>CRM</span>
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </Link>
           </div>
 
@@ -908,16 +908,16 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
         {/* Recent Registrations Feed */}
         <div className="rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DCFCE7]/30 border-b border-[#C8EFE6] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-xs shrink-0">
-                <CalendarCheck2 className="w-4 h-4" />
+          <div className="px-3.5 sm:px-4.5 py-3 sm:py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DCFCE7]/30 border-b border-[#C8EFE6] flex items-center justify-between shrink-0 gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+              <span className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-[#10B981] to-[#047857] text-white flex items-center justify-center shadow-xs shrink-0">
+                <CalendarCheck2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </span>
-              <div className="min-w-0">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-serif font-bold text-xs sm:text-base text-[#102E4D] truncate leading-tight">
                   Recent Registrations Feed
                 </h3>
-                <p className="text-[10.5px] text-slate-500 truncate">
+                <p className="text-[10px] sm:text-[10.5px] text-slate-500 truncate">
                   Latest activity candidates &amp; applicants
                 </p>
               </div>
@@ -925,10 +925,10 @@ export default function AdminDashboardPage() {
             <Link
               href="/AD_Admin/registrations"
               prefetch={true}
-              className="text-xs font-extrabold text-[#10B981] hover:text-[#047857] inline-flex items-center gap-1 transition-colors shrink-0"
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-[#EFFBF8] hover:bg-[#DCFCE7] border border-[#C8EFE6] text-[#10B981] hover:text-[#047857] text-[10.5px] sm:text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-1 sm:gap-1.5 transition-all active:scale-95 shrink-0 whitespace-nowrap shadow-2xs"
             >
               <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </Link>
           </div>
 
@@ -1050,16 +1050,16 @@ export default function AdminDashboardPage() {
 
         {/* Recent Contact Inquiries Feed */}
         <div className="rounded-2xl bg-white border-2 border-[#CFE6F3] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EDF6FB] via-white to-[#CFE6F3]/30 border-b border-[#CFE6F3] flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
-                <MessageSquareText className="w-4 h-4" />
+          <div className="px-3.5 sm:px-4.5 py-3 sm:py-3.5 bg-gradient-to-r from-[#EDF6FB] via-white to-[#CFE6F3]/30 border-b border-[#CFE6F3] flex items-center justify-between shrink-0 gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+              <span className="w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
+                <MessageSquareText className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </span>
-              <div className="min-w-0">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-serif font-bold text-xs sm:text-base text-[#102E4D] truncate leading-tight">
                   Recent Inquiries &amp; Leads
                 </h3>
-                <p className="text-[10.5px] text-slate-500 truncate">
+                <p className="text-[10px] sm:text-[10.5px] text-slate-500 truncate">
                   School, corporate and parent messages
                 </p>
               </div>
@@ -1067,7 +1067,7 @@ export default function AdminDashboardPage() {
             <Link
               href="/AD_Admin/contacts"
               prefetch={true}
-              className="text-xs font-extrabold text-[#0284C7] hover:text-[#0369A1] inline-flex items-center gap-1 transition-colors shrink-0"
+              className="px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl bg-[#EDF6FB] hover:bg-[#CFE6F3]/50 border border-[#CFE6F3] text-[#0284C7] hover:text-[#0369A1] text-[10.5px] sm:text-xs font-extrabold uppercase tracking-wider inline-flex items-center gap-1 sm:gap-1.5 transition-all active:scale-95 shrink-0 whitespace-nowrap shadow-2xs"
             >
               <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
