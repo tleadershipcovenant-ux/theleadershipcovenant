@@ -40,6 +40,7 @@ import {
   List,
   CheckCheck,
   UserPlus,
+  Layers,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type { LeadershipEvent } from "@/content/events";
@@ -576,13 +577,80 @@ function RegistrationsCrmInner() {
     }
   };
 
-  // Colorful & Distinct Booking Mode Styles
+  // Colorful & Distinct Activity Cohort Themes for filter tabs
+  const getActivityTabTheme = (slug: string, index: number = 0) => {
+    const s = slug.toLowerCase();
+    if (s.includes("summit") || s.includes("impact")) {
+      return {
+        active: "bg-gradient-to-r from-[#FF7900] to-[#FF9E3B] text-white shadow-sm shadow-orange-500/25 border-transparent",
+        inactive: "bg-orange-50/70 hover:bg-orange-100/90 text-orange-950 border-orange-200/90",
+        dot: "bg-[#FF7900]",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-orange-200/90 text-orange-900 font-extrabold",
+      };
+    }
+    if (s.includes("7-habits") || s.includes("habits") || s.includes("teen")) {
+      return {
+        active: "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm shadow-emerald-600/25 border-transparent",
+        inactive: "bg-emerald-50/70 hover:bg-emerald-100/90 text-emerald-950 border-emerald-200/90",
+        dot: "bg-emerald-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-emerald-200/90 text-emerald-900 font-extrabold",
+      };
+    }
+    if (s.includes("4-disciplines") || s.includes("4dx") || s.includes("execution")) {
+      return {
+        active: "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm shadow-amber-500/25 border-transparent",
+        inactive: "bg-amber-50/70 hover:bg-amber-100/90 text-amber-950 border-amber-200/90",
+        dot: "bg-amber-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-amber-200/90 text-amber-900 font-extrabold",
+      };
+    }
+    if (s.includes("swat") || s.includes("camp") || s.includes("bootcamp")) {
+      return {
+        active: "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm shadow-purple-600/25 border-transparent",
+        inactive: "bg-purple-50/70 hover:bg-purple-100/90 text-purple-950 border-purple-200/90",
+        dot: "bg-purple-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-purple-200/90 text-purple-900 font-extrabold",
+      };
+    }
+
+    // Default colorful rotating palette
+    const palettes = [
+      {
+        active: "bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-sm shadow-sky-600/25 border-transparent",
+        inactive: "bg-sky-50/70 hover:bg-sky-100/90 text-sky-950 border-sky-200/90",
+        dot: "bg-sky-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-sky-200/90 text-sky-900 font-extrabold",
+      },
+      {
+        active: "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-sm shadow-rose-600/25 border-transparent",
+        inactive: "bg-rose-50/70 hover:bg-rose-100/90 text-rose-950 border-rose-200/90",
+        dot: "bg-rose-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-rose-200/90 text-rose-900 font-extrabold",
+      },
+      {
+        active: "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm shadow-teal-600/25 border-transparent",
+        inactive: "bg-teal-50/70 hover:bg-teal-100/90 text-teal-950 border-teal-200/90",
+        dot: "bg-teal-500",
+        badgeActive: "bg-white/25 text-white",
+        badgeInactive: "bg-teal-200/90 text-teal-900 font-extrabold",
+      },
+    ];
+    return palettes[index % palettes.length];
+  };
+
+  // Colorful & Distinct Booking Mode Styles (Compact & Streamlined)
   const bookingModeStyles = (mode: BookingModeType) => {
     if (mode === "secure_seat") {
       return {
         pill: "bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold shadow-2xs",
         dot: "bg-emerald-500",
-        label: "Confirmed Seated • UBL Paid",
+        label: "Confirmed Seated",
         shortLabel: "Confirmed Seated",
         borderTop: "from-emerald-400 via-emerald-500 to-teal-500",
       };
@@ -590,8 +658,8 @@ function RegistrationsCrmInner() {
     return {
       pill: "bg-amber-50 text-amber-900 border-amber-300 font-extrabold shadow-2xs",
       dot: "bg-amber-500",
-      label: "Reservation • Pay Later",
-      shortLabel: "Reservation (Pay Later)",
+      label: "Reservation",
+      shortLabel: "Reservation",
       borderTop: "from-amber-400 via-orange-400 to-amber-500",
     };
   };
@@ -717,50 +785,79 @@ function RegistrationsCrmInner() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────── */}
-      {/* 2. ACTIVITY / COHORT TABS (Horizontal Sleek Filter)                */}
+      {/* 2. ACTIVITY / COHORT TABS (Vibrant, Colorful, Sleek & Compact)     */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-white border border-slate-200 p-3 shadow-2xs">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <div className="rounded-2xl bg-white border border-slate-200/90 p-3 shadow-2xs">
+        <div className="flex items-center justify-between gap-2 mb-2 px-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+            <Layers className="w-3.5 h-3.5 text-[#FF7900]" />
+            <span>Filter by Activity / Cohort</span>
+            <span className="text-[11px] text-slate-400 font-medium">
+              ({activityTabs.length + 1} views)
+            </span>
+          </div>
+          {activeActivityTab !== "all" && (
+            <button
+              type="button"
+              onClick={() => setActiveActivityTab("all")}
+              className="text-[11px] font-bold text-[#FF7900] hover:text-[#e06b00] cursor-pointer inline-flex items-center gap-1 transition-colors"
+            >
+              <span>Show All Activities</span>
+              <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/80 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-r [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full">
+          {/* All Activities Tab */}
           <button
             type="button"
             onClick={() => setActiveActivityTab("all")}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap inline-flex items-center gap-2 transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap inline-flex items-center gap-2 transition-all cursor-pointer border ${
               activeActivityTab === "all"
-                ? "bg-[#102E4D] text-white shadow-xs"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                ? "bg-gradient-to-r from-[#102E4D] to-[#005696] text-white border-transparent shadow-xs"
+                : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
             }`}
           >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                activeActivityTab === "all" ? "bg-sky-400" : "bg-slate-400"
+              }`}
+            />
             <span>All Activities</span>
             <span
               className={`font-num px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                 activeActivityTab === "all"
-                  ? "bg-[#FF7900] text-white"
-                  : "bg-white text-slate-700"
+                  ? "bg-white/20 text-white"
+                  : "bg-slate-200 text-slate-700"
               }`}
             >
               {registrations.length}
             </span>
           </button>
 
-          {activityTabs.map((tab) => {
+          {/* Dynamic Activity Cohort Tabs with Vibrant Themes */}
+          {activityTabs.map((tab, idx) => {
             const active = activeActivityTab === tab.slug;
+            const theme = getActivityTabTheme(tab.slug, idx);
             return (
               <button
                 key={tab.slug}
                 type="button"
                 onClick={() => setActiveActivityTab(tab.slug)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap inline-flex items-center gap-2 transition-all cursor-pointer ${
-                  active
-                    ? "bg-[#102E4D] text-white shadow-xs"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap inline-flex items-center gap-2 transition-all cursor-pointer border ${
+                  active ? theme.active : theme.inactive
                 }`}
               >
-                <span className="max-w-[200px] truncate">{tab.title}</span>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    active ? "bg-white" : theme.dot
+                  }`}
+                />
+                <span className="max-w-[210px] truncate">{tab.title}</span>
                 <span
                   className={`font-num px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                    active
-                      ? "bg-[#FF7900] text-white"
-                      : "bg-white text-slate-700"
+                    active ? theme.badgeActive : theme.badgeInactive
                   }`}
                 >
                   {tab.count}
@@ -1063,18 +1160,18 @@ function RegistrationsCrmInner() {
             })}
           </div>
         ) : (
-          /* ── RICH, COLORFUL TABLE LIST VIEW ── */
-          <div className="overflow-x-auto">
+          /* ── RICH, COLORFUL & COMPACT TABLE LIST VIEW ── */
+          <div className="overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-slate-100/80 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-r [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#e06b00] hover:[&::-webkit-scrollbar-thumb]:to-[#102E4D]">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/90 border-b border-slate-200 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-500">
-                  <th className="py-2.5 px-4 w-36">Booking Ref</th>
-                  <th className="py-2.5 px-4 w-52">Participant</th>
-                  <th className="py-2.5 px-4 min-w-[200px]">Activity Cohort</th>
-                  <th className="py-2.5 px-4 w-44">Booking Mode</th>
-                  <th className="py-2.5 px-4 w-36">Payment Proof</th>
-                  <th className="py-2.5 px-4 w-36">Verification</th>
-                  <th className="py-2.5 px-4 w-28 text-right">Actions</th>
+                <tr className="bg-slate-50/90 border-b border-slate-200 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                  <th className="py-2.5 px-3 w-28 whitespace-nowrap">Booking Ref</th>
+                  <th className="py-2.5 px-3 min-w-[130px] max-w-[170px]">Participant</th>
+                  <th className="py-2.5 px-3 min-w-[140px] max-w-[190px]">Activity Cohort</th>
+                  <th className="py-2.5 px-3 w-36 whitespace-nowrap">Booking Mode</th>
+                  <th className="py-2.5 px-3 w-28 whitespace-nowrap">Payment Proof</th>
+                  <th className="py-2.5 px-3 w-36 whitespace-nowrap">Verification</th>
+                  <th className="py-2.5 px-3 w-28 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1091,9 +1188,9 @@ function RegistrationsCrmInner() {
                       className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
                     >
                       {/* Booking Ref */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="space-y-1">
-                          <span className="font-num font-extrabold text-[11px] text-[#102E4D] bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200 inline-block">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <div className="space-y-0.5">
+                          <span className="font-num font-extrabold text-[11px] text-[#102E4D] bg-slate-100 px-1.5 py-0.5 rounded-md border border-slate-200 inline-block">
                             #{r.reference_code}
                           </span>
                           <div className="text-[10px] text-slate-400 font-num">
@@ -1106,40 +1203,40 @@ function RegistrationsCrmInner() {
                       </td>
 
                       {/* Participant Details */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2.5">
+                      <td className="py-2.5 px-3">
+                        <div className="flex items-center gap-2">
                           <div
-                            className={`w-7.5 h-7.5 rounded-lg border ${avatarColor} flex items-center justify-center font-bold text-[10px] shrink-0`}
+                            className={`w-7 h-7 rounded-lg border ${avatarColor} flex items-center justify-center font-bold text-[10px] shrink-0`}
                           >
                             {initials}
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate">
+                          <div className="min-w-0 max-w-[150px]">
+                            <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate text-xs">
                               {r.full_name}
                             </div>
-                            <div className="text-[11px] text-slate-500 truncate">
-                              {r.role} • {r.organization || "Independent"}
+                            <div className="text-[10px] text-slate-500 truncate">
+                              {r.role || "Participant"} {r.organization ? `• ${r.organization}` : ""}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Activity Cohort */}
-                      <td className="py-3 px-4">
-                        <div className="space-y-0.5">
-                          <div className="font-bold text-[#102E4D] truncate max-w-xs">
+                      {/* Activity Cohort (Compact & Less Bloated) */}
+                      <td className="py-2.5 px-3">
+                        <div className="min-w-0 max-w-[180px]">
+                          <div className="font-semibold text-[#102E4D] truncate text-xs" title={r.activity_title}>
                             {r.activity_title}
                           </div>
-                          <div className="text-[10.5px] text-slate-500 font-num">
-                            {r.activity_date || "2026 Schedule"} • {r.activity_city || "Islamabad"}
+                          <div className="text-[10px] text-slate-400 font-num truncate">
+                            {r.activity_date || "2026 Schedule"} {r.activity_city ? `• ${r.activity_city}` : ""}
                           </div>
                         </div>
                       </td>
 
-                      {/* Booking Mode (Vibrant Colors for Confirmed vs Reservation!) */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      {/* Booking Mode */}
+                      <td className="py-2.5 px-3 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full border text-[10.5px] font-bold inline-flex items-center gap-1.5 ${bStyle.pill}`}
+                          className={`px-2.5 py-0.5 rounded-full border text-[10.5px] font-bold inline-flex items-center gap-1.5 ${bStyle.pill}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
                           <span>{bStyle.label}</span>
@@ -1148,33 +1245,34 @@ function RegistrationsCrmInner() {
 
                       {/* Payment Proof / Screenshot */}
                       <td
-                        className="py-3 px-4 whitespace-nowrap"
+                        className="py-2.5 px-3 whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {r.screenshot_url ? (
                           <button
                             type="button"
                             onClick={() => setLightboxUrl(r.screenshot_url)}
-                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-bold text-[10.5px] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-bold text-[10px] transition-colors cursor-pointer"
+                            title="Click to view payment proof"
                           >
                             <img
                               src={r.screenshot_url}
                               alt="Proof"
-                              className="w-5 h-5 rounded object-cover border border-white"
+                              className="w-4 h-4 rounded object-cover border border-white"
                             />
                             <span>View Proof</span>
                           </button>
                         ) : (
-                          <span className="text-[11px] text-slate-400 font-mono">
+                          <span className="text-[10.5px] text-slate-400 font-mono">
                             {r.transaction_ref ? `TID: ${r.transaction_ref}` : "Pay Later"}
                           </span>
                         )}
                       </td>
 
                       {/* Verification Status */}
-                      <td className="py-3 px-4 whitespace-nowrap">
+                      <td className="py-2.5 px-3 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full border text-[10px] font-bold inline-flex items-center gap-1.5 ${vBadge.cls}`}
+                          className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold inline-flex items-center gap-1.5 ${vBadge.cls}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${vBadge.dot}`} />
                           <span>{vBadge.label}</span>
@@ -1183,7 +1281,7 @@ function RegistrationsCrmInner() {
 
                       {/* Actions */}
                       <td
-                        className="py-3 px-4 text-right whitespace-nowrap"
+                        className="py-2.5 px-3 text-right whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex items-center justify-end gap-1.5">
@@ -1211,7 +1309,7 @@ function RegistrationsCrmInner() {
                           <button
                             type="button"
                             onClick={() => openInspector(r)}
-                            className="px-2.5 py-1 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[11px] font-bold transition-colors cursor-pointer shadow-2xs"
+                            className="px-2.5 py-1 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors cursor-pointer shadow-2xs"
                           >
                             Manage
                           </button>
