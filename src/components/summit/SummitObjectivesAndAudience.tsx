@@ -43,28 +43,28 @@ const OBJECTIVE_THEMES = [
 
 const AUDIENCE_ROLES = [
   {
-    role: "School Owners & Directors",
+    role: "School Owners and Directors",
     icon: Building2,
     iconColor: "text-[#102E4D]",
     iconBg: "bg-[#102E4D]/10 border-[#102E4D]/20",
     topGradient: "from-[#102E4D] to-[#FFC400]",
   },
   {
-    role: "Principals & School Heads",
+    role: "Principals and School Heads",
     icon: GraduationCap,
     iconColor: "text-[#16A34A]",
     iconBg: "bg-[#16A34A]/10 border-[#16A34A]/25",
     topGradient: "from-[#16A34A] to-[#22C55E]",
   },
   {
-    role: "Educators & Teacher Leaders",
+    role: "Educators and Teacher Leaders",
     icon: BookOpen,
     iconColor: "text-[#FF7900]",
     iconBg: "bg-[#FF7900]/10 border-[#FF7900]/25",
     topGradient: "from-[#FF7900] to-[#FFC400]",
   },
   {
-    role: "Well-being & Student support Leaders",
+    role: "Well-being and Student support Leaders",
     icon: HeartHandshake,
     iconColor: "text-[#E11D48]",
     iconBg: "bg-[#E11D48]/10 border-[#E11D48]/25",

@@ -25,7 +25,7 @@ export const SUMMIT_CONTENT = {
   },
   objectives: {
     eyebrow: "",
-    heading: "What this summit is for",
+    heading: "What this summit is for?",
     body: "The School Impact Summit 2026 brings together educational leaders and schools to discover meaningful practices, give voice to their journeys, and showcase the impact they are creating in their school communities. It is a platform to celebrate progress, exchange ideas, learn from shared experiences, and inspire a greater commitment to leadership and continuous improvement in education.",
     items: [
       {
@@ -44,14 +44,14 @@ export const SUMMIT_CONTENT = {
   },
   audience: {
     eyebrow: "",
-    heading: "Who Should Attend",
+    heading: "Who Should Attend?",
     pullQuote:
       "This day is built for educational leaders who believe schools can be places where people grow, voices matter, and impact goes beyond academics.",
     items: [
-      { role: "School Owners & Directors", icon: "landmark" },
-      { role: "Principals & School Heads", icon: "graduation" },
-      { role: "Educators & Teacher Leaders", icon: "book" },
-      { role: "Well-being & Student support Leaders", icon: "heart" },
+      { role: "School Owners and Directors", icon: "landmark" },
+      { role: "Principals and School Heads", icon: "graduation" },
+      { role: "Educators and Teacher Leaders", icon: "book" },
+      { role: "Well-being and Student support Leaders", icon: "heart" },
       { role: "Curriculum and Academic Leaders", icon: "compass" },
     ],
   },
