@@ -37,7 +37,7 @@ export default function SummitInteractiveSections() {
       {/* 5. SPEAKERS & FACILITATORS                                */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden"
+        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden"
         id="speakers"
       >
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
@@ -52,7 +52,7 @@ export default function SummitInteractiveSections() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
+            className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 transform-gpu"
           >
             <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
               <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
@@ -131,7 +131,7 @@ export default function SummitInteractiveSections() {
       {/* 6. WATCH & RELIVE — EMBEDDED VIDEO PLAYERS                 */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden"
+        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden"
         id="videos"
       >
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -140,7 +140,7 @@ export default function SummitInteractiveSections() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-2 sm:mb-3 transform-gpu"
+            className="text-center max-w-3xl mx-auto mb-6 sm:mb-8 transform-gpu"
           >
             <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
               <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
@@ -163,7 +163,7 @@ export default function SummitInteractiveSections() {
       {/* 9. RESERVE YOUR SEAT — READY SECTION CTA BANNER            */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden scroll-mt-24"
+        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-24"
         id="register"
       >
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -172,7 +172,7 @@ export default function SummitInteractiveSections() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-6 sm:p-9 lg:p-12 shadow-xl border border-white/15 transform-gpu"
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-8 sm:p-12 lg:p-14 shadow-xl border border-white/15 transform-gpu"
           >
             {/* Ambient Glows */}
             <div className="absolute -top-24 right-1/4 w-80 h-32 bg-[#FFC400]/15 rounded-full blur-3xl pointer-events-none transform-gpu" />

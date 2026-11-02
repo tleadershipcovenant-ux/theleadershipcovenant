@@ -88,7 +88,7 @@ export default function SummitObjectivesAndAudience() {
       {/* 2. OBJECTIVES SECTION ("What this summit is for")         */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden scroll-mt-20"
+        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-20"
         id="objective"
       >
         {/* Subtle top divider line */}
@@ -105,7 +105,7 @@ export default function SummitObjectivesAndAudience() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
+            className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 transform-gpu"
           >
             {objectives.eyebrow ? (
               <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-3">
@@ -183,7 +183,7 @@ export default function SummitObjectivesAndAudience() {
       {/* 3. WHO SHOULD ATTEND? ("This day is built for you")        */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-10 sm:py-14 relative overflow-hidden scroll-mt-20"
+        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-20"
         id="audience"
       >
         {/* Subtle top divider line matching other sections */}
@@ -200,7 +200,7 @@ export default function SummitObjectivesAndAudience() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-3xl mx-auto mb-8 sm:mb-10 transform-gpu"
+            className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 transform-gpu"
           >
             {audience.eyebrow ? (
               <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-3">
