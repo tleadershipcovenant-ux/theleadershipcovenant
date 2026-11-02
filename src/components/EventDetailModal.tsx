@@ -263,9 +263,13 @@ export default function EventDetailModal({
                           {formatFullDateRange(event)}
                         </div>
                         <div className="font-num text-[11.5px] text-slate-600 font-medium flex items-center gap-1 mt-0.5">
-                          <MdAccessTime className="text-xs text-slate-400 shrink-0" />
+                          {event.schedule && !isSummit && (
+                            <MdAccessTime className="text-xs text-slate-400 shrink-0" />
+                          )}
                           <span>
-                            {event.duration} • {event.schedule}
+                            {event.schedule && !isSummit
+                              ? `${event.duration} • ${event.schedule}`
+                              : event.duration}
                           </span>
                         </div>
                       </div>
@@ -315,9 +319,6 @@ export default function EventDetailModal({
                         </div>
                         <div className="text-xs sm:text-[13px] font-bold text-[#102E4D] mt-0.5">
                           {event.facilitator}
-                        </div>
-                        <div className="text-[11.5px] text-slate-600 font-medium mt-0.5">
-                          The Leadership Covenant
                         </div>
                       </div>
                     </div>

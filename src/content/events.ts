@@ -427,11 +427,11 @@ export const EVENTS: LeadershipEvent[] = [
     featured: true,
     image: "/images/summit-banner.png",
     duration: "1-Day Regional Summit",
-    schedule: "9:00 AM – 5:30 PM PKT",
+    schedule: "",
     venue: "Islamabad",
-    format: "Keynotes, Case Stories & Working Labs",
+    format: "Training Session, Impact Stories, Panel Discussion",
     certificate: "Summit Participant Kit & Certificate",
-    facilitator: "Mr. Fazal Niazi, Mr. Ubaid ur Rehman & Guest School Heads",
+    facilitator: "Mr. Fazal Niazi, Mr. Ubaid ur Rehman & Guest Speakers",
     overview:
       "Themed 'Discover • Voice • Impact', The School Impact Summit 2026 convenes school owners, principals, academic heads, and change-makers from across Pakistan. Hear candid case stories from schools moving the needle on student leadership, engage in guided working sessions, and leave with a concrete 90-day impact plan and scorecard ready to start Monday morning.",
     highlights: [
