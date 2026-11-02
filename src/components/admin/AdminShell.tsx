@@ -31,40 +31,6 @@ interface QuickBadges {
   pendingRegistrations: number;
 }
 
-/* ─── Activities Sub-List ─── */
-const ACTIVITIES_SUBMENU = [
-  {
-    label: "All Registrations",
-    href: "/AD_Admin/registrations",
-    exact: true,
-    dotColor: "bg-[#38BDF8]",
-  },
-  {
-    label: "School Impact Summit 2026",
-    href: "/AD_Admin/registrations?activity=school-impact-summit-2026",
-    activityKey: "school-impact-summit-2026",
-    dotColor: "bg-[#FF7900]",
-  },
-  {
-    label: "7 Habits of Highly Effective People",
-    href: "/AD_Admin/registrations?activity=7-habits",
-    activityKey: "7-habits",
-    dotColor: "bg-[#10B981]",
-  },
-  {
-    label: "4 Disciplines of Execution (4DX)",
-    href: "/AD_Admin/registrations?activity=4dx-for-educators",
-    activityKey: "4dx-for-educators",
-    dotColor: "bg-[#FFC400]",
-  },
-  {
-    label: "Leadership Camp Swat",
-    href: "/AD_Admin/registrations?activity=leadership-camp-swat-2026",
-    activityKey: "leadership-camp-swat-2026",
-    dotColor: "bg-[#A855F7]",
-  },
-];
-
 /* ─── CMS Pages Sub-List ─── */
 const CMS_PAGES_SUBMENU = [
   { label: "Home Page", pageKey: "home", icon: Home, iconColor: "text-[#38BDF8]" },
@@ -119,8 +85,7 @@ export default function AdminShell({
   // Mobile slide-over
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Accordion dropdown states: Activities & CMS both closed by default on start
-  const [activitiesOpen, setActivitiesOpen] = useState(false);
+  // Accordion dropdown states: CMS closed by default on start
   const [cmsPagesOpen, setCmsPagesOpen] = useState(false);
 
   const [loggingOut, setLoggingOut] = useState(false);
@@ -358,106 +323,53 @@ export default function AdminShell({
               )}
             </Link>
 
-            {/* Activity Registrations Button (Closed by default, icon opens list) */}
-            <div>
-              <div
-                className={`group relative flex items-center ${
-                  isMini
-                    ? "justify-center w-12 h-12 mx-auto rounded-xl"
-                    : "px-3.5 py-2.5 rounded-xl"
-                } transition-all duration-150 cursor-pointer ${
-                  isRegistrationsActive
-                    ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
-                        isMini
-                          ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
-                          : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
-                      }`
-                    : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
-                }`}
-                onClick={() => {
-                  if (isMini) setExpanded(true);
-                  else setActivitiesOpen(!activitiesOpen);
-                }}
-                title={
-                  isMini
-                    ? `Activity Registrations (${badges.pendingRegistrations} pending)`
-                    : undefined
-                }
-              >
-                <div className={`flex items-center ${isMini ? "justify-center" : "flex-1 min-w-0"}`}>
-                  <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
-                    <CalendarCheck2
-                      className={`w-5 h-5 shrink-0 transition-colors ${
-                        isRegistrationsActive
-                          ? "text-white"
-                          : "text-[#10B981] group-hover:text-[#34D399]"
-                      }`}
-                    />
-                    {badges.pendingRegistrations > 0 && (
-                      <span
-                        suppressHydrationWarning
-                        className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40 pointer-events-none"
-                        title={`${badges.pendingRegistrations} pending registrations`}
-                      >
-                        {badges.pendingRegistrations}
-                      </span>
-                    )}
-                  </div>
-                  {!isMini && (
-                    <Link
-                      href={resolveLink("/AD_Admin/registrations")}
-                      prefetch={true}
-                      className="ml-3 text-xs sm:text-[13px] leading-snug truncate hover:underline flex-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                    >
-                      Activity Registrations
-                    </Link>
-                  )}
-                </div>
-
-                {!isMini && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivitiesOpen(!activitiesOpen);
-                    }}
-                    className="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 ml-1 cursor-pointer transition-colors"
-                    title={activitiesOpen ? "Collapse activities" : "Expand activities"}
-                    aria-label={activitiesOpen ? "Collapse activities" : "Expand activities"}
+            {/* Activity Registrations Button (Direct Link, No Sub-Menu) */}
+            <Link
+              href={resolveLink("/AD_Admin/registrations")}
+              prefetch={true}
+              title={
+                isMini
+                  ? `Activity Registrations (${badges.pendingRegistrations} pending)`
+                  : undefined
+              }
+              className={`group relative flex items-center ${
+                isMini
+                  ? "justify-center w-12 h-12 mx-auto rounded-xl"
+                  : "px-3.5 py-2.5 rounded-xl"
+              } transition-all duration-150 ${
+                isRegistrationsActive
+                  ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
+                      isMini
+                        ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
+                        : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                    }`
+                  : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
+              }`}
+            >
+              <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
+                <CalendarCheck2
+                  className={`w-5 h-5 shrink-0 transition-colors ${
+                    isRegistrationsActive
+                      ? "text-white"
+                      : "text-[#10B981] group-hover:text-[#34D399]"
+                  }`}
+                />
+                {badges.pendingRegistrations > 0 && (
+                  <span
+                    suppressHydrationWarning
+                    className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40 pointer-events-none"
+                    title={`${badges.pendingRegistrations} pending registrations`}
                   >
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 text-[#FFC400] transition-transform duration-200 ${
-                        activitiesOpen ? "rotate-180" : "rotate-0"
-                      }`}
-                    />
-                  </button>
+                    {badges.pendingRegistrations}
+                  </span>
                 )}
               </div>
-
-              {/* Nested Activities Sub-Menu (Closed on start) */}
-              {!isMini && activitiesOpen && (
-                <div className="mt-1 ml-4 pl-3 border-l-2 border-[#10B981]/30 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                  {ACTIVITIES_SUBMENU.map((act) => {
-                    return (
-                      <Link
-                        key={act.href}
-                        href={resolveLink(act.href)}
-                        prefetch={true}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors truncate group/act"
-                      >
-                        <span
-                          className={`w-2 h-2 rounded-full ${act.dotColor} group-hover/act:scale-125 transition-transform shadow-xs shrink-0`}
-                        />
-                        <span className="truncate">{act.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+              {!isMini && (
+                <span className="ml-3 text-xs sm:text-[13px] leading-snug truncate flex-1">
+                  Activity Registrations
+                </span>
               )}
-            </div>
+            </Link>
           </div>
 
           {/* 3. WEBSITE MANAGEMENT: CMS PORTAL */}
