@@ -697,33 +697,33 @@ export default function AdminContactsCrmPage() {
               </select>
             </div>
 
-            {/* View Mode Toggle */}
+            {/* View Mode Toggle - Icon Only */}
             <div className="inline-flex h-8 p-0.5 bg-slate-100 rounded-xl border border-slate-200 shrink-0">
               <button
                 type="button"
                 onClick={() => handleSetViewMode("grid")}
-                className={`h-full px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`h-full w-7 rounded-lg inline-flex items-center justify-center transition-all cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-white text-[#102E4D] shadow-2xs font-extrabold"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-white text-[#FF7900] shadow-2xs"
+                    : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Card Grid View"
+                aria-label="Card Grid View"
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#FF7900]" />
-                <span className="text-[11px]">Cards</span>
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => handleSetViewMode("list")}
-                className={`h-full px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`h-full w-7 rounded-lg inline-flex items-center justify-center transition-all cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-white text-[#102E4D] shadow-2xs font-extrabold"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-white text-[#005696] shadow-2xs"
+                    : "text-slate-400 hover:text-slate-700"
                 }`}
                 title="Table List View"
+                aria-label="Table List View"
               >
-                <List className="w-3.5 h-3.5 text-[#005696]" />
-                <span className="text-[11px]">List</span>
+                <List className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
