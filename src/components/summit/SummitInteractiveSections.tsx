@@ -37,7 +37,7 @@ export default function SummitInteractiveSections() {
       {/* 5. SPEAKERS & FACILITATORS                                */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden"
         id="speakers"
       >
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
@@ -131,7 +131,7 @@ export default function SummitInteractiveSections() {
       {/* 6. WATCH & RELIVE — EMBEDDED VIDEO PLAYERS                 */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden"
         id="videos"
       >
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -163,7 +163,7 @@ export default function SummitInteractiveSections() {
       {/* 9. RESERVE YOUR SEAT — READY SECTION CTA BANNER            */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-24"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-24"
         id="register"
       >
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">

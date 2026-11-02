@@ -88,7 +88,7 @@ export default function SummitObjectivesAndAudience() {
       {/* 2. OBJECTIVES SECTION ("What this summit is for")         */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-20"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20"
         id="objective"
       >
         {/* Subtle top divider line */}
@@ -183,7 +183,7 @@ export default function SummitObjectivesAndAudience() {
       {/* 3. WHO SHOULD ATTEND? ("This day is built for you")        */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-14 sm:py-20 lg:py-24 relative overflow-hidden scroll-mt-20"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20"
         id="audience"
       >
         {/* Subtle top divider line matching other sections */}
