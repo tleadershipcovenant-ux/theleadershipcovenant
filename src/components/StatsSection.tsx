@@ -122,7 +122,7 @@ const STATS_TABS: StatTab[] = [
         tone: "mint",
       },
       {
-        value: 6,
+        value: 10,
         suffix: "+",
         label: "Years of implementation",
         icon: MdWorkspacePremium,
