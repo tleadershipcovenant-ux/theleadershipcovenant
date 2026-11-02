@@ -698,31 +698,43 @@ export default function AdminShell({
         </div>
       </header>
 
-      {/* DESKTOP FIXED VERTICAL LEFT SIDEBAR — 100% LOCKED IN VIEWPORT AT ALL TIMES */}
+      {/* DESKTOP FIXED VERTICAL LEFT SIDEBAR — GPU ACCELERATED FAST SMOOTH TRANSITION */}
       <aside
-        className={`hidden lg:flex flex-col fixed top-0 left-0 bottom-0 h-screen z-30 transition-[width] duration-300 ease-out overflow-hidden shadow-2xl ${
+        className={`hidden lg:flex flex-col fixed top-0 left-0 bottom-0 h-screen z-30 transition-[width] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] overflow-hidden shadow-2xl ${
           expanded ? "w-72 xl:w-80" : "w-20"
         }`}
       >
         {renderNavContent(false)}
       </aside>
 
-      {/* MOBILE SLIDE-OVER DRAWER FROM LEFT */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex justify-start">
-          <div
-            className="fixed inset-0 bg-[#001B33]/70 backdrop-blur-xs transition-opacity"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="relative z-10 w-80 max-w-[88vw] h-full shadow-2xl animate-in slide-in-from-left duration-200">
-            {renderNavContent(true)}
-          </div>
-        </div>
-      )}
-
-      {/* MAIN CONTENT AREA ON THE RIGHT — SCROLLS FREELY ACROSS ALL SECTIONS WHILE SIDEBAR STAYS FIXED */}
+      {/* MOBILE SLIDE-OVER DRAWER (GPU ACCELERATED HARDWARE SLIDE, ZERO UNMOUNT LAG) */}
       <div
-        className={`min-h-screen flex flex-col transition-[padding] duration-300 ease-out ${
+        className={`fixed inset-0 z-50 lg:hidden transition-[visibility] duration-200 ${
+          mobileOpen ? "visible pointer-events-auto" : "invisible pointer-events-none delay-200"
+        }`}
+        aria-hidden={!mobileOpen}
+      >
+        {/* Backdrop Overlay with Smooth Fade */}
+        <div
+          className={`fixed inset-0 bg-[#001B33]/60 transition-opacity duration-200 ease-out ${
+            mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setMobileOpen(false)}
+        />
+
+        {/* Drawer Panel Sliding with GPU translate3d */}
+        <div
+          className={`relative z-10 w-80 max-w-[88vw] h-full shadow-2xl transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          {renderNavContent(true)}
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA ON THE RIGHT — SNAPPY SMOOTH PADDING TRANSITION */}
+      <div
+        className={`min-h-screen flex flex-col transition-[padding-left] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[padding-left] ${
           expanded ? "lg:pl-72 xl:pl-80" : "lg:pl-20"
         }`}
       >
