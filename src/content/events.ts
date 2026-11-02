@@ -427,7 +427,7 @@ export const EVENTS: LeadershipEvent[] = [
     featured: true,
     image: "/images/summit-banner.png",
     duration: "1-Day Regional Summit",
-    schedule: "",
+    schedule: "1-Day Regional Summit",
     venue: "Islamabad",
     format: "Training Session, Impact Stories, Panel Discussion",
     certificate: "Summit Participant Kit & Certificate",

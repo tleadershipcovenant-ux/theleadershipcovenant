@@ -459,7 +459,7 @@ export default function ActivitiesExplorer() {
                               className={`${theme.text} text-sm shrink-0`}
                             />
                             <span className="font-num font-medium">
-                              {evt.schedule}
+                              {evt.schedule || evt.duration}
                             </span>
                           </div>
 
