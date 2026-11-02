@@ -292,10 +292,14 @@ export default function ContactSection() {
 
     setIsSubmitting(true);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
     try {
       const response = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           type: "contact",
           full_name: formData.name.trim(),
@@ -335,6 +339,14 @@ export default function ContactSection() {
       setReferenceId(refCode);
       setFormSubmitted(true);
       setIsServerBusy(false);
+
+      // Smoothly scroll to the top of the container to reveal the thank-you screen
+      if (typeof window !== "undefined") {
+        const formEl = document.getElementById("enquiry-form");
+        if (formEl) {
+          formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
     } catch (err: unknown) {
       console.warn("[CONTACT SUBMISSION NETWORK/SERVER ERROR]", err);
       setIsServerBusy(true);
@@ -342,6 +354,7 @@ export default function ContactSection() {
         "Server is busy. Our team is working on that. Please try again in a few moments or contact us directly on WhatsApp."
       );
     } finally {
+      clearTimeout(timeoutId);
       setIsSubmitting(false);
     }
   };
@@ -838,7 +851,7 @@ export default function ContactSection() {
                     )}
                   </AnimatePresence>
 
-                  {/* Quick Topic Chips - Aligned Grid for Mobile & Desktop */}
+                  {/* Quick Topic Chips - Perfect 2-Col on Mobile, Flowing Full-Text Pills on Desktop */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="block text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
@@ -848,7 +861,7 @@ export default function ContactSection() {
                         Tap to prefill interest
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-2.5">
                       {QUICK_TOPICS.map((topic) => {
                         const isSelected = formData.interest === topic.value;
                         return (
@@ -862,13 +875,13 @@ export default function ContactSection() {
                               });
                               setInterestDropdownOpen(false);
                             }}
-                            className={`w-full py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer border text-center flex items-center justify-center min-h-[38px] ${
+                            className={`w-full sm:w-auto py-2.5 sm:py-2 px-3 sm:px-4 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border text-center flex items-center justify-center min-h-[38px] whitespace-normal sm:whitespace-nowrap ${
                               isSelected
-                                ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D] shadow-xs"
+                                ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D] shadow-sm scale-[1.02]"
                                 : "bg-[#EFFBF8] text-[#102E4D] border-[#D7F5EF] hover:bg-[#D7F5EF] hover:border-[#C8EFE6]"
                             }`}
                           >
-                            <span className="truncate">{topic.label}</span>
+                            <span>{topic.label}</span>
                           </button>
                         );
                       })}
