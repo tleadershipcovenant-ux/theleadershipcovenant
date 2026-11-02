@@ -262,6 +262,7 @@ export default function AdminShell({
             )}
             <Link
               href={resolveLink("/AD_Admin")}
+              prefetch={true}
               title={isMini ? "Dashboard" : undefined}
               className={`group relative flex items-center ${
                 isMini
@@ -299,6 +300,7 @@ export default function AdminShell({
             {/* Contact Inquiries Button */}
             <Link
               href={resolveLink("/AD_Admin/contacts")}
+              prefetch={true}
               title={
                 isMini
                   ? `Contact Inquiries (${badges.newContacts} new)`
@@ -328,6 +330,7 @@ export default function AdminShell({
               )}
               {badges.newContacts > 0 && (
                 <span
+                  suppressHydrationWarning
                   className={`${
                     isMini
                       ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
@@ -362,6 +365,7 @@ export default function AdminShell({
               >
                 <Link
                   href={resolveLink("/AD_Admin/registrations")}
+                  prefetch={true}
                   className="flex items-center flex-1 min-w-0"
                   onClick={(e) => {
                     if (!isMini) {
@@ -386,6 +390,7 @@ export default function AdminShell({
 
                 {badges.pendingRegistrations > 0 && (
                   <span
+                    suppressHydrationWarning
                     className={`${
                       isMini
                         ? "absolute -top-1 -right-1 min-w-4 h-4 px-1 text-[9px]"
@@ -427,6 +432,7 @@ export default function AdminShell({
                       <Link
                         key={act.href}
                         href={resolveLink(act.href)}
+                        prefetch={true}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors truncate group/act"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-[#FF7900] group-hover/act:bg-[#FFC400] group-hover/act:scale-125 transition-transform shrink-0" />
@@ -465,6 +471,7 @@ export default function AdminShell({
               >
                 <Link
                   href={resolveLink("/AD_Admin/cms")}
+                  prefetch={true}
                   className="flex items-center flex-1 min-w-0"
                   onClick={(e) => {
                     if (!isMini) {
@@ -515,6 +522,7 @@ export default function AdminShell({
                       <Link
                         key={page.pageKey}
                         href={resolveLink(`/AD_Admin/cms?page=${page.pageKey}`)}
+                        prefetch={true}
                         className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors group/item truncate"
                       >
                         <PageIcon className="w-3 h-3 text-[#FFC400] group-hover/item:text-[#FF7900] shrink-0" />
@@ -615,7 +623,10 @@ export default function AdminShell({
           <Menu className="w-5 h-5 text-[#FFC400]" />
           <span className="text-[11px] font-extrabold text-white">Menu</span>
           {totalUnreadCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#FF7900] text-white text-[9px] font-bold flex items-center justify-center">
+            <span
+              suppressHydrationWarning
+              className="w-4 h-4 rounded-full bg-[#FF7900] text-white text-[9px] font-bold flex items-center justify-center"
+            >
               {totalUnreadCount}
             </span>
           )}
@@ -650,7 +661,7 @@ export default function AdminShell({
           expanded ? "lg:pl-72 xl:pl-80" : "lg:pl-20"
         }`}
       >
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto animate-in fade-in duration-150">
           {children}
         </main>
       </div>

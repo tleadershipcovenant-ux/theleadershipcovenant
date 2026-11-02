@@ -72,17 +72,8 @@ interface DashboardData {
 }
 
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const cached = window.sessionStorage.getItem("tlc_admin_dashboard_cache");
-        if (cached) return JSON.parse(cached);
-      } catch {
-        // Fallback
-      }
-    }
-    return null;
-  });
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const loadDashboard = useCallback(async (isRefresh = false) => {
@@ -111,10 +102,19 @@ export default function AdminDashboardPage() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
+    try {
+      const cached = window.sessionStorage.getItem("tlc_admin_dashboard_cache");
+      if (cached) {
+        setData(JSON.parse(cached));
+      }
+    } catch {
+      // Fallback
+    }
     loadDashboard();
   }, [loadDashboard]);
 
-  if (loading && !data) {
+  if (!mounted && !data) {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-32 rounded-3xl bg-white border border-[#C8EFE6]" />
@@ -209,10 +209,10 @@ export default function AdminDashboardPage() {
               <Users className="w-4.5 h-4.5" />
             </span>
           </div>
-          <div className="font-num font-black text-3xl text-[#102E4D]">
+          <div className="font-num font-black text-3xl text-[#102E4D]" suppressHydrationWarning>
             {reg.total}
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
             <span>
               <strong className="text-[#15803D]">{reg.securedSeats}</strong>{" "}
               Secured
@@ -235,10 +235,10 @@ export default function AdminDashboardPage() {
               <ShieldCheck className="w-4.5 h-4.5" />
             </span>
           </div>
-          <div className="font-num font-black text-3xl text-[#15803D]">
+          <div className="font-num font-black text-3xl text-[#15803D]" suppressHydrationWarning>
             {reg.securedSeats}
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
             <span className="inline-flex items-center gap-1">
               <ImageIcon className="w-3.5 h-3.5 text-[#005696]" />
               <strong>{reg.withScreenshots}</strong> Proofs
@@ -259,10 +259,10 @@ export default function AdminDashboardPage() {
               <Clock className="w-4.5 h-4.5" />
             </span>
           </div>
-          <div className="font-num font-black text-3xl text-[#D97706]">
+          <div className="font-num font-black text-3xl text-[#D97706]" suppressHydrationWarning>
             {reg.awaitingVerification + reg.pendingCallback}
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
             <span>
               <strong>{reg.awaitingVerification}</strong> Verify Proof
             </span>
@@ -281,10 +281,10 @@ export default function AdminDashboardPage() {
               <MessageSquareText className="w-4.5 h-4.5" />
             </span>
           </div>
-          <div className="font-num font-black text-3xl text-[#102E4D]">
+          <div className="font-num font-black text-3xl text-[#102E4D]" suppressHydrationWarning>
             {con.total}
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100">
+          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
             <span className="text-[#FF7900] font-bold">
               {con.newCount} Unread New
             </span>
