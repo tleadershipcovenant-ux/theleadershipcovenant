@@ -58,7 +58,7 @@ export default function HomeUpcomingSection() {
             WHAT&apos;S COMING UP
           </p>
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
-            Programmes, Events &amp; Learning Experiences
+            Programs, Events &amp; Learning Experiences
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
         </motion.div>

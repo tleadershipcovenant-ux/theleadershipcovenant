@@ -21,7 +21,7 @@ export const HOME_CONTENT = {
   },
   upcoming: {
     eyebrow: "WHAT'S COMING UP",
-    heading: "Programmes, Events & Learning Experiences",
+    heading: "Programs, Events & Learning Experiences",
     viewAllLink: { label: "View all activities", href: "/activities" },
   },
   reach: {
@@ -29,7 +29,7 @@ export const HOME_CONTENT = {
     subtitle: "International Footprint | Pakistan Reach | North Region Spread",
     stats: [
       { value: 8000, suffix: "+", label: "Schools worldwide" },
-      { value: 50, suffix: "+", label: "Countries served" },
+      { value: 70, suffix: "+", label: "Countries served" },
       { value: 3, suffix: "M+", label: "Students impacted" },
       { value: 25, suffix: "+", label: "Years of research" },
     ],

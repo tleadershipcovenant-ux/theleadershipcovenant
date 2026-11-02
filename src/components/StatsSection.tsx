@@ -40,7 +40,7 @@ const STATS_TABS: StatTab[] = [
         tone: "gold",
       },
       {
-        value: 50,
+        value: 70,
         suffix: "+",
         label: "Countries served",
         icon: MdPublic,
@@ -88,7 +88,7 @@ const STATS_TABS: StatTab[] = [
         tone: "mint",
       },
       {
-        value: 6,
+        value: 10,
         suffix: "+",
         label: "Years of implementation",
         icon: MdWorkspacePremium,
