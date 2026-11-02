@@ -114,6 +114,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     "downloaded" | "shared" | "copied" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
+  const [isServerBusy, setIsServerBusy] = useState(false);
 
   useEffect(() => {
     if (initialActivity) {
@@ -323,6 +324,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
 
   const submitFinalApplication = async (mode: BookingMode) => {
     setError(null);
+    setIsServerBusy(false);
 
     if (mode === "secure_seat" && !screenshotFile) {
       setError(
@@ -332,6 +334,9 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     }
 
     setLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
     try {
       let uploadedScreenshotUrl = "";
       let uploadedScreenshotPublicId = "";
@@ -345,24 +350,45 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
           formData.activity_slug || "school-impact-summit-2026"
         );
 
-        const uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: uploadForm,
-        });
-        const uploadJson = await uploadRes.json();
-        if (!uploadRes.ok || !uploadJson.ok) {
+        try {
+          const uploadRes = await fetch("/api/upload", {
+            method: "POST",
+            body: uploadForm,
+            signal: controller.signal,
+          });
+          const uploadJson = await uploadRes.json().catch(() => ({}));
+          if (!uploadRes.ok || !uploadJson.ok) {
+            if (uploadRes.status >= 500) {
+              setIsServerBusy(true);
+              throw new Error(
+                "Server is busy. Our team is working on that. Please apply later or contact us directly on WhatsApp."
+              );
+            }
+            throw new Error(
+              uploadJson.error ||
+                "Failed to upload payment screenshot. Please try again."
+            );
+          }
+          uploadedScreenshotUrl = String(uploadJson.url || "");
+          uploadedScreenshotPublicId = String(uploadJson.publicId || "");
+        } catch (uploadErr: unknown) {
+          if (
+            uploadErr instanceof Error &&
+            uploadErr.message.includes("Server is busy")
+          ) {
+            throw uploadErr;
+          }
+          setIsServerBusy(true);
           throw new Error(
-            uploadJson.error ||
-              "Failed to upload payment screenshot. Please try again."
+            "Server is busy. Our team is working on that. Please apply later or contact us directly on WhatsApp."
           );
         }
-        uploadedScreenshotUrl = String(uploadJson.url || "");
-        uploadedScreenshotPublicId = String(uploadJson.publicId || "");
       }
 
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           type: "application",
           ...formData,
@@ -377,10 +403,18 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
         }),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.ok) {
+      if (!res.ok) {
+        setIsServerBusy(true);
         throw new Error(
-          json.error || "Failed to submit application. Please check your inputs."
+          "Server is busy. Our team is working on that. Please apply later or contact us directly on WhatsApp."
+        );
+      }
+
+      const json = await res.json().catch(() => ({}));
+      if (!json || !json.ok) {
+        setIsServerBusy(true);
+        throw new Error(
+          "Server is busy. Our team is working on that. Please apply later or contact us directly on WhatsApp."
         );
       }
 
@@ -403,14 +437,17 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
       setReceiptFeedback(null);
       setDirection(1);
       setStep("complete");
+      setIsServerBusy(false);
       scrollWizardIntoView();
     } catch (err: unknown) {
+      setIsServerBusy(true);
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong. Please try again."
+          : "Server is busy. Our team is working on that. Please apply later or contact us directly on WhatsApp."
       );
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   };
@@ -426,6 +463,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     setIssuedAt("");
     setReceiptFeedback(null);
     setError(null);
+    setIsServerBusy(false);
     setFormData({
       full_name: "",
       email: "",
@@ -1014,10 +1052,31 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5 shadow-2xs"
+            className={
+              isServerBusy
+                ? "p-4 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 text-amber-950 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
+                : "p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5 shadow-2xs"
+            }
           >
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span className="font-medium">{error}</span>
+            <div className="flex items-start sm:items-center gap-2.5">
+              <AlertCircle
+                className={`w-5 h-5 shrink-0 ${
+                  isServerBusy ? "text-[#FF7900]" : "text-red-500"
+                } mt-0.5 sm:mt-0`}
+              />
+              <span className="font-semibold">{error}</span>
+            </div>
+            {isServerBusy && (
+              <a
+                href="https://wa.me/923192091249"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-colors self-start sm:self-auto"
+              >
+                <FaWhatsapp className="text-sm" />
+                <span>WhatsApp (+92 319 2091249)</span>
+              </a>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -1086,7 +1145,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                       name="full_name"
                       type="text"
                       required
-                      placeholder="e.g. Ayesha Khan"
+                      placeholder="e.g. Salman Ahmed"
                       value={formData.full_name}
                       onChange={handleChange}
                       className={getInputClass(Boolean(formData.full_name.trim()))}
@@ -1103,7 +1162,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                       name="email"
                       type="email"
                       required
-                      placeholder="ayesha@school.edu.pk"
+                      placeholder="salman@school.edu.pk"
                       value={formData.email}
                       onChange={handleChange}
                       className={getInputClass(Boolean(formData.email.trim()))}
