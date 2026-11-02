@@ -879,15 +879,10 @@ export default function ContactSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Full Name */}
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="mb-1.5">
                         <label htmlFor="name" className={labelClass}>
                           Your Name <span className="text-[#FF7900]">*</span>
                         </label>
-                        {touched.name && !fieldErrors.name && formData.name && (
-                          <span className="text-[11px] text-emerald-600 font-bold inline-flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Valid
-                          </span>
-                        )}
                       </div>
                       <div className="relative flex items-center">
                         <User
@@ -925,15 +920,10 @@ export default function ContactSection() {
 
                     {/* Email */}
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="mb-1.5">
                         <label htmlFor="email" className={labelClass}>
                           Email Address <span className="text-[#FF7900]">*</span>
                         </label>
-                        {touched.email && !fieldErrors.email && formData.email && (
-                          <span className="text-[11px] text-emerald-600 font-bold inline-flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Valid
-                          </span>
-                        )}
                       </div>
                       <div className="relative flex items-center">
                         <Mail
@@ -974,15 +964,10 @@ export default function ContactSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {/* Phone */}
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="mb-1.5">
                         <label htmlFor="contact-phone" className={labelClass}>
                           Phone / WhatsApp <span className="text-[#FF7900]">*</span>
                         </label>
-                        {touched.phone && !fieldErrors.phone && formData.phone && (
-                          <span className="text-[11px] text-emerald-600 font-bold inline-flex items-center gap-1">
-                            <Check className="w-3 h-3" /> Valid
-                          </span>
-                        )}
                       </div>
                       <div className="relative flex items-center">
                         <Phone
@@ -1020,18 +1005,11 @@ export default function ContactSection() {
 
                     {/* School / Organization */}
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="mb-1.5">
                         <label htmlFor="organization" className={labelClass}>
                           School / Organization{" "}
                           <span className="text-[#FF7900]">*</span>
                         </label>
-                        {touched.organization &&
-                          !fieldErrors.organization &&
-                          formData.organization && (
-                            <span className="text-[11px] text-emerald-600 font-bold inline-flex items-center gap-1">
-                              <Check className="w-3 h-3" /> Valid
-                            </span>
-                          )}
                       </div>
                       <div className="relative flex items-center">
                         <Building2
@@ -1068,20 +1046,16 @@ export default function ContactSection() {
                     </div>
                   </div>
 
-                  {/* Row 3: HIGHLY STYLED CUSTOM "I'M INTERESTED IN" DROPDOWN */}
+                  {/* Row 3: COMPACT & PROPER "I'M INTERESTED IN" DROPDOWN */}
                   <div className="relative" ref={dropdownRef}>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="mb-1.5">
                       <label htmlFor="interest-trigger" className={labelClass}>
                         I&apos;m Interested In{" "}
                         <span className="text-[#FF7900]">*</span>
                       </label>
-                      <span className="text-[11px] text-[#10B981] font-bold inline-flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> Selected:{" "}
-                        {selectedInterestMeta.label}
-                      </span>
                     </div>
 
-                    {/* Accessible Trigger Button */}
+                    {/* Compact Trigger Button */}
                     <button
                       id="interest-trigger"
                       type="button"
@@ -1090,7 +1064,7 @@ export default function ContactSection() {
                       onClick={() =>
                         setInterestDropdownOpen((prev) => !prev)
                       }
-                      className={`w-full text-left pl-10 pr-10 py-3 sm:py-3.5 rounded-xl border-2 transition-all relative flex items-center justify-between cursor-pointer ${
+                      className={`w-full text-left pl-10 pr-9 py-3 sm:py-3.5 rounded-xl border-2 transition-all relative flex items-center justify-between cursor-pointer ${
                         interestDropdownOpen
                           ? "border-[#FF7900] bg-white ring-4 ring-[#FF7900]/15"
                           : "border-[#10B981] bg-[#F0FDF4]/35 hover:bg-[#F0FDF4]/60"
@@ -1104,38 +1078,33 @@ export default function ContactSection() {
                         }`}
                       />
 
-                      <div className="min-w-0 pr-2">
-                        <span className="text-sm font-bold text-[#102E4D] block truncate">
+                      <div className="flex items-center gap-2 min-w-0 pr-2">
+                        <span className="text-sm font-bold text-[#102E4D] truncate">
                           {selectedInterestMeta.label}
                         </span>
-                        <span className="text-[11px] text-slate-500 block truncate">
-                          {selectedInterestMeta.tag}
+                        <span className="text-[10.5px] font-semibold text-slate-500 hidden sm:inline-block">
+                          • {selectedInterestMeta.tag}
                         </span>
                       </div>
 
                       <ChevronDown
-                        className={`w-4 h-4 text-slate-400 absolute right-3.5 transition-transform duration-200 ${
+                        className={`w-4 h-4 text-slate-400 absolute right-3 transition-transform duration-200 ${
                           interestDropdownOpen ? "rotate-180 text-[#FF7900]" : ""
                         }`}
                       />
                     </button>
 
-                    {/* Styled Floating Dropdown Menu for All Devices */}
+                    {/* Compact Floating Dropdown Menu */}
                     <AnimatePresence>
                       {interestDropdownOpen && (
                         <motion.div
-                          initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                          initial={{ opacity: 0, y: 4, scale: 0.99 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                          transition={{ duration: 0.18 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.99 }}
+                          transition={{ duration: 0.15 }}
                           role="listbox"
-                          className="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-2xl border-2 border-[#C8EFE6] shadow-[0_20px_45px_-10px_rgba(0,27,51,0.2)] overflow-hidden max-h-72 overflow-y-auto divide-y divide-slate-100 backdrop-blur-md"
+                          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-[#C8EFE6] shadow-[0_12px_32px_-8px_rgba(0,27,51,0.18)] overflow-hidden max-h-64 overflow-y-auto divide-y divide-slate-100"
                         >
-                          <div className="p-2 bg-[#F8FCFB] border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-                            <span>Select Your Area of Interest</span>
-                            <span>{INTEREST_OPTIONS.length} Options</span>
-                          </div>
-
                           {INTEREST_OPTIONS.map((opt) => {
                             const isSelected = formData.interest === opt.value;
                             const meta = INTEREST_DETAILS[opt.value] || {
@@ -1157,38 +1126,23 @@ export default function ContactSection() {
                                   });
                                   setInterestDropdownOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-3 sm:py-3.5 flex items-center justify-between gap-3 transition-colors cursor-pointer ${
+                                className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between gap-2.5 transition-colors cursor-pointer text-xs sm:text-sm ${
                                   isSelected
-                                    ? "bg-[#EFFBF8] text-[#102E4D]"
-                                    : "hover:bg-[#F8FCFB] text-slate-700"
+                                    ? "bg-[#EFFBF8] text-[#102E4D] font-extrabold"
+                                    : "hover:bg-[#F8FCFB] text-slate-700 font-medium"
                                 }`}
                               >
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className={`text-sm ${
-                                        isSelected
-                                          ? "font-extrabold text-[#102E4D]"
-                                          : "font-semibold"
-                                      }`}
-                                    >
-                                      {opt.label}
-                                    </span>
-                                    <span
-                                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${meta.badgeColor} hidden sm:inline-block`}
-                                    >
-                                      {meta.tag}
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-slate-500 mt-0.5 sm:hidden">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="truncate">{opt.label}</span>
+                                  <span
+                                    className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded border ${meta.badgeColor} hidden sm:inline-block shrink-0`}
+                                  >
                                     {meta.tag}
-                                  </p>
+                                  </span>
                                 </div>
 
                                 {isSelected && (
-                                  <div className="w-5 h-5 rounded-full bg-[#10B981] text-white flex items-center justify-center shrink-0 shadow-xs">
-                                    <Check className="w-3 h-3" />
-                                  </div>
+                                  <Check className="w-4 h-4 text-[#10B981] shrink-0" />
                                 )}
                               </button>
                             );
@@ -1219,15 +1173,10 @@ export default function ContactSection() {
 
                   {/* Row 4: Message */}
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="mb-1.5">
                       <label htmlFor="message" className={labelClass}>
                         Your Message <span className="text-[#FF7900]">*</span>
                       </label>
-                      {touched.message && !fieldErrors.message && formData.message && (
-                        <span className="text-[11px] text-emerald-600 font-bold inline-flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Valid
-                        </span>
-                      )}
                     </div>
                     <div className="relative">
                       <MessageSquareText
