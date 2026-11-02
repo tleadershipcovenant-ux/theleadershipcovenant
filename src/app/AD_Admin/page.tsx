@@ -110,6 +110,10 @@ export default function AdminDashboardPage() {
               "tlc_admin_dashboard_cache",
               JSON.stringify(json)
             );
+            window.localStorage.setItem(
+              "tlc_admin_dashboard_cache",
+              JSON.stringify(json)
+            );
           } catch {
             // Storage quota or error
           }
@@ -123,7 +127,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     setMounted(true);
     try {
-      const cached = window.sessionStorage.getItem("tlc_admin_dashboard_cache");
+      const cached =
+        window.sessionStorage.getItem("tlc_admin_dashboard_cache") ||
+        window.localStorage.getItem("tlc_admin_dashboard_cache");
       if (cached) {
         setData(JSON.parse(cached));
       }
@@ -231,7 +237,7 @@ export default function AdminDashboardPage() {
   });
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6 max-w-full overflow-x-hidden">
       {/* ────────────────── 1. EXECUTIVE WELCOME HERO BANNER ────────────────── */}
       <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001B33] via-[#0A2540] to-[#001B33] text-white p-4.5 sm:p-7 lg:p-8 shadow-xl relative overflow-hidden border border-white/10 select-none">
         {/* Signature colored top stripe */}
@@ -304,10 +310,10 @@ export default function AdminDashboardPage() {
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <div className="font-num font-black text-3xl sm:text-4xl text-[#102E4D]" suppressHydrationWarning>
+            <div className="font-num font-black text-2xl sm:text-3xl xl:text-4xl text-[#102E4D]" suppressHydrationWarning>
               {reg.total}
             </div>
-            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#EFFBF8] text-[#102E4D] border border-[#C8EFE6] shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#EFFBF8] text-[#102E4D] border border-[#C8EFE6] shrink-0">
               {securedPct}% Secured
             </span>
           </div>
@@ -324,7 +330,7 @@ export default function AdminDashboardPage() {
               title={`Reserved: ${100 - securedPct}%`}
             />
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
+          <div className="text-[11px] sm:text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-1" suppressHydrationWarning>
             <span>
               <strong className="text-[#10B981]">{reg.securedSeats}</strong> Secured
             </span>
@@ -345,10 +351,10 @@ export default function AdminDashboardPage() {
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <div className="font-num font-black text-3xl sm:text-4xl text-[#15803D]" suppressHydrationWarning>
+            <div className="font-num font-black text-2xl sm:text-3xl xl:text-4xl text-[#15803D]" suppressHydrationWarning>
               {reg.securedSeats}
             </div>
-            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] shrink-0">
               {verifiedPct}% Verified
             </span>
           </div>
@@ -360,7 +366,7 @@ export default function AdminDashboardPage() {
               title={`Verified: ${verifiedPct}%`}
             />
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
+          <div className="text-[11px] sm:text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-1" suppressHydrationWarning>
             <span className="inline-flex items-center gap-1 truncate">
               <ImageIcon className="w-3.5 h-3.5 text-[#0284C7] shrink-0" />
               <strong>{reg.withScreenshots}</strong> Proofs
@@ -382,11 +388,11 @@ export default function AdminDashboardPage() {
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <div className="font-num font-black text-3xl sm:text-4xl text-[#D97706]" suppressHydrationWarning>
+            <div className="font-num font-black text-2xl sm:text-3xl xl:text-4xl text-[#D97706]" suppressHydrationWarning>
               {reg.awaitingVerification + reg.pendingCallback}
             </div>
-            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
-              Urgent Attention
+            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
+              Urgent
             </span>
           </div>
           {/* Mini split bar */}
@@ -414,9 +420,9 @@ export default function AdminDashboardPage() {
               title="Pending callback"
             />
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
+          <div className="text-[11px] sm:text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-1" suppressHydrationWarning>
             <span>
-              <strong className="text-[#0284C7]">{reg.awaitingVerification}</strong> Verify Proof
+              <strong className="text-[#0284C7]">{reg.awaitingVerification}</strong> Verify
             </span>
             <span>
               <strong className="text-[#D97706]">{reg.pendingCallback}</strong> Callback
@@ -435,10 +441,10 @@ export default function AdminDashboardPage() {
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
-            <div className="font-num font-black text-3xl sm:text-4xl text-[#102E4D]" suppressHydrationWarning>
+            <div className="font-num font-black text-2xl sm:text-3xl xl:text-4xl text-[#102E4D]" suppressHydrationWarning>
               {con.total}
             </div>
-            <span className="text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3] shrink-0">
+            <span className="text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3] shrink-0">
               {inquiryResPct}% Responded
             </span>
           </div>
@@ -455,9 +461,9 @@ export default function AdminDashboardPage() {
               title={`New / In Progress: ${100 - inquiryResPct}%`}
             />
           </div>
-          <div className="text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100" suppressHydrationWarning>
+          <div className="text-[11px] sm:text-xs text-slate-500 flex items-center justify-between pt-1 border-t border-slate-100 flex-wrap gap-1" suppressHydrationWarning>
             <span className="text-[#FF7900] font-bold">
-              {con.newCount} Unread New
+              {con.newCount} New
             </span>
             <span>
               <strong className="text-[#10B981]">{con.respondedCount}</strong> Responded
@@ -495,7 +501,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div
-            className="p-3.5 sm:p-4.5 space-y-2.5 flex-1 min-h-0 max-h-[640px] overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
+            className="p-3.5 sm:p-4.5 space-y-2.5 flex-1 min-h-0 max-h-[640px] overflow-y-auto pr-2 scroll-smooth overscroll-y-contain [will-change:scroll-position] [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
             style={{ scrollbarColor: "#10B981 #EFFBF8" }}
           >
             {(data?.activityBreakdown || []).map((act) => {
@@ -525,7 +531,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0 font-num text-[11px] pt-1 sm:pt-0">
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 font-num text-[10.5px] sm:text-[11px] pt-1 sm:pt-0 flex-wrap">
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-[#102E4D] font-black border border-slate-200">
                         {act.total} Total
                       </span>
@@ -777,7 +783,7 @@ export default function AdminDashboardPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-500 font-num pt-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-500 font-num pt-0.5 flex-wrap gap-1">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-[#10B981]" />
                     <span>Receipts (<strong>{reg.awaitingVerification}</strong>)</span>
@@ -926,7 +932,7 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
 
-          <div className="p-3 sm:p-4 space-y-2.5 flex-1 max-h-[480px] overflow-y-auto pr-1.5 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#10B981] [&::-webkit-scrollbar-thumb]:via-[#38BDF8] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110">
+          <div className="p-3 sm:p-4 space-y-2.5 flex-1 max-h-[480px] overflow-y-auto pr-1.5 scroll-smooth overscroll-y-contain [will-change:scroll-position] [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#10B981] [&::-webkit-scrollbar-thumb]:via-[#38BDF8] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110">
             {(data?.recentRegistrations || []).length === 0 ? (
               <div className="p-8 text-center text-xs text-slate-400">
                 No activity registrations yet. Submissions from <code>/apply</code> and <code>/summit</code> will appear here automatically.
@@ -1068,7 +1074,7 @@ export default function AdminDashboardPage() {
             </Link>
           </div>
 
-          <div className="p-3 sm:p-4 space-y-2.5 flex-1 max-h-[480px] overflow-y-auto pr-1.5 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EDF6FB] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#38BDF8] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110">
+          <div className="p-3 sm:p-4 space-y-2.5 flex-1 max-h-[480px] overflow-y-auto pr-1.5 scroll-smooth overscroll-y-contain [will-change:scroll-position] [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EDF6FB] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#38BDF8] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110">
             {(data?.recentContacts || []).length === 0 ? (
               <div className="p-8 text-center text-xs text-slate-400">
                 No contact inquiries yet. Messages submitted via <code>/contact</code> appear here in real time.
