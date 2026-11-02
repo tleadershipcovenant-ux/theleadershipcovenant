@@ -30,6 +30,7 @@ import {
   FileText,
   Lock,
   Unlock,
+  Loader2,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type {
@@ -293,23 +294,6 @@ export default function AdminContactsCrmPage() {
     setFeedback(null);
     const targetStatus = quickStatus || editStatus;
 
-    // Optimistic instant UI update
-    const updatedOptimistic: ContactSubmissionRecord = {
-      ...selected,
-      crm_status: targetStatus,
-      admin_notes: editNotes,
-      updated_at: new Date().toISOString(),
-      responded_at:
-        targetStatus === "responded"
-          ? selected.responded_at || new Date().toISOString()
-          : selected.responded_at,
-    };
-    setSelected(updatedOptimistic);
-    setEditStatus(targetStatus);
-    setContacts((prev) =>
-      prev.map((item) => (item.id === selected.id ? updatedOptimistic : item))
-    );
-
     try {
       const res = await fetch("/api/admin/contacts", {
         method: "PATCH",
@@ -327,8 +311,9 @@ export default function AdminContactsCrmPage() {
         );
         setSelected(json.contact);
         setEditStatus(json.contact.crm_status);
+        setIsStatusUnlocked(false);
         const stLabel = statusStyles(json.contact.crm_status).label;
-        setFeedback(`Status updated to "${stLabel}" successfully!`);
+        setFeedback(`Contact inquiry updated to "${stLabel}" successfully!`);
         setTimeout(() => setFeedback(null), 3000);
       } else {
         loadContacts();
@@ -340,11 +325,6 @@ export default function AdminContactsCrmPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleUpdateStatus = async (newStatus: ContactCrmStatus) => {
-    setEditStatus(newStatus);
-    await handleSaveRecord(newStatus);
   };
 
   const handleDeleteRecord = async (id: string) => {
@@ -1371,8 +1351,15 @@ export default function AdminContactsCrmPage() {
 
                   return (
                     <div className="space-y-2">
-                      <div className="text-[10.5px] text-slate-500 font-medium">
-                        Click any status below to immediately apply and update:
+                      <div className="flex items-center justify-between text-[10.5px]">
+                        <span className="text-slate-500 font-medium">
+                          Select status to stage (persists when Save Changes is clicked):
+                        </span>
+                        {editStatus !== selected.crm_status && (
+                          <span className="font-bold text-[#FF7900] bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                            Staged: {statusStyles(editStatus).label}
+                          </span>
+                        )}
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         {(["new", "in_progress", "responded", "archived"] as ContactCrmStatus[]).map(
@@ -1384,15 +1371,18 @@ export default function AdminContactsCrmPage() {
                                 key={st}
                                 type="button"
                                 disabled={saving}
-                                onClick={() => handleUpdateStatus(st)}
+                                onClick={() => setEditStatus(st)}
                                 className={`h-10 px-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center justify-center sm:justify-start gap-2 min-w-0 ${
                                   active
-                                    ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
-                                    : "bg-slate-50/70 hover:bg-slate-100/70 text-slate-700 border-slate-200"
+                                    ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/40"
+                                    : "bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200"
                                 }`}
                               >
                                 <span className={`w-2 h-2 rounded-full shrink-0 ${info.dot}`} />
                                 <span className="truncate">{info.label}</span>
+                                {active && (
+                                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FF7900] shrink-0" />
+                                )}
                               </button>
                             );
                           }
@@ -1485,28 +1475,25 @@ export default function AdminContactsCrmPage() {
                   onClick={() => setSelected(null)}
                   className="h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Close
+                  Cancel
                 </button>
-                {selected.crm_status !== "responded" && (
-                  <button
-                    type="button"
-                    disabled={saving}
-                    onClick={() => handleUpdateStatus("responded")}
-                    className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-2xs"
-                    title="Mark as Responded and Lock"
-                  >
-                    <CheckCheck className="w-3.5 h-3.5" />
-                    <span>Responded</span>
-                  </button>
-                )}
                 <button
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord()}
                   className="h-9 px-4 sm:px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-colors"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>{saving ? "Saving…" : "Save Notes"}</span>
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Changes…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
