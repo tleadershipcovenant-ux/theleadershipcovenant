@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
   Suspense,
 } from "react";
 import { useSearchParams } from "next/navigation";
@@ -45,6 +46,7 @@ import {
   Unlock,
   AlertCircle,
   Eye,
+  ChevronDown,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type { LeadershipEvent } from "@/content/events";
@@ -135,57 +137,67 @@ const QUICK_REG_SUGGESTIONS = [
   },
 ];
 
-const VERIFICATION_STATUS_CARDS: Array<{
+const VERIFICATION_DROPDOWN_OPTIONS: Array<{
   value: VerificationStatus;
   stepNum: string;
   label: string;
   shortDesc: string;
   icon: React.ComponentType<{ className?: string }>;
-  activeClass: string;
-  inactiveClass: string;
-  activeBadge: string;
+  dotColor: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  activeBg: string;
   requiresProof?: boolean;
 }> = [
   {
-    value: "awaiting_verification",
+    value: "pending_callback",
     stepNum: "1",
-    label: "Admin Review",
-    shortDesc: "Proof under review",
-    icon: Eye,
-    activeClass: "bg-sky-600 text-white border-sky-600 shadow-sm ring-2 ring-sky-400/40",
-    inactiveClass: "bg-sky-50/70 text-sky-900 border-sky-200 hover:bg-sky-100 hover:border-sky-300",
-    activeBadge: "bg-sky-500 text-white",
+    label: "Pending Call Back",
+    shortDesc: "Initial reservation • Phone callback required",
+    icon: Phone,
+    dotColor: "bg-amber-500",
+    badgeBg: "bg-amber-50",
+    badgeText: "text-amber-900",
+    badgeBorder: "border-amber-200",
+    activeBg: "bg-amber-500 text-white",
   },
   {
-    value: "pending_callback",
+    value: "awaiting_verification",
     stepNum: "2",
-    label: "Pending Callback",
-    shortDesc: "Provisional reservation",
-    icon: Phone,
-    activeClass: "bg-amber-500 text-white border-amber-500 shadow-sm ring-2 ring-amber-400/40",
-    inactiveClass: "bg-amber-50/70 text-amber-900 border-amber-200 hover:bg-amber-100 hover:border-amber-300",
-    activeBadge: "bg-amber-400 text-amber-950",
+    label: "Admin Review",
+    shortDesc: "Secured seat proof uploaded • Verification pending",
+    icon: Eye,
+    dotColor: "bg-sky-500",
+    badgeBg: "bg-sky-50",
+    badgeText: "text-sky-900",
+    badgeBorder: "border-sky-200",
+    activeBg: "bg-sky-600 text-white",
   },
   {
     value: "verified_confirmed",
     stepNum: "3",
-    label: "Confirmed",
-    shortDesc: "Seat locked & confirmed",
+    label: "Confirm Seat",
+    shortDesc: "Payment verified • Seat confirmed & locked",
     icon: CheckCircle2,
-    activeClass: "bg-emerald-600 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/40",
-    inactiveClass: "bg-emerald-50/70 text-emerald-900 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300",
-    activeBadge: "bg-emerald-500 text-white",
+    dotColor: "bg-emerald-500",
+    badgeBg: "bg-emerald-50",
+    badgeText: "text-emerald-900",
+    badgeBorder: "border-emerald-200",
+    activeBg: "bg-emerald-600 text-white",
     requiresProof: true,
   },
   {
     value: "cancelled",
     stepNum: "4",
-    label: "Cancelled",
-    shortDesc: "Booking rejected & locked",
+    label: "Canceled",
+    shortDesc: "Registration rejected or cancelled • Locked",
     icon: X,
-    activeClass: "bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-400/40",
-    inactiveClass: "bg-rose-50/70 text-rose-900 border-rose-200 hover:bg-rose-100 hover:border-rose-300",
-    activeBadge: "bg-rose-500 text-white",
+    dotColor: "bg-rose-500",
+    badgeBg: "bg-rose-50",
+    badgeText: "text-rose-900",
+    badgeBorder: "border-rose-200",
+    activeBg: "bg-rose-600 text-white",
   },
 ];
 
@@ -218,6 +230,26 @@ function RegistrationsCrmInner() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [proofRequirementWarning, setProofRequirementWarning] = useState<string | null>(null);
   const [isStatusUnlocked, setIsStatusUnlocked] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close custom dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        statusDropdownRef.current &&
+        !statusDropdownRef.current.contains(e.target as Node)
+      ) {
+        setStatusDropdownOpen(false);
+      }
+    };
+    if (statusDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [statusDropdownOpen]);
 
   // Fullscreen Screenshot Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -383,6 +415,7 @@ function RegistrationsCrmInner() {
     setEditFeeLabel(reg.fee_label || "");
     setEditNotes(reg.admin_notes || "");
     setIsStatusUnlocked(false);
+    setStatusDropdownOpen(false);
     setProofRequirementWarning(null);
     setFeedback(null);
   };
@@ -1912,32 +1945,44 @@ function RegistrationsCrmInner() {
                     !isStatusUnlocked;
                   const hasProof = Boolean(selected.screenshot_url);
 
+                  const currentStatusOpt =
+                    VERIFICATION_DROPDOWN_OPTIONS.find(
+                      (opt) => opt.value === editVerification
+                    ) || VERIFICATION_DROPDOWN_OPTIONS[0];
+                  const CurrentIcon = currentStatusOpt.icon;
+
                   return (
-                    <div className="space-y-3.5">
-                      {/* Booking Mode */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Left: Booking Mode */}
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
                             Booking Mode
                           </label>
-                          <span className="text-[10.5px] text-slate-400">
+                          <span className="text-[10px] text-slate-400 font-medium">
                             {editMode === "secure_seat" ? "Seat Guaranteed" : "Provisional Hold"}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 h-10">
+                        <div className="grid grid-cols-2 gap-2 h-11">
                           <button
                             type="button"
                             disabled={isRecordLocked}
                             onClick={() => {
                               if (isRecordLocked) return;
                               if (!hasProof) {
-                                setProofRequirementWarning("Payment proof screenshot required before switching to Secured Seat. Please upload a screenshot proof first.");
+                                setProofRequirementWarning(
+                                  "Payment proof screenshot required before switching to Secured Seat. Please upload a screenshot proof first."
+                                );
                                 return;
                               }
                               setProofRequirementWarning(null);
                               setEditMode("secure_seat");
+                              // If current status is pending callback, move to Admin Review (awaiting_verification)
+                              if (editVerification === "pending_callback") {
+                                setEditVerification("awaiting_verification");
+                              }
                             }}
-                            className={`h-10 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            className={`h-11 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                               isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                             } ${
                               editMode === "secure_seat"
@@ -1945,7 +1990,7 @@ function RegistrationsCrmInner() {
                                 : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
-                            <ShieldCheck className="w-4 h-4" />
+                            <ShieldCheck className="w-4 h-4 shrink-0" />
                             <span>Secured Seat</span>
                           </button>
 
@@ -1956,8 +2001,12 @@ function RegistrationsCrmInner() {
                               if (isRecordLocked) return;
                               setProofRequirementWarning(null);
                               setEditMode("reserve_later");
+                              // Switch status to initial reservation status: Pending Call Back
+                              if (editVerification !== "cancelled") {
+                                setEditVerification("pending_callback");
+                              }
                             }}
-                            className={`h-10 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            className={`h-11 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                               isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                             } ${
                               editMode === "reserve_later"
@@ -1965,79 +2014,170 @@ function RegistrationsCrmInner() {
                                 : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
-                            <CalendarCheck2 className="w-4 h-4" />
+                            <CalendarCheck2 className="w-4 h-4 shrink-0" />
                             <span>Reservation</span>
                           </button>
                         </div>
                       </div>
 
-                      {/* Verification Status (Colorful, Sequenced Selection Grid) */}
-                      <div className="space-y-1.5">
+                      {/* Right: Verification Status Dropdown List */}
+                      <div className="space-y-1.5 relative" ref={statusDropdownRef}>
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
-                            Verification Status (Select status to stage, then click Save)
+                            Verification Status
                           </label>
-                          {isRecordLocked && (
+                          {isRecordLocked ? (
                             <span className="text-[10px] text-slate-400 font-semibold inline-flex items-center gap-1">
                               <Lock className="w-3 h-3 text-slate-400" />
                               <span>Locked</span>
                             </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              Step {currentStatusOpt.stepNum} of 4
+                            </span>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                          {VERIFICATION_STATUS_CARDS.map((opt) => {
-                            const isSelected = editVerification === opt.value;
-                            const IconComp = opt.icon;
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                disabled={isRecordLocked}
-                                onClick={() => {
-                                  if (isRecordLocked) return;
-                                  if (opt.requiresProof && !hasProof) {
-                                    setProofRequirementWarning(
-                                      "Payment proof screenshot required before confirming seat. Please upload a screenshot proof first."
-                                    );
-                                    return;
-                                  }
-                                  setProofRequirementWarning(null);
-                                  setEditVerification(opt.value);
-                                  if (opt.value === "verified_confirmed") {
-                                    setEditMode("secure_seat");
-                                  } else if (opt.value === "pending_callback") {
-                                    setEditMode("reserve_later");
-                                  }
-                                }}
-                                className={`p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between gap-1 min-h-[68px] ${
-                                  isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:shadow-xs active:scale-[0.99]"
-                                } ${isSelected ? opt.activeClass : opt.inactiveClass}`}
-                              >
-                                <div className="flex items-center justify-between gap-1">
-                                  <div className="flex items-center gap-1.5">
-                                    <IconComp className="w-3.5 h-3.5 shrink-0" />
-                                    <span className="text-xs font-extrabold leading-tight">
-                                      {opt.label}
-                                    </span>
-                                  </div>
-                                  <span
-                                    className={`text-[9.5px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wide ${
-                                      isSelected ? opt.activeBadge : "bg-black/5 text-slate-600"
+                        {/* Dropdown Trigger Button */}
+                        <button
+                          type="button"
+                          disabled={isRecordLocked}
+                          onClick={() => {
+                            if (isRecordLocked) return;
+                            setStatusDropdownOpen((prev) => !prev);
+                          }}
+                          className={`w-full h-11 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                            isRecordLocked
+                              ? "bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed opacity-75"
+                              : `${currentStatusOpt.badgeBg} ${currentStatusOpt.badgeBorder} hover:shadow-2xs cursor-pointer`
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-7 h-7 rounded-lg ${currentStatusOpt.dotColor} text-white flex items-center justify-center shrink-0 shadow-2xs`}
+                            >
+                              <CurrentIcon className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="text-left min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-extrabold text-[#102E4D] truncate">
+                                  {currentStatusOpt.label}
+                                </span>
+                                <span
+                                  className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded ${currentStatusOpt.badgeBg} ${currentStatusOpt.badgeText} border ${currentStatusOpt.badgeBorder} shrink-0`}
+                                >
+                                  Step {currentStatusOpt.stepNum}
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-slate-500 truncate leading-none mt-0.5">
+                                {currentStatusOpt.shortDesc}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0 ml-1">
+                            <ChevronDown
+                              className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${
+                                statusDropdownOpen ? "rotate-180 text-[#102E4D]" : ""
+                              }`}
+                            />
+                          </div>
+                        </button>
+
+                        {/* Floating Dropdown Menu */}
+                        {statusDropdownOpen && !isRecordLocked && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-150">
+                            <div className="px-3 py-1.5 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                              <span>Select Verification Status</span>
+                              <span className="text-[9.5px] font-semibold text-slate-400">Stages locally until Save</span>
+                            </div>
+
+                            <div className="p-1 space-y-1">
+                              {VERIFICATION_DROPDOWN_OPTIONS.map((opt) => {
+                                const isSelected = editVerification === opt.value;
+                                const IconComp = opt.icon;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => {
+                                      if (opt.requiresProof && !hasProof) {
+                                        setProofRequirementWarning(
+                                          "Payment proof screenshot required before confirming seat. Please upload a screenshot proof first."
+                                        );
+                                        setStatusDropdownOpen(false);
+                                        return;
+                                      }
+                                      setProofRequirementWarning(null);
+                                      setEditVerification(opt.value);
+                                      // Workflow synchronizations
+                                      if (opt.value === "pending_callback") {
+                                        setEditMode("reserve_later");
+                                      } else if (
+                                        opt.value === "awaiting_verification" ||
+                                        opt.value === "verified_confirmed"
+                                      ) {
+                                        setEditMode("secure_seat");
+                                      }
+                                      setStatusDropdownOpen(false);
+                                    }}
+                                    className={`w-full px-2.5 py-2 rounded-lg text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer ${
+                                      isSelected
+                                        ? `${opt.badgeBg} border ${opt.badgeBorder}`
+                                        : "hover:bg-slate-50 border border-transparent"
                                     }`}
                                   >
-                                    Step {opt.stepNum}
-                                  </span>
-                                </div>
-                                <div className={`text-[10px] font-medium leading-tight ${
-                                  isSelected ? "text-white/90" : "text-slate-500"
-                                }`}>
-                                  {opt.shortDesc}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <div
+                                        className={`w-7 h-7 rounded-lg ${
+                                          isSelected ? opt.dotColor : "bg-slate-100"
+                                        } ${
+                                          isSelected ? "text-white" : "text-slate-600"
+                                        } flex items-center justify-center shrink-0`}
+                                      >
+                                        <IconComp className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                          <span
+                                            className={`text-xs font-bold ${
+                                              isSelected ? "text-[#102E4D]" : "text-slate-800"
+                                            }`}
+                                          >
+                                            {opt.stepNum}. {opt.label}
+                                          </span>
+                                          {opt.requiresProof && !hasProof && (
+                                            <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-semibold shrink-0">
+                                              Proof required
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-[10.5px] text-slate-500 truncate leading-snug">
+                                          {opt.shortDesc}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <span
+                                        className={`text-[9.5px] px-1.5 py-0.5 rounded font-extrabold uppercase ${
+                                          isSelected
+                                            ? `${opt.badgeBg} ${opt.badgeText} border ${opt.badgeBorder}`
+                                            : "bg-slate-100 text-slate-500"
+                                        }`}
+                                      >
+                                        Step {opt.stepNum}
+                                      </span>
+                                      {isSelected && (
+                                        <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
