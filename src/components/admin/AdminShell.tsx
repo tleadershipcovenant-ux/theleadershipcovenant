@@ -198,7 +198,7 @@ export default function AdminShell({
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="w-11 h-11 rounded-xl bg-white p-1 border-2 border-white/90 shadow-lg flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform group"
+              className="w-12 h-12 rounded-xl bg-white p-1 border-2 border-white/90 shadow-lg flex items-center justify-center mx-auto cursor-pointer hover:scale-105 active:scale-95 transition-transform group"
               title="Click logo to expand navigation drawer"
             >
               <img
@@ -272,21 +272,27 @@ export default function AdminShell({
               title={isMini ? "Dashboard" : undefined}
               className={`group relative flex items-center ${
                 isMini
-                  ? "justify-center p-2.5 rounded-xl"
+                  ? "justify-center w-12 h-12 mx-auto rounded-xl"
                   : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
                 isDashboardActive
-                  ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                  ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
+                      isMini
+                        ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
+                        : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                    }`
                   : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
               }`}
             >
-              <LayoutDashboard
-                className={`w-5 h-5 shrink-0 transition-colors ${
-                  isDashboardActive
-                    ? "text-white"
-                    : "text-[#FFC400] group-hover:text-[#FFE066]"
-                }`}
-              />
+              <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
+                <LayoutDashboard
+                  className={`w-5 h-5 shrink-0 transition-colors ${
+                    isDashboardActive
+                      ? "text-white"
+                      : "text-[#FFC400] group-hover:text-[#FFE066]"
+                  }`}
+                />
+              </div>
               {!isMini && (
                 <span className="ml-3 text-xs sm:text-[13px] leading-snug truncate">
                   Dashboard
@@ -315,15 +321,19 @@ export default function AdminShell({
               }
               className={`group relative flex items-center ${
                 isMini
-                  ? "justify-center p-2.5 rounded-xl"
+                  ? "justify-center w-12 h-12 mx-auto rounded-xl"
                   : "px-3.5 py-2.5 rounded-xl"
               } transition-all duration-150 ${
                 isContactsActive
-                  ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                  ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
+                      isMini
+                        ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
+                        : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                    }`
                   : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
               }`}
             >
-              <div className="relative shrink-0 flex items-center justify-center">
+              <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
                 <MessageSquareText
                   className={`w-5 h-5 shrink-0 transition-colors ${
                     isContactsActive
@@ -334,7 +344,7 @@ export default function AdminShell({
                 {badges.newContacts > 0 && (
                   <span
                     suppressHydrationWarning
-                    className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40"
+                    className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40 pointer-events-none"
                     title={`${badges.newContacts} new contacts`}
                   >
                     {badges.newContacts}
@@ -353,20 +363,29 @@ export default function AdminShell({
               <div
                 className={`group relative flex items-center ${
                   isMini
-                    ? "justify-center p-2.5 rounded-xl"
+                    ? "justify-center w-12 h-12 mx-auto rounded-xl"
                     : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
                   isRegistrationsActive
-                    ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                    ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
+                        isMini
+                          ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
+                          : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                      }`
                     : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
                 }`}
                 onClick={() => {
                   if (isMini) setExpanded(true);
                   else setActivitiesOpen(!activitiesOpen);
                 }}
+                title={
+                  isMini
+                    ? `Activity Registrations (${badges.pendingRegistrations} pending)`
+                    : undefined
+                }
               >
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="relative shrink-0 flex items-center justify-center">
+                <div className={`flex items-center ${isMini ? "justify-center" : "flex-1 min-w-0"}`}>
+                  <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
                     <CalendarCheck2
                       className={`w-5 h-5 shrink-0 transition-colors ${
                         isRegistrationsActive
@@ -377,7 +396,7 @@ export default function AdminShell({
                     {badges.pendingRegistrations > 0 && (
                       <span
                         suppressHydrationWarning
-                        className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40"
+                        className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF7900] text-white text-[9px] font-num font-black flex items-center justify-center ring-2 ring-[#001B33] shadow-md shadow-[#FF7900]/40 pointer-events-none"
                         title={`${badges.pendingRegistrations} pending registrations`}
                       >
                         {badges.pendingRegistrations}
@@ -454,20 +473,25 @@ export default function AdminShell({
               <div
                 className={`group relative flex items-center ${
                   isMini
-                    ? "justify-center p-2.5 rounded-xl"
+                    ? "justify-center w-12 h-12 mx-auto rounded-xl"
                     : "px-3.5 py-2.5 rounded-xl"
                 } transition-all duration-150 cursor-pointer ${
                   isCmsActive
-                    ? "bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                    ? `bg-gradient-to-r from-[#FF7900] via-[#FF881A] to-[#E56D00] text-white shadow-md shadow-[#FF7900]/30 font-bold ${
+                        isMini
+                          ? "before:absolute before:left-0.5 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-[#FFC400]"
+                          : "before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r-full before:bg-[#FFC400]"
+                      }`
                     : "text-slate-200 hover:bg-white/8 hover:text-white font-semibold"
                 }`}
                 onClick={() => {
                   if (isMini) setExpanded(true);
                   else setCmsPagesOpen(!cmsPagesOpen);
                 }}
+                title={isMini ? "Website CMS Portal" : undefined}
               >
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="relative shrink-0 flex items-center justify-center">
+                <div className={`flex items-center ${isMini ? "justify-center" : "flex-1 min-w-0"}`}>
+                  <div className="relative shrink-0 flex items-center justify-center w-6 h-6">
                     <Layers
                       className={`w-5 h-5 shrink-0 transition-colors ${
                         isCmsActive
@@ -570,7 +594,7 @@ export default function AdminShell({
               <button
                 type="button"
                 onClick={fetchShellMeta}
-                className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FFC400] cursor-pointer transition-colors"
+                className="w-12 h-10 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-[#FFC400] flex items-center justify-center mx-auto cursor-pointer transition-colors active:scale-95"
                 title="Refresh statistics"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -579,7 +603,7 @@ export default function AdminShell({
                 href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FF7900] cursor-pointer transition-colors"
+                className="w-12 h-10 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-[#FF7900] flex items-center justify-center mx-auto cursor-pointer transition-colors active:scale-95"
                 title="Open public website in new tab"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -594,7 +618,7 @@ export default function AdminShell({
             disabled={loggingOut}
             className={`w-full ${
               isMini
-                ? "p-2 rounded-xl flex items-center justify-center"
+                ? "w-12 h-10 rounded-xl flex items-center justify-center mx-auto"
                 : "h-9 rounded-xl px-3 flex items-center justify-center gap-2 text-xs"
             } bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 hover:border-red-500/50 text-red-200 hover:text-white font-extrabold transition-all cursor-pointer active:scale-98 disabled:opacity-60`}
             title="Sign Out of Admin"
