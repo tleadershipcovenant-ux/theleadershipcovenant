@@ -1247,10 +1247,15 @@ export default function AdminContactsCrmPage() {
               </div>
 
               {/* SECTION 3: CRM Workflow Status */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3 sm:p-4 space-y-2">
-                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D] block">
-                  CRM Workflow Status
-                </span>
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-2.5">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                  <div className="w-5 h-5 rounded-md bg-[#102E4D] text-white flex items-center justify-center shrink-0">
+                    <Clock className="w-3 h-3" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                    CRM Workflow Status
+                  </span>
+                </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(["new", "in_progress", "responded", "archived"] as ContactCrmStatus[]).map(
@@ -1262,7 +1267,7 @@ export default function AdminContactsCrmPage() {
                           key={st}
                           type="button"
                           onClick={() => setEditStatus(st)}
-                          className={`p-2 sm:p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-2 min-w-0 ${
+                          className={`h-10 px-3 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center justify-center sm:justify-start gap-2 min-w-0 ${
                             active
                               ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
                               : "bg-slate-50/70 hover:bg-slate-100/70 text-slate-700 border-slate-200"
@@ -1278,11 +1283,16 @@ export default function AdminContactsCrmPage() {
               </div>
 
               {/* SECTION 4: Internal Admin Notes with Full-Display Suggestions */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3 sm:p-4 space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                    Internal Admin Notes
-                  </label>
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-md bg-[#005696] text-white flex items-center justify-center shrink-0">
+                      <FileText className="w-3 h-3" />
+                    </div>
+                    <label className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Internal Admin Notes
+                    </label>
+                  </div>
                   <span className="text-[10px] sm:text-[10.5px] text-slate-400">Private log for portal team</span>
                 </div>
 
@@ -1303,14 +1313,14 @@ export default function AdminContactsCrmPage() {
                               prev ? `${prev}\n${item.appendNote}` : item.appendNote
                             )
                           }
-                          className={`p-2 sm:p-2.5 rounded-xl border text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center gap-2 min-w-0 ${item.color}`}
+                          className={`h-11 px-2.5 rounded-xl border text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center gap-2 min-w-0 ${item.color}`}
                         >
                           <span
                             className={`w-6 h-6 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0`}
                           >
                             <IconComponent className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-[11px] sm:text-xs font-bold leading-tight break-words">
+                          <span className="text-[11px] sm:text-xs font-bold leading-tight truncate">
                             {item.label}
                           </span>
                         </button>
@@ -1324,7 +1334,7 @@ export default function AdminContactsCrmPage() {
                   placeholder="Type detailed callback notes, follow-up dates, or action items…"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full p-2.5 sm:p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors leading-relaxed"
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors leading-relaxed"
                 />
               </div>
 
@@ -1338,21 +1348,21 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* Modal Footer Controls - Responsive for all mobile screens */}
-            <div className="px-3.5 sm:px-6 py-3 sm:py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
+            <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleDeleteRecord(selected.id)}
-                className="h-8.5 sm:h-9 px-2.5 sm:px-3.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="h-9 px-3 sm:px-3.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete</span>
               </button>
 
-              <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
-                  className="h-8.5 sm:h-9 px-2.5 sm:px-3.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                  className="h-9 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1360,7 +1370,7 @@ export default function AdminContactsCrmPage() {
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord("responded")}
-                  className="h-8.5 sm:h-9 px-2.5 sm:px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-2xs"
+                  className="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-2xs"
                   title="Mark as Responded and Save"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
@@ -1370,7 +1380,7 @@ export default function AdminContactsCrmPage() {
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord()}
-                  className="h-8.5 sm:h-9 px-3 sm:px-4.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-colors"
+                  className="h-9 px-4 sm:px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{saving ? "Saving…" : "Save"}</span>
@@ -1391,12 +1401,12 @@ export default function AdminContactsCrmPage() {
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
             {/* Modal Header */}
-            <div className="bg-[#102E4D] text-white px-5 sm:px-6 py-4 flex items-center justify-between gap-3 shrink-0">
+            <div className="bg-[#102E4D] text-white px-5 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
                   <UserPlus className="w-5 h-5" />
@@ -1425,269 +1435,287 @@ export default function AdminContactsCrmPage() {
               </button>
             </div>
 
-            {/* Modal Form Body */}
-            <form onSubmit={handleCreateInquiry} className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
-              {/* SECTION 1: Sender & Organization Profile */}
-              <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
-                  <div className="w-5 h-5 rounded-md bg-[#102E4D] text-white flex items-center justify-center shrink-0">
-                    <User className="w-3 h-3" />
+            {/* Form wrapping scrollable content + fixed pinned footer */}
+            <form onSubmit={handleCreateInquiry} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
+                {/* SECTION 1: Sender & Organization Profile */}
+                <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
+                    <div className="w-5 h-5 rounded-md bg-[#102E4D] text-white flex items-center justify-center shrink-0">
+                      <User className="w-3 h-3" />
+                    </div>
+                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Sender & Organization Details
+                    </span>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                    Sender & Organization Details
-                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Full Name */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Full Name <span className="text-[#FF7900]">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <User className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          required
+                          type="text"
+                          placeholder="e.g. Dr. Ayesha Khan"
+                          value={addForm.full_name}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, full_name: e.target.value })
+                          }
+                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Address */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Email Address <span className="text-[#FF7900]">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Mail className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          required
+                          type="email"
+                          placeholder="ayesha@school.edu.pk"
+                          value={addForm.email}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, email: e.target.value })
+                          }
+                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone / WhatsApp */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Phone / WhatsApp
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Phone className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          type="tel"
+                          placeholder="+92 300 1234567"
+                          value={addForm.phone}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, phone: e.target.value })
+                          }
+                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all font-num"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Organization */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        School / Organization
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <Building2 className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Beaconhouse / Roots / IBA"
+                          value={addForm.organization}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, organization: e.target.value })
+                          }
+                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Full Name */}
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      Full Name <span className="text-[#FF7900]">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <User className="w-3.5 h-3.5" />
-                      </div>
-                      <input
-                        required
-                        type="text"
-                        placeholder="e.g. Dr. Ayesha Khan"
-                        value={addForm.full_name}
-                        onChange={(e) =>
-                          setAddForm({ ...addForm, full_name: e.target.value })
-                        }
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
-                      />
+                {/* SECTION 2: Topic & Workflow Status (Perfect Geometric Alignment) */}
+                <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                    <div className="w-5 h-5 rounded-md bg-[#005696] text-white flex items-center justify-center shrink-0">
+                      <Tag className="w-3 h-3" />
                     </div>
+                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Program Interest & Intake Status
+                    </span>
                   </div>
 
-                  {/* Email Address */}
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      Email Address <span className="text-[#FF7900]">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Mail className="w-3.5 h-3.5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
+                    {/* Topic Dropdown */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Interest Topic
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={addForm.interest}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, interest: e.target.value })
+                          }
+                          className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all cursor-pointer"
+                        >
+                          <option value="school-impact-summit">School Impact Summit</option>
+                          <option value="teacher-training">Teacher Believed In Me</option>
+                          <option value="leadership-camps">Leadership Camps</option>
+                          <option value="family-covenant">7 Habits of Families</option>
+                          <option value="institutional-partnership">Institutional Partnership</option>
+                          <option value="general">General Inquiry</option>
+                        </select>
                       </div>
-                      <input
-                        required
-                        type="email"
-                        placeholder="ayesha@school.edu.pk"
-                        value={addForm.email}
-                        onChange={(e) =>
-                          setAddForm({ ...addForm, email: e.target.value })
-                        }
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
-                      />
                     </div>
-                  </div>
 
-                  {/* Phone / WhatsApp */}
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      Phone / WhatsApp Number
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Phone className="w-3.5 h-3.5" />
+                    {/* Initial Status Selector - Exact h-10 matching dropdown height */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Initial Status
+                      </label>
+                      <div className="grid grid-cols-3 gap-1.5 h-10">
+                        {(["new", "in_progress", "responded"] as ContactCrmStatus[]).map((st) => {
+                          const active = addForm.crm_status === st;
+                          const info = statusStyles(st);
+                          return (
+                            <button
+                              key={st}
+                              type="button"
+                              onClick={() =>
+                                setAddForm({ ...addForm, crm_status: st })
+                              }
+                              className={`h-10 px-1.5 rounded-xl border text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                active
+                                  ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
+                                  : "bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200"
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${info.dot}`} />
+                              <span className="truncate">{info.label}</span>
+                            </button>
+                          );
+                        })}
                       </div>
-                      <input
-                        type="tel"
-                        placeholder="+92 300 1234567"
-                        value={addForm.phone}
-                        onChange={(e) =>
-                          setAddForm({ ...addForm, phone: e.target.value })
-                        }
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all font-num"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Organization */}
-                  <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      School / Organization
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Building2 className="w-3.5 h-3.5" />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Beaconhouse / Roots / IBA"
-                        value={addForm.organization}
-                        onChange={(e) =>
-                          setAddForm({ ...addForm, organization: e.target.value })
-                        }
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
-                      />
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* SECTION 2: Topic & Workflow Status */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <div className="w-5 h-5 rounded-md bg-[#005696] text-white flex items-center justify-center shrink-0">
-                    <Tag className="w-3 h-3" />
+                {/* SECTION 3: Inquiry Message & Admin Notes */}
+                <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-[#FF7900] text-white flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-3 h-3" />
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                        Inquiry Details & Admin Notes
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400">Click a template to auto-fill</span>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                    Program Interest & Intake Status
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {/* Topic Dropdown */}
+                  {/* Quick Intake Suggestions - Perfectly Aligned 2x2 Grid with Uniform Heights */}
                   <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      Interest Topic
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={addForm.interest}
-                        onChange={(e) =>
-                          setAddForm({ ...addForm, interest: e.target.value })
-                        }
-                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all cursor-pointer"
-                      >
-                        <option value="school-impact-summit">School Impact Summit</option>
-                        <option value="teacher-training">Teacher Believed In Me</option>
-                        <option value="leadership-camps">Leadership Camps</option>
-                        <option value="family-covenant">7 Habits of Families</option>
-                        <option value="institutional-partnership">Institutional Partnership</option>
-                        <option value="general">General Inquiry</option>
-                      </select>
+                    <div className="text-[10px] sm:text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
+                      Quick Intake Templates:
                     </div>
-                  </div>
-
-                  {/* Initial Status Pills */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[11px] font-bold text-slate-700">
-                      Initial Status
-                    </label>
-                    <div className="grid grid-cols-3 gap-1.5">
-                      {(["new", "in_progress", "responded"] as ContactCrmStatus[]).map((st) => {
-                        const active = addForm.crm_status === st;
-                        const info = statusStyles(st);
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {[
+                        {
+                          icon: Phone,
+                          label: "Phone Call Inquiry",
+                          text: "Inquired via phone call regarding upcoming program dates and registration details.",
+                          color: "text-blue-700 bg-blue-50/80 border-blue-200/90 hover:bg-blue-100/80",
+                        },
+                        {
+                          icon: Building2,
+                          label: "School Walk-in Visit",
+                          text: "Walk-in visitor inquired about institutional participation and customized cohort schedule.",
+                          color: "text-amber-800 bg-amber-50/80 border-amber-200/90 hover:bg-amber-100/80",
+                        },
+                        {
+                          icon: FaWhatsapp,
+                          label: "WhatsApp Brochure Request",
+                          text: "Sent inquiry via WhatsApp requesting fee structure and program brochure.",
+                          color: "text-emerald-800 bg-emerald-50/80 border-emerald-200/90 hover:bg-emerald-100/80",
+                        },
+                        {
+                          icon: Tag,
+                          label: "Camp Enrollment Request",
+                          text: "Inquired about student age criteria and batch timings for upcoming Leadership Camps.",
+                          color: "text-purple-800 bg-purple-50/80 border-purple-200/90 hover:bg-purple-100/80",
+                        },
+                      ].map((tpl) => {
+                        const IconComp = tpl.icon;
                         return (
                           <button
-                            key={st}
+                            key={tpl.label}
                             type="button"
                             onClick={() =>
-                              setAddForm({ ...addForm, crm_status: st })
+                              setAddForm((prev) => ({
+                                ...prev,
+                                message: prev.message ? `${prev.message}\n${tpl.text}` : tpl.text,
+                              }))
                             }
-                            className={`py-1.5 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                              active
-                                ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
-                                : "bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200"
-                            }`}
+                            className={`h-9 px-3 rounded-xl border flex items-center gap-2 text-xs font-bold transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${tpl.color}`}
+                            title="Click to insert template into message"
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${info.dot}`} />
-                            <span>{info.label}</span>
+                            <IconComp className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{tpl.label}</span>
                           </button>
                         );
                       })}
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* SECTION 3: Inquiry Message & Admin Notes */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-[#FF7900] text-white flex items-center justify-center shrink-0">
-                      <MessageSquare className="w-3 h-3" />
-                    </div>
-                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                      Inquiry Details & Admin Notes
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-slate-400">Quick template tags below</span>
-                </div>
-
-                {/* Quick Intake Template Chips */}
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {[
-                      {
-                        label: "📞 Phone Call Inquiry",
-                        text: "Inquired via phone call regarding upcoming program dates and registration details.",
-                      },
-                      {
-                        label: "🏫 Walk-in Visit",
-                        text: "Walk-in visitor inquired about institutional participation and customized cohort schedule.",
-                      },
-                      {
-                        label: "💬 WhatsApp Request",
-                        text: "Sent inquiry via WhatsApp requesting fee structure and program brochure.",
-                      },
-                      {
-                        label: "📋 Camp Enrollment",
-                        text: "Inquired about student age criteria and batch timings for upcoming Leadership Camps.",
-                      },
-                    ].map((tpl) => (
-                      <button
-                        key={tpl.label}
-                        type="button"
-                        onClick={() =>
-                          setAddForm((prev) => ({
-                            ...prev,
-                            message: prev.message ? `${prev.message}\n${tpl.text}` : tpl.text,
-                          }))
-                        }
-                        className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-orange-50 hover:text-[#FF7900] border border-slate-200 hover:border-orange-200 text-[10.5px] font-bold text-slate-600 transition-colors cursor-pointer"
-                        title="Click to insert template"
-                      >
-                        {tpl.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Message Textarea */}
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-bold text-slate-700">
-                    Inquiry Message / Request Details <span className="text-[#FF7900]">*</span>
-                  </label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Describe the inquiry details, specific requests, batch sizes, or questions asked…"
-                    value={addForm.message}
-                    onChange={(e) =>
-                      setAddForm({ ...addForm, message: e.target.value })
-                    }
-                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all leading-relaxed"
-                  />
-                </div>
-
-                {/* Internal Admin Notes */}
-                <div className="space-y-1 pt-1">
-                  <label className="block text-[11px] font-bold text-slate-700">
-                    Internal Admin Notes <span className="text-slate-400 font-normal">(Optional team log)</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <FileText className="w-3.5 h-3.5" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="e.g. Follow-up promised by Friday with customized proposal"
-                      value={addForm.admin_notes}
+                  {/* Message Textarea */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                      Inquiry Message / Request Details <span className="text-[#FF7900]">*</span>
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      placeholder="Describe the inquiry details, specific requests, batch sizes, or questions asked…"
+                      value={addForm.message}
                       onChange={(e) =>
-                        setAddForm({ ...addForm, admin_notes: e.target.value })
+                        setAddForm({ ...addForm, message: e.target.value })
                       }
-                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                      className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all leading-relaxed"
                     />
                   </div>
+
+                  {/* Internal Admin Notes */}
+                  <div className="space-y-1.5 pt-0.5">
+                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                      Internal Admin Notes <span className="text-slate-400 font-normal lowercase">(optional team log)</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <FileText className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="e.g. Follow-up promised by Friday with customized proposal"
+                        value={addForm.admin_notes}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, admin_notes: e.target.value })
+                        }
+                        className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Modal Footer Controls */}
-              <div className="pt-2 flex items-center justify-between gap-2">
+              {/* Pinned Modal Footer Controls - Stays visible during scroll */}
+              <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
                 <span className="text-[11px] text-slate-500 hidden sm:inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Auto-generates a unique #TLC-INQ reference code
@@ -1704,7 +1732,7 @@ export default function AdminContactsCrmPage() {
                   <button
                     type="submit"
                     disabled={addingInquiry}
-                    className="h-9 px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-sm shadow-orange-500/25 transition-all"
+                    className="h-9 px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-xs transition-all"
                   >
                     {addingInquiry ? (
                       <>
