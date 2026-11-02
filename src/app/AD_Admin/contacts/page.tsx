@@ -629,9 +629,9 @@ export default function AdminContactsCrmPage() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       <div className="rounded-2xl bg-white border border-slate-200/90 shadow-2xs overflow-hidden">
         {/* Compact Single-Row Toolbar (Tabs + Compact Search + Sort + View) */}
-        <div className="p-3 sm:px-4 sm:py-3 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+        <div className="p-3 sm:px-4 sm:py-2.5 border-b border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 xl:pb-0 scrollbar-none shrink-0">
             {STATUS_TABS.map((tab) => {
               const active = statusFilter === tab.id;
               return (
@@ -639,15 +639,15 @@ export default function AdminContactsCrmPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setStatusFilter(tab.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                  className={`h-8 px-3 rounded-xl text-xs font-bold whitespace-nowrap inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                     active
                       ? tab.activeClass
-                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-transparent"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200/60"
                   }`}
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={`font-num px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
+                    className={`font-num px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
                       active
                         ? "bg-white/20 text-white"
                         : "bg-white text-slate-600 border border-slate-200"
@@ -660,17 +660,17 @@ export default function AdminContactsCrmPage() {
             })}
           </div>
 
-          {/* Right Toolbar Controls (Compact Search, Sort, Layout) */}
-          <div className="flex flex-wrap items-center gap-2 self-end lg:self-auto">
+          {/* Right Toolbar Controls (Compact Search, Sort, Layout) - Fixed Non-Wrapping Row */}
+          <div className="flex items-center gap-2 flex-nowrap shrink-0 w-full xl:w-auto justify-between xl:justify-end">
             {/* Compact Search Bar */}
-            <div className="relative w-56 sm:w-64">
+            <div className="relative flex-1 xl:flex-initial xl:w-56">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 placeholder="Search inquiries…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-7.5 pr-7 py-1.5 rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
+                className="w-full h-8 pl-8 pr-7 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D] transition-all placeholder:text-slate-400"
               />
               {searchQuery && (
                 <button
@@ -684,11 +684,11 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* Sort Menu */}
-            <div className="relative w-36">
+            <div className="relative w-32 sm:w-36 shrink-0">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D] cursor-pointer"
+                className="w-full h-8 px-2.5 rounded-xl border border-slate-200 bg-white font-semibold text-xs text-slate-700 focus:outline-none focus:border-[#102E4D] cursor-pointer"
               >
                 <option value="newest">🕒 Newest</option>
                 <option value="oldest">⏳ Oldest</option>
@@ -698,13 +698,13 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+            <div className="inline-flex h-8 p-0.5 bg-slate-100 rounded-xl border border-slate-200 shrink-0">
               <button
                 type="button"
                 onClick={() => handleSetViewMode("grid")}
-                className={`px-2 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer ${
+                className={`h-full px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-white text-[#102E4D] shadow-2xs"
+                    ? "bg-white text-[#102E4D] shadow-2xs font-extrabold"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
                 title="Card Grid View"
@@ -715,9 +715,9 @@ export default function AdminContactsCrmPage() {
               <button
                 type="button"
                 onClick={() => handleSetViewMode("list")}
-                className={`px-2 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer ${
+                className={`h-full px-2.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-white text-[#102E4D] shadow-2xs"
+                    ? "bg-white text-[#102E4D] shadow-2xs font-extrabold"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
                 title="Table List View"
