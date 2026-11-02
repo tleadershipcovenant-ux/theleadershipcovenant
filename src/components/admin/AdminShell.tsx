@@ -610,27 +610,69 @@ export default function AdminShell({
   /* ──────────────────────────── Main Shell Layout ──────────────────────────── */
   return (
     <div className="min-h-screen bg-[#F3FAF8] text-[#102E4D] relative">
-      {/* MOBILE FLOATING LEFT BUTTON (WHEN DRAWER IS CLOSED ON MOBILE) */}
-      {!mobileOpen && (
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="lg:hidden fixed top-4 left-4 z-40 h-11 px-3.5 rounded-2xl bg-[#001B33] hover:bg-[#102E4D] text-white border-2 border-[#FFC400] shadow-2xl flex items-center gap-2 cursor-pointer transition-all active:scale-95"
-          title="Open Admin Menu"
-          aria-label="Open Admin Menu"
-        >
-          <Menu className="w-5 h-5 text-[#FFC400]" />
-          <span className="text-[11px] font-extrabold text-white">Menu</span>
-          {totalUnreadCount > 0 && (
-            <span
-              suppressHydrationWarning
-              className="w-4 h-4 rounded-full bg-[#FF7900] text-white text-[9px] font-bold flex items-center justify-center"
+      {/* MOBILE TOP NAVIGATION BAR (STICKY AT TOP OF VIEWPORT ON MOBILE) */}
+      <header className="lg:hidden sticky top-0 left-0 right-0 z-40 bg-[#001B33]/95 backdrop-blur-md border-b border-white/10 shadow-lg select-none">
+        {/* Signature colored top stripe */}
+        <div className="h-1 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
+
+        <div className="h-15 px-3.5 flex items-center justify-between gap-3">
+          {/* Brand Logo & Name */}
+          <Link
+            href={resolveLink("/AD_Admin")}
+            prefetch={true}
+            className="flex items-center gap-2.5 min-w-0 group"
+            title="Return to Dashboard"
+          >
+            <div className="w-8.5 h-8.5 rounded-lg bg-white p-0.5 border border-white/90 shadow-sm shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <img
+                src="/Logo_For_Navbar_Fotter.png"
+                alt="TLC"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#FFC400] block truncate">
+                The Leadership Covenant
+              </span>
+              <span className="font-serif font-extrabold text-sm text-white leading-tight block truncate">
+                TLC Admin Portal
+              </span>
+            </div>
+          </Link>
+
+          {/* Right Action Icons: Refresh + Menu Toggle Button */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={fetchShellMeta}
+              className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FFC400] border border-white/10 cursor-pointer active:scale-95 transition-all"
+              title="Refresh statistics"
+              aria-label="Refresh statistics"
             >
-              {totalUnreadCount}
-            </span>
-          )}
-        </button>
-      )}
+              <RefreshCw className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="relative px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC6200] text-white border border-[#FFC400]/40 shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+              title="Open Navigation Menu"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu className="w-4.5 h-4.5 text-white" />
+              <span className="text-xs font-black uppercase tracking-wider">Menu</span>
+              {totalUnreadCount > 0 && (
+                <span
+                  suppressHydrationWarning
+                  className="ml-0.5 px-1.5 py-0.5 min-w-4 h-4 rounded-full bg-white text-[#E56D00] text-[9.5px] font-num font-black flex items-center justify-center shadow-xs"
+                >
+                  {totalUnreadCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* DESKTOP FIXED VERTICAL LEFT SIDEBAR — 100% LOCKED IN VIEWPORT AT ALL TIMES */}
       <aside
@@ -645,10 +687,10 @@ export default function AdminShell({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex justify-start">
           <div
-            className="fixed inset-0 bg-[#001B33]/65 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-[#001B33]/70 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative z-10 w-80 max-w-[85vw] h-full shadow-2xl animate-in slide-in-from-left duration-200">
+          <div className="relative z-10 w-80 max-w-[88vw] h-full shadow-2xl animate-in slide-in-from-left duration-200">
             {renderNavContent(true)}
           </div>
         </div>
@@ -660,7 +702,7 @@ export default function AdminShell({
           expanded ? "lg:pl-72 xl:pl-80" : "lg:pl-20"
         }`}
       >
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto animate-in fade-in duration-150">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto animate-in fade-in duration-150">
           {children}
         </main>
       </div>

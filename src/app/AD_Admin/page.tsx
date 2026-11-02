@@ -152,14 +152,14 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Executive Welcome Hero Banner */}
-      <div className="rounded-3xl bg-gradient-to-r from-[#001B33] via-[#102E4D] to-[#001B33] text-white p-6 sm:p-8 shadow-lg relative overflow-hidden border border-white/10">
+      <div className="rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#001B33] via-[#102E4D] to-[#001B33] text-white p-5 sm:p-7 lg:p-8 shadow-lg relative overflow-hidden border border-white/10">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="space-y-1.5">
-            <span className="text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#FFC400] block">
+            <span className="text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-[0.14em] text-[#FFC400] block">
               The Leadership Covenant • Executive Command Center
             </span>
-            <h2 className="font-serif font-extrabold text-2xl sm:text-3xl text-white">
+            <h2 className="font-serif font-extrabold text-xl sm:text-2xl lg:text-3xl text-white leading-tight">
               CRM, Bookings &amp; Website CMS Overview
             </h2>
             <p className="text-xs sm:text-sm text-[#D7F5EF] max-w-2xl">
