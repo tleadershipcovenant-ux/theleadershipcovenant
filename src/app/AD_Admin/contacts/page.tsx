@@ -26,6 +26,8 @@ import {
   ArrowUpDown,
   Filter,
   User,
+  UserPlus,
+  FileText,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type {
@@ -1385,186 +1387,338 @@ export default function AdminContactsCrmPage() {
       {addModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
-            <div className="h-1.5 w-full bg-[#FF7900]" />
+          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[90vh]">
+            {/* Top gradient accent line */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
-            <div className="bg-[#102E4D] text-white px-4 sm:px-5 py-3 sm:py-3.5 flex items-center justify-between shrink-0">
-              <div>
-                <h3 className="font-bold text-sm sm:text-base text-white">
-                  Create Contact Inquiry
-                </h3>
-                <p className="text-[10px] sm:text-[11px] text-slate-300">
-                  Log a walk-in, phone call, or new direct organization inquiry.
-                </p>
+            {/* Modal Header */}
+            <div className="bg-[#102E4D] text-white px-5 sm:px-6 py-4 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base sm:text-lg text-white leading-tight">
+                      Create Contact Inquiry
+                    </h3>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/10 text-orange-300 uppercase tracking-wider">
+                      Admin Log
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-slate-300 truncate mt-0.5">
+                    Log a walk-in, phone call, or new direct organization inquiry.
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setAddModalOpen(false)}
-                className="p-1 rounded-lg bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateInquiry} className="p-4 sm:p-5 space-y-3 text-xs overflow-y-auto flex-1">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Full Name *
+            {/* Modal Form Body */}
+            <form onSubmit={handleCreateInquiry} className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm">
+              {/* SECTION 1: Sender & Organization Profile */}
+              <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
+                  <div className="w-5 h-5 rounded-md bg-[#102E4D] text-white flex items-center justify-center shrink-0">
+                    <User className="w-3 h-3" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                    Sender & Organization Details
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Full Name */}
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Full Name <span className="text-[#FF7900]">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <User className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        required
+                        type="text"
+                        placeholder="e.g. Dr. Ayesha Khan"
+                        value={addForm.full_name}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, full_name: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Email Address <span className="text-[#FF7900]">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Mail className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        required
+                        type="email"
+                        placeholder="ayesha@school.edu.pk"
+                        value={addForm.email}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, email: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone / WhatsApp */}
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Phone / WhatsApp Number
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Phone className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        type="tel"
+                        placeholder="+92 300 1234567"
+                        value={addForm.phone}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, phone: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all font-num"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Organization */}
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      School / Organization
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Building2 className="w-3.5 h-3.5" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Beaconhouse / Roots / IBA"
+                        value={addForm.organization}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, organization: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: Topic & Workflow Status */}
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <div className="w-5 h-5 rounded-md bg-[#005696] text-white flex items-center justify-center shrink-0">
+                    <Tag className="w-3 h-3" />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                    Program Interest & Intake Status
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Topic Dropdown */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Interest Topic
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={addForm.interest}
+                        onChange={(e) =>
+                          setAddForm({ ...addForm, interest: e.target.value })
+                        }
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all cursor-pointer"
+                      >
+                        <option value="school-impact-summit">School Impact Summit</option>
+                        <option value="teacher-training">Teacher Believed In Me</option>
+                        <option value="leadership-camps">Leadership Camps</option>
+                        <option value="family-covenant">7 Habits of Families</option>
+                        <option value="institutional-partnership">Institutional Partnership</option>
+                        <option value="general">General Inquiry</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Initial Status Pills */}
+                  <div className="space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-700">
+                      Initial Status
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {(["new", "in_progress", "responded"] as ContactCrmStatus[]).map((st) => {
+                        const active = addForm.crm_status === st;
+                        const info = statusStyles(st);
+                        return (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() =>
+                              setAddForm({ ...addForm, crm_status: st })
+                            }
+                            className={`py-1.5 px-2 rounded-xl border text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                              active
+                                ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
+                                : "bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${info.dot}`} />
+                            <span>{info.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: Inquiry Message & Admin Notes */}
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-md bg-[#FF7900] text-white flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-3 h-3" />
+                    </div>
+                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Inquiry Details & Admin Notes
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400">Quick template tags below</span>
+                </div>
+
+                {/* Quick Intake Template Chips */}
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {[
+                      {
+                        label: "📞 Phone Call Inquiry",
+                        text: "Inquired via phone call regarding upcoming program dates and registration details.",
+                      },
+                      {
+                        label: "🏫 Walk-in Visit",
+                        text: "Walk-in visitor inquired about institutional participation and customized cohort schedule.",
+                      },
+                      {
+                        label: "💬 WhatsApp Request",
+                        text: "Sent inquiry via WhatsApp requesting fee structure and program brochure.",
+                      },
+                      {
+                        label: "📋 Camp Enrollment",
+                        text: "Inquired about student age criteria and batch timings for upcoming Leadership Camps.",
+                      },
+                    ].map((tpl) => (
+                      <button
+                        key={tpl.label}
+                        type="button"
+                        onClick={() =>
+                          setAddForm((prev) => ({
+                            ...prev,
+                            message: prev.message ? `${prev.message}\n${tpl.text}` : tpl.text,
+                          }))
+                        }
+                        className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-orange-50 hover:text-[#FF7900] border border-slate-200 hover:border-orange-200 text-[10.5px] font-bold text-slate-600 transition-colors cursor-pointer"
+                        title="Click to insert template"
+                      >
+                        {tpl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Message Textarea */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-slate-700">
+                    Inquiry Message / Request Details <span className="text-[#FF7900]">*</span>
                   </label>
-                  <input
+                  <textarea
                     required
-                    type="text"
-                    placeholder="e.g. Dr. Ayesha Khan"
-                    value={addForm.full_name}
+                    rows={3}
+                    placeholder="Describe the inquiry details, specific requests, batch sizes, or questions asked…"
+                    value={addForm.message}
                     onChange={(e) =>
-                      setAddForm({ ...addForm, full_name: e.target.value })
+                      setAddForm({ ...addForm, message: e.target.value })
                     }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
+                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all leading-relaxed"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Email Address *
+                {/* Internal Admin Notes */}
+                <div className="space-y-1 pt-1">
+                  <label className="block text-[11px] font-bold text-slate-700">
+                    Internal Admin Notes <span className="text-slate-400 font-normal">(Optional team log)</span>
                   </label>
-                  <input
-                    required
-                    type="email"
-                    placeholder="ayesha@school.edu.pk"
-                    value={addForm.email}
-                    onChange={(e) =>
-                      setAddForm({ ...addForm, email: e.target.value })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Phone / WhatsApp
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="+92 300 1234567"
-                    value={addForm.phone}
-                    onChange={(e) =>
-                      setAddForm({ ...addForm, phone: e.target.value })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    School / Organization
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Beaconhouse / Roots"
-                    value={addForm.organization}
-                    onChange={(e) =>
-                      setAddForm({ ...addForm, organization: e.target.value })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:border-[#102E4D]"
-                  />
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <FileText className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="e.g. Follow-up promised by Friday with customized proposal"
+                      value={addForm.admin_notes}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, admin_notes: e.target.value })
+                      }
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Interest Topic
-                  </label>
-                  <select
-                    value={addForm.interest}
-                    onChange={(e) =>
-                      setAddForm({ ...addForm, interest: e.target.value })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold text-xs text-slate-700"
+              {/* Modal Footer Controls */}
+              <div className="pt-2 flex items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500 hidden sm:inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Auto-generates a unique #TLC-INQ reference code
+                </span>
+
+                <div className="flex items-center gap-2 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setAddModalOpen(false)}
+                    className="h-9 px-4 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                   >
-                    <option value="school-impact-summit">School Impact Summit</option>
-                    <option value="teacher-training">Teacher Believed In Me</option>
-                    <option value="leadership-camps">Leadership Camps</option>
-                    <option value="family-covenant">7 Habits of Families</option>
-                    <option value="institutional-partnership">Institutional Partnership</option>
-                    <option value="general">General Inquiry</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    Initial Status
-                  </label>
-                  <select
-                    value={addForm.crm_status}
-                    onChange={(e) =>
-                      setAddForm({
-                        ...addForm,
-                        crm_status: e.target.value as ContactCrmStatus,
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-semibold text-xs text-slate-700"
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingInquiry}
+                    className="h-9 px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-sm shadow-orange-500/25 transition-all"
                   >
-                    <option value="new">New / Unread</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="responded">Responded</option>
-                  </select>
+                    {addingInquiry ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Creating…</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>Create Inquiry</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Inquiry Message / Request Details
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Details of inquiry or phone call conversation…"
-                  value={addForm.message}
-                  onChange={(e) =>
-                    setAddForm({ ...addForm, message: e.target.value })
-                  }
-                  className="w-full p-2.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#102E4D]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                  Internal Admin Notes (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Follow-up promised by Friday"
-                  value={addForm.admin_notes}
-                  onChange={(e) =>
-                    setAddForm({ ...addForm, admin_notes: e.target.value })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-[#102E4D]"
-                />
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setAddModalOpen(false)}
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={addingInquiry}
-                  className="px-4 py-1.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-xs"
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>{addingInquiry ? "Creating…" : "Create Inquiry"}</span>
-                </button>
               </div>
             </form>
           </div>
