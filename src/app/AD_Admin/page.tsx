@@ -495,7 +495,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div
-            className="p-3.5 sm:p-4.5 space-y-2.5 max-h-[580px] overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
+            className="p-3.5 sm:p-4.5 space-y-2.5 max-h-[490px] overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
             style={{ scrollbarColor: "#10B981 #EFFBF8" }}
           >
             {(data?.activityBreakdown || []).map((act) => {
@@ -688,7 +688,7 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Bottom of Stack: Action & CRM Hub (With Graphical Representation) */}
+          {/* Bottom of Stack: Action & CRM Hub (Reduced Content with Clean Graphical Representation) */}
           <div className="rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
             <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -700,22 +700,22 @@ export default function AdminDashboardPage() {
                     Action &amp; CRM Hub
                   </h3>
                   <p className="text-[10.5px] text-slate-500 truncate">
-                    Live operational queues &amp; follow-up velocity
+                    Operational workload &amp; queue distribution
                   </p>
                 </div>
               </div>
               <span className="text-[11px] font-num font-black px-2.5 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
-                {reg.awaitingVerification + reg.pendingCallback + con.newCount} Active Tasks
+                {reg.awaitingVerification + reg.pendingCallback + con.newCount} Active
               </span>
             </div>
 
             <div className="p-4 sm:p-5 space-y-3.5">
-              {/* Graphical Workload Distribution Meter */}
-              <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
+              {/* 1. Multi-Segment Graphical Workload Ratio Strip */}
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5">
                 <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
                   <span className="flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-[#10B981]" />
-                    <span>Queue Workload Ratio</span>
+                    <span>Queue Load Distribution</span>
                   </span>
                   <span className="font-num text-[#102E4D] font-extrabold text-[10.5px]">
                     {reg.awaitingVerification + reg.pendingCallback + con.newCount > 0 ? "Pending Follow-up" : "All Clear"}
@@ -729,7 +729,13 @@ export default function AdminDashboardPage() {
                     style={{
                       width: `${
                         reg.awaitingVerification + reg.pendingCallback + con.newCount > 0
-                          ? Math.round((reg.awaitingVerification / Math.max(reg.awaitingVerification + reg.pendingCallback + con.newCount, 1)) * 100)
+                          ? Math.round(
+                              (reg.awaitingVerification /
+                                Math.max(
+                                  reg.awaitingVerification + reg.pendingCallback + con.newCount,
+                                  1
+                                )) * 100
+                            )
                           : 33
                       }%`,
                     }}
@@ -740,7 +746,13 @@ export default function AdminDashboardPage() {
                     style={{
                       width: `${
                         reg.awaitingVerification + reg.pendingCallback + con.newCount > 0
-                          ? Math.round((reg.pendingCallback / Math.max(reg.awaitingVerification + reg.pendingCallback + con.newCount, 1)) * 100)
+                          ? Math.round(
+                              (reg.pendingCallback /
+                                Math.max(
+                                  reg.awaitingVerification + reg.pendingCallback + con.newCount,
+                                  1
+                                )) * 100
+                            )
                           : 33
                       }%`,
                     }}
@@ -751,7 +763,13 @@ export default function AdminDashboardPage() {
                     style={{
                       width: `${
                         reg.awaitingVerification + reg.pendingCallback + con.newCount > 0
-                          ? Math.round((con.newCount / Math.max(reg.awaitingVerification + reg.pendingCallback + con.newCount, 1)) * 100)
+                          ? Math.round(
+                              (con.newCount /
+                                Math.max(
+                                  reg.awaitingVerification + reg.pendingCallback + con.newCount,
+                                  1
+                                )) * 100
+                            )
                           : 34
                       }%`,
                     }}
@@ -759,154 +777,122 @@ export default function AdminDashboardPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-400 font-num pt-0.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-500 font-num pt-0.5">
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                    <span>Receipts</span>
+                    <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                    <span>Receipts (<strong>{reg.awaitingVerification}</strong>)</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
-                    <span>Callbacks</span>
+                    <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
+                    <span>Callbacks (<strong>{reg.pendingCallback}</strong>)</span>
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0284C7]" />
-                    <span>Inquiries</span>
+                    <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
+                    <span>Inquiries (<strong>{con.newCount}</strong>)</span>
                   </span>
                 </div>
               </div>
 
-              {/* Graphical Queue Items with Individual Velocity Bars */}
-              <div className="space-y-2">
-                {/* Item 1: Proof Receipts Graphical Progress */}
+              {/* 2. Graphical Queue Velocity Bars (Clean Comparative Graph) */}
+              <div className="space-y-2.5">
+                {/* Graph Bar 1: Payment Proof Receipts */}
                 <Link
                   href="/AD_Admin/registrations"
                   prefetch={true}
-                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#10B981]/50 bg-[#FAFCFB] hover:bg-[#DCFCE7]/30 transition-all space-y-1.5 block group"
+                  className="p-2 rounded-xl border border-slate-100 hover:border-[#10B981]/50 bg-[#FAFCFB] hover:bg-[#DCFCE7]/20 transition-all space-y-1 block group"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-7 h-7 rounded-lg bg-[#DCFCE7] text-[#15803D] flex items-center justify-center shrink-0">
-                        <FileCheck2 className="w-3.5 h-3.5" />
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#102E4D] group-hover:text-[#15803D] transition-colors">
+                      <FileCheck2 className="w-3.5 h-3.5 text-[#10B981]" />
+                      <span className="text-[11.5px]">Payment Proofs</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-num">
+                      <span className="text-[10px] text-slate-400">{reg.verifiedConfirmed} confirmed</span>
+                      <span className="text-[10.5px] font-black px-1.5 py-0.2 rounded bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+                        {reg.awaitingVerification} to verify
                       </span>
-                      <div className="min-w-0">
-                        <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#15803D] transition-colors truncate">
-                          Proof Receipts Verification
-                        </div>
-                        <div className="text-[10px] text-slate-400 truncate">
-                          {reg.withScreenshots} total screenshots uploaded
-                        </div>
-                      </div>
                     </div>
-                    <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] shrink-0">
-                      {reg.awaitingVerification} to verify
-                    </span>
                   </div>
-
-                  {/* Graphical Verification Progress Bar */}
-                  <div className="space-y-0.5">
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#10B981] to-[#059669] transition-all duration-700"
-                        style={{ width: `${verifiedPct}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[9.5px] text-slate-400 font-num">
-                      <span>Verified: <strong className="text-[#15803D]">{reg.verifiedConfirmed} confirmed</strong></span>
-                      <span>Rate: <strong className="text-[#102E4D]">{verifiedPct}%</strong></span>
-                    </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#10B981] to-[#059669] transition-all duration-700 rounded-full"
+                      style={{ width: `${verifiedPct}%` }}
+                    />
                   </div>
                 </Link>
 
-                {/* Item 2: Phone Callback Queue Graphical Progress */}
+                {/* Graph Bar 2: Provisional Callbacks */}
                 <Link
                   href="/AD_Admin/registrations"
                   prefetch={true}
-                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#F59E0B]/50 bg-[#FAFCFB] hover:bg-[#FEF3C7]/30 transition-all space-y-1.5 block group"
+                  className="p-2 rounded-xl border border-slate-100 hover:border-[#F59E0B]/50 bg-[#FAFCFB] hover:bg-[#FEF3C7]/20 transition-all space-y-1 block group"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-7 h-7 rounded-lg bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shrink-0">
-                        <PhoneCall className="w-3.5 h-3.5" />
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#102E4D] group-hover:text-[#D97706] transition-colors">
+                      <PhoneCall className="w-3.5 h-3.5 text-[#F59E0B]" />
+                      <span className="text-[11.5px]">Provisional Callbacks</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-num">
+                      <span className="text-[10px] text-slate-400">{reg.securedSeats} secured</span>
+                      <span className="text-[10.5px] font-black px-1.5 py-0.2 rounded bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
+                        {reg.pendingCallback} to call
                       </span>
-                      <div className="min-w-0">
-                        <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#D97706] transition-colors truncate">
-                          Provisional Callback Queue
-                        </div>
-                        <div className="text-[10px] text-slate-400 truncate">
-                          Attendees awaiting confirmation call
-                        </div>
-                      </div>
                     </div>
-                    <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
-                      {reg.pendingCallback} to call
-                    </span>
                   </div>
-
-                  {/* Graphical Conversion Progress Bar */}
-                  <div className="space-y-0.5">
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#F59E0B] to-[#D97706] transition-all duration-700"
-                        style={{ width: `${securedPct}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[9.5px] text-slate-400 font-num">
-                      <span>Secured: <strong className="text-[#B45309]">{reg.securedSeats} paid</strong></span>
-                      <span>Conversion: <strong className="text-[#102E4D]">{securedPct}%</strong></span>
-                    </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#F59E0B] to-[#D97706] transition-all duration-700 rounded-full"
+                      style={{ width: `${securedPct}%` }}
+                    />
                   </div>
                 </Link>
 
-                {/* Item 3: Unread Inquiries Graphical Progress */}
+                {/* Graph Bar 3: Inbound Inquiries */}
                 <Link
                   href="/AD_Admin/contacts"
                   prefetch={true}
-                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#0284C7]/50 bg-[#FAFCFB] hover:bg-[#EDF6FB]/40 transition-all space-y-1.5 block group"
+                  className="p-2 rounded-xl border border-slate-100 hover:border-[#0284C7]/50 bg-[#FAFCFB] hover:bg-[#EDF6FB]/30 transition-all space-y-1 block group"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-7 h-7 rounded-lg bg-[#EDF6FB] text-[#0284C7] flex items-center justify-center shrink-0">
-                        <MessageSquareText className="w-3.5 h-3.5" />
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-[#102E4D] group-hover:text-[#0284C7] transition-colors">
+                      <MessageSquareText className="w-3.5 h-3.5 text-[#0284C7]" />
+                      <span className="text-[11.5px]">Inbound Messages</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-num">
+                      <span className="text-[10px] text-slate-400">{con.respondedCount} resolved</span>
+                      <span className="text-[10.5px] font-black px-1.5 py-0.2 rounded bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3]">
+                        {con.newCount} new
                       </span>
-                      <div className="min-w-0">
-                        <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#0284C7] transition-colors truncate">
-                          Inbound Communications
-                        </div>
-                        <div className="text-[10px] text-slate-400 truncate">
-                          School &amp; candidate inquiries
-                        </div>
-                      </div>
                     </div>
-                    <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FF7900]/15 text-[#E56D00] border border-[#FF7900]/30 shrink-0">
-                      {con.newCount} new
-                    </span>
                   </div>
-
-                  {/* Graphical Resolution Progress Bar */}
-                  <div className="space-y-0.5">
-                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] transition-all duration-700"
-                        style={{ width: `${inquiryResPct}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[9.5px] text-slate-400 font-num">
-                      <span>Responded: <strong className="text-[#0284C7]">{con.respondedCount} messages</strong></span>
-                      <span>Resolved: <strong className="text-[#102E4D]">{inquiryResPct}%</strong></span>
-                    </div>
+                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                    <div
+                      className="h-full bg-gradient-to-r from-[#0284C7] to-[#0369A1] transition-all duration-700 rounded-full"
+                      style={{ width: `${inquiryResPct}%` }}
+                    />
                   </div>
                 </Link>
               </div>
 
-              {/* 1-Click Action Button */}
-              <Link
-                href="/AD_Admin/registrations"
-                prefetch={true}
-                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#001B33] to-[#102E4D] hover:from-[#102E4D] hover:to-[#001B33] text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-98"
-              >
-                <span>Process Pending Verifications</span>
-                <ChevronRight className="w-4 h-4 text-[#FFC400]" />
-              </Link>
+              {/* 3. Compact 2-Button Action Bar */}
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                <Link
+                  href="/AD_Admin/registrations"
+                  prefetch={true}
+                  className="py-2 px-2.5 rounded-xl bg-gradient-to-r from-[#001B33] to-[#102E4D] hover:from-[#102E4D] hover:to-[#001B33] text-white text-[11px] font-extrabold inline-flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-98 truncate"
+                >
+                  <span>Verify ({reg.awaitingVerification})</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-[#FFC400] shrink-0" />
+                </Link>
+                <Link
+                  href="/AD_Admin/contacts"
+                  prefetch={true}
+                  className="py-2 px-2.5 rounded-xl bg-[#EFFBF8] hover:bg-[#DCFCE7] border border-[#C8EFE6] text-[#102E4D] text-[11px] font-extrabold inline-flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-98 truncate"
+                >
+                  <span>Inquiries ({con.newCount})</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
