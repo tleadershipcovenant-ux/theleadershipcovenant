@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useDeferredValue,
+} from "react";
 import {
   Search,
   Download,
@@ -156,12 +162,14 @@ function formatTopicName(topic: string): string {
 export default function AdminContactsCrmPage() {
   const [contacts, setContacts] = useState<ContactSubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Filters & Sorting (Priority removed as requested)
   const [statusFilter, setStatusFilter] = useState<"all" | ContactCrmStatus>("all");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name" | "status">("newest");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   // Details Modal Inspector State
   const [selected, setSelected] = useState<ContactSubmissionRecord | null>(null);
@@ -186,6 +194,20 @@ export default function AdminContactsCrmPage() {
     admin_notes: "",
   });
 
+  // Lock background scroll when modal is active (smooth mobile touch performance)
+  useEffect(() => {
+    if (selected || addModalOpen) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [selected, addModalOpen]);
+
   // Load view mode preference from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -203,8 +225,12 @@ export default function AdminContactsCrmPage() {
     }
   };
 
-  const loadContacts = useCallback(async () => {
-    setLoading(true);
+  const loadContacts = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     try {
       const res = await fetch("/api/admin/contacts", { cache: "no-store" });
       if (res.ok) {
@@ -213,11 +239,12 @@ export default function AdminContactsCrmPage() {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    loadContacts();
+    loadContacts(true);
   }, [loadContacts]);
 
   const openInspector = (record: ContactSubmissionRecord) => {
@@ -237,7 +264,7 @@ export default function AdminContactsCrmPage() {
   };
 
   const filteredContacts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = deferredSearchQuery.trim().toLowerCase();
     const result = contacts.filter((c) => {
       if (statusFilter !== "all" && c.crm_status !== statusFilter) return false;
       if (!q) return true;
@@ -269,7 +296,7 @@ export default function AdminContactsCrmPage() {
     });
 
     return result;
-  }, [contacts, statusFilter, searchQuery, sortBy]);
+  }, [contacts, statusFilter, deferredSearchQuery, sortBy]);
 
   const counts = useMemo(() => {
     const total = contacts.length;
@@ -498,13 +525,14 @@ export default function AdminContactsCrmPage() {
             </button>
             <button
               type="button"
-              onClick={loadContacts}
-              className="h-8.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-[0.98]"
+              onClick={() => loadContacts(false)}
+              disabled={refreshing || loading}
+              className="h-8.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 text-[#FFC400] ${loading ? "animate-spin" : ""}`}
+                className={`w-3.5 h-3.5 text-[#FFC400] ${refreshing || loading ? "animate-spin" : ""}`}
               />
-              <span>Refresh</span>
+              <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
             </button>
           </div>
         </div>
@@ -900,7 +928,7 @@ export default function AdminContactsCrmPage() {
           </div>
         ) : (
           /* ── RICH, HIGH-DENSITY LIST TABLE (NO AWKWARD EMPTY SPACE!) ── */
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto crm-scrollbar-x">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-500">
@@ -1040,7 +1068,7 @@ export default function AdminContactsCrmPage() {
       {/* 4. MODAL: INQUIRY DETAILS INSPECTOR (NO PRIORITY)                  */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-hidden pointer-events-auto">
           {/* Dimmed backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
@@ -1048,7 +1076,7 @@ export default function AdminContactsCrmPage() {
           />
 
           {/* Centered Modal Card */}
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
@@ -1101,7 +1129,7 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* Modal Scrollable Body with Clean Alignment & Spacing */}
-            <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
+            <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
               {/* SECTION 1: Sender Profile (FROM) */}
               <div className="rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 p-3 sm:p-4 space-y-3 sm:space-y-3.5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-200/70">
@@ -1505,13 +1533,13 @@ export default function AdminContactsCrmPage() {
       {/* 5. CREATE INQUIRY MODAL (Full Admin Support, No Priority)           */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-hidden pointer-events-auto">
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
+          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
@@ -1548,7 +1576,7 @@ export default function AdminContactsCrmPage() {
             {/* Form wrapping scrollable content + fixed pinned footer */}
             <form onSubmit={handleCreateInquiry} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               {/* Scrollable Form Body */}
-              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
                 {/* SECTION 1: Sender & Organization Profile */}
                 <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
                   <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">

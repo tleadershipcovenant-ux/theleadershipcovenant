@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
+  useDeferredValue,
   Suspense,
 } from "react";
 import { useSearchParams } from "next/navigation";
@@ -208,12 +209,14 @@ function RegistrationsCrmInner() {
   const [registrations, setRegistrations] = useState<ActivityRegistrationRecord[]>([]);
   const [activities, setActivities] = useState<LeadershipEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Filters & Views
   const [activeActivityTab, setActiveActivityTab] = useState<string>(initialActivityParam);
   const [bookingFilter, setBookingFilter] = useState<"all" | BookingModeType>("all");
   const [verificationFilter, setVerificationFilter] = useState<"all" | VerificationStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name">("newest");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -271,6 +274,20 @@ function RegistrationsCrmInner() {
     message: "",
   });
 
+  // Lock background scroll when modal or lightbox is active (smooth mobile touch performance)
+  useEffect(() => {
+    if (selected || addModalOpen || lightboxUrl) {
+      const prevOverflow = document.body.style.overflow;
+      const prevTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.touchAction = prevTouchAction;
+      };
+    }
+  }, [selected, addModalOpen, lightboxUrl]);
+
   // Restore saved view mode preference
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -294,8 +311,12 @@ function RegistrationsCrmInner() {
     }
   }, [initialActivityParam]);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
     try {
       const res = await fetch("/api/admin/registrations", {
         cache: "no-store",
@@ -307,11 +328,12 @@ function RegistrationsCrmInner() {
       }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, [loadData]);
 
   // Build dynamic Activity Tabs from CMS events + any custom slugs in DB
@@ -367,7 +389,7 @@ function RegistrationsCrmInner() {
   }, [tabFilteredByActivity]);
 
   const filteredRegistrations = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
+    const q = deferredSearchQuery.trim().toLowerCase();
     const result = tabFilteredByActivity.filter((r) => {
       if (bookingFilter !== "all" && r.booking_mode !== bookingFilter) {
         return false;
@@ -405,7 +427,7 @@ function RegistrationsCrmInner() {
     });
 
     return result;
-  }, [tabFilteredByActivity, bookingFilter, verificationFilter, searchQuery, sortBy]);
+  }, [tabFilteredByActivity, bookingFilter, verificationFilter, deferredSearchQuery, sortBy]);
 
   const openInspector = (reg: ActivityRegistrationRecord) => {
     setSelected(reg);
@@ -868,12 +890,13 @@ function RegistrationsCrmInner() {
 
               <button
                 type="button"
-                onClick={loadData}
-                className="h-9 px-3 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                onClick={() => loadData(false)}
+                disabled={refreshing || loading}
+                className="h-9 px-3 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
                 title="Refresh Records"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-[#FFC400] ${loading ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">Refresh</span>
+                <RefreshCw className={`w-3.5 h-3.5 text-[#FFC400] ${refreshing || loading ? "animate-spin" : ""}`} />
+                <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
               </button>
             </div>
           </div>
@@ -962,7 +985,7 @@ function RegistrationsCrmInner() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/80 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-r [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 crm-scrollbar-x">
           {/* All Activities Tab */}
           <button
             type="button"
@@ -1315,17 +1338,17 @@ function RegistrationsCrmInner() {
           </div>
         ) : (
           /* ── RICH, COLORFUL & COMPACT TABLE LIST VIEW ── */
-          <div className="overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-slate-100/80 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-r [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#e06b00] hover:[&::-webkit-scrollbar-thumb]:to-[#102E4D]">
+          <div className="overflow-x-auto crm-scrollbar-x">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/90 border-b border-slate-200 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
                   <th className="py-2.5 px-3 w-28 whitespace-nowrap">Booking Ref</th>
-                  <th className="py-2.5 px-3 min-w-[130px] max-w-[170px]">Participant</th>
-                  <th className="py-2.5 px-3 min-w-[140px] max-w-[190px]">Activity Cohort</th>
-                  <th className="py-2.5 px-3 w-36 whitespace-nowrap">Booking Mode</th>
+                  <th className="py-2.5 px-3 min-w-[120px] max-w-[160px]">Participant</th>
+                  <th className="py-2.5 px-3 min-w-[130px] max-w-[180px]">Activity Cohort</th>
+                  <th className="py-2.5 px-3 w-32 whitespace-nowrap">Booking Mode</th>
                   <th className="py-2.5 px-3 w-28 whitespace-nowrap">Payment Proof</th>
-                  <th className="py-2.5 px-3 w-36 whitespace-nowrap">Verification</th>
-                  <th className="py-2.5 px-3 w-28 text-right whitespace-nowrap">Actions</th>
+                  <th className="py-2.5 px-3 w-32 whitespace-nowrap">Verification</th>
+                  <th className="py-2.5 px-3 w-24 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1364,25 +1387,25 @@ function RegistrationsCrmInner() {
                           >
                             {initials}
                           </div>
-                          <div className="min-w-0 max-w-[150px]">
+                          <div className="min-w-0 max-w-[140px]">
                             <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate text-xs">
                               {r.full_name}
                             </div>
                             <div className="text-[10px] text-slate-500 truncate">
-                              {r.role || "Participant"} {r.organization ? `• ${r.organization}` : ""}
+                              {r.organization || r.role || "Independent"}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Activity Cohort (Compact & Less Bloated) */}
+                      {/* Activity Cohort (Compact & Clean) */}
                       <td className="py-2.5 px-3">
-                        <div className="min-w-0 max-w-[180px]">
+                        <div className="min-w-0 max-w-[170px]">
                           <div className="font-semibold text-[#102E4D] truncate text-xs" title={r.activity_title}>
                             {r.activity_title}
                           </div>
                           <div className="text-[10px] text-slate-400 font-num truncate">
-                            {r.activity_date || "2026 Schedule"} {r.activity_city ? `• ${r.activity_city}` : ""}
+                            {r.activity_city ? `${r.activity_city} • ` : ""}{r.activity_date || "2026 Cohort"}
                           </div>
                         </div>
                       </td>
@@ -1390,10 +1413,10 @@ function RegistrationsCrmInner() {
                       {/* Booking Mode */}
                       <td className="py-2.5 px-3 whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full border text-[10.5px] font-bold inline-flex items-center gap-1.5 ${bStyle.pill}`}
+                          className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold inline-flex items-center gap-1.5 ${bStyle.pill}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
-                          <span>{bStyle.label}</span>
+                          <span>{bStyle.shortLabel}</span>
                         </span>
                       </td>
 
@@ -1412,12 +1435,12 @@ function RegistrationsCrmInner() {
                             <img
                               src={r.screenshot_url}
                               alt="Proof"
-                              className="w-4 h-4 rounded object-cover border border-white"
+                              className="w-3.5 h-3.5 rounded object-cover border border-white"
                             />
                             <span>View Proof</span>
                           </button>
                         ) : (
-                          <span className="text-[10.5px] text-slate-400 font-mono">
+                          <span className="text-[10px] text-slate-400 font-medium">
                             {r.transaction_ref ? `TID: ${r.transaction_ref}` : "Pay Later"}
                           </span>
                         )}
@@ -1464,7 +1487,7 @@ function RegistrationsCrmInner() {
                           <button
                             type="button"
                             onClick={() => openInspector(r)}
-                            className="px-2.5 py-1 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors cursor-pointer shadow-2xs"
+                            className="px-2 py-1 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors cursor-pointer shadow-2xs"
                           >
                             Manage
                           </button>
@@ -1483,7 +1506,7 @@ function RegistrationsCrmInner() {
       {/* 4. MODAL: REGISTRATION DETAILS INSPECTOR (Proper, Colorful & Modern) */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-hidden pointer-events-auto">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
@@ -1491,7 +1514,7 @@ function RegistrationsCrmInner() {
           />
 
           {/* Modal Container */}
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
@@ -1560,7 +1583,7 @@ function RegistrationsCrmInner() {
             })()}
 
             {/* Modal Scrollable Body */}
-            <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
+            <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
               {/* SECTION 1: Participant Identity Profile */}
               <div className="rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-200/70">
@@ -2347,13 +2370,13 @@ function RegistrationsCrmInner() {
       {/* 6. CREATE MANUAL REGISTRATION MODAL (Structured & Modern)          */}
       {/* ─────────────────────────────────────────────────────────────────── */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-hidden pointer-events-auto">
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
+          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
@@ -2389,7 +2412,7 @@ function RegistrationsCrmInner() {
 
             {/* Form */}
             <form onSubmit={handleCreateManual} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain flex-1 text-xs sm:text-sm [scrollbar-width:thin] [scrollbar-color:#FF7900_#f1f5f9] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-slate-100/90 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#FF7900] [&::-webkit-scrollbar-thumb]:via-[#FFC400] [&::-webkit-scrollbar-thumb]:to-[#005696] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#E56D00] hover:[&::-webkit-scrollbar-thumb]:to-[#004070]">
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
                 {/* Participant Details */}
                 <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
                   <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
