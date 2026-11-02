@@ -467,10 +467,10 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ────────────────── 3. VISUAL ANALYTICS & OPERATIONS SECTION ────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
         {/* Left Column (lg:col-span-7): Activity Enrollment Analytics Bar Visualizer */}
-        <div className="lg:col-span-7 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
+        <div className="lg:col-span-7 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col h-full">
+          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
               <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
                 <BarChart3 className="w-4 h-4" />
@@ -495,7 +495,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div
-            className="p-3.5 sm:p-4.5 space-y-2.5 max-h-[490px] overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
+            className="p-3.5 sm:p-4.5 space-y-2.5 flex-1 min-h-[380px] max-h-[520px] lg:max-h-none overflow-y-auto pr-2 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#0284C7] [&::-webkit-scrollbar-thumb]:via-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:brightness-110"
             style={{ scrollbarColor: "#10B981 #EFFBF8" }}
           >
             {(data?.activityBreakdown || []).map((act) => {
