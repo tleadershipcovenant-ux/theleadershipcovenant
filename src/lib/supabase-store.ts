@@ -334,7 +334,14 @@ export async function listContactSubmissions(): Promise<
       const rows = await supabaseFetch<ContactSubmissionRecord[]>(
         "contact_submissions?select=*&order=created_at.desc"
       );
-      return rows;
+      if (Array.isArray(rows)) {
+        // Sync warm cache
+        readLocalDb().then((db) => {
+          db.contacts = rows;
+          writeLocalDb(db).catch(() => {});
+        }).catch(() => {});
+        return rows;
+      }
     } catch {
       // Fallback to local DB if table not yet migrated
     }
@@ -417,21 +424,32 @@ export async function updateContactSubmission(
   if (cfg.isConfigured) {
     try {
       const updated = await supabaseFetch<ContactSubmissionRecord[]>(
-        `contact_submissions?id=eq.${encodeURIComponent(id)}`,
+        `contact_submissions?or=(id.eq.${encodeURIComponent(id)},reference_code.eq.${encodeURIComponent(id)})`,
         {
           method: "PATCH",
           headers: { Prefer: "return=representation" },
           body: JSON.stringify(payload),
         }
       );
-      if (updated?.[0]) return updated[0];
-    } catch {
-      // Fallback to local DB
+      if (updated?.[0]) {
+        readLocalDb().then((db) => {
+          const idx = db.contacts.findIndex((c) => c.id === id || c.reference_code === id);
+          if (idx !== -1) {
+            db.contacts[idx] = updated[0];
+          } else {
+            db.contacts.unshift(updated[0]);
+          }
+          writeLocalDb(db).catch(() => {});
+        }).catch(() => {});
+        return updated[0];
+      }
+    } catch (err) {
+      console.error("[SUPABASE CONTACT UPDATE ERROR]", err);
     }
   }
 
   const db = await readLocalDb();
-  const idx = db.contacts.findIndex((c) => c.id === id);
+  const idx = db.contacts.findIndex((c) => c.id === id || c.reference_code === id);
   if (idx === -1) return null;
   db.contacts[idx] = {
     ...db.contacts[idx],
@@ -446,9 +464,13 @@ export async function deleteContactSubmission(id: string): Promise<boolean> {
   if (cfg.isConfigured) {
     try {
       await supabaseFetch<unknown>(
-        `contact_submissions?id=eq.${encodeURIComponent(id)}`,
+        `contact_submissions?or=(id.eq.${encodeURIComponent(id)},reference_code.eq.${encodeURIComponent(id)})`,
         { method: "DELETE" }
       );
+      readLocalDb().then((db) => {
+        db.contacts = db.contacts.filter((c) => c.id !== id && c.reference_code !== id);
+        writeLocalDb(db).catch(() => {});
+      }).catch(() => {});
       return true;
     } catch {
       // Fallback to local DB
@@ -457,7 +479,7 @@ export async function deleteContactSubmission(id: string): Promise<boolean> {
 
   const db = await readLocalDb();
   const before = db.contacts.length;
-  db.contacts = db.contacts.filter((c) => c.id !== id);
+  db.contacts = db.contacts.filter((c) => c.id !== id && c.reference_code !== id);
   await writeLocalDb(db);
   return db.contacts.length < before;
 }
@@ -840,21 +862,32 @@ export async function updateActivityRegistration(
   if (cfg.isConfigured) {
     try {
       const updated = await supabaseFetch<ActivityRegistrationRecord[]>(
-        `activity_registrations?id=eq.${encodeURIComponent(id)}`,
+        `activity_registrations?or=(id.eq.${encodeURIComponent(id)},reference_code.eq.${encodeURIComponent(id)})`,
         {
           method: "PATCH",
           headers: { Prefer: "return=representation" },
           body: JSON.stringify(payload),
         }
       );
-      if (updated?.[0]) return updated[0];
+      if (updated?.[0]) {
+        readLocalDb().then((db) => {
+          const idx = db.registrations.findIndex((r) => r.id === id || r.reference_code === id);
+          if (idx !== -1) {
+            db.registrations[idx] = updated[0];
+          } else {
+            db.registrations.unshift(updated[0]);
+          }
+          writeLocalDb(db).catch(() => {});
+        }).catch(() => {});
+        return updated[0];
+      }
     } catch {
       // Fallback to local DB
     }
   }
 
   const db = await readLocalDb();
-  const idx = db.registrations.findIndex((r) => r.id === id);
+  const idx = db.registrations.findIndex((r) => r.id === id || r.reference_code === id);
   if (idx === -1) return null;
   db.registrations[idx] = {
     ...db.registrations[idx],
