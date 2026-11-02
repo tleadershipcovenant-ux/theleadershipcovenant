@@ -17,11 +17,11 @@ import {
   TrendingUp,
   BarChart3,
   PieChart,
+  Filter,
+  Zap,
   Activity,
-  Sparkles,
   PhoneCall,
   FileCheck2,
-  ExternalLink,
   ChevronRight,
 } from "lucide-react";
 import type {
@@ -136,9 +136,8 @@ export default function AdminDashboardPage() {
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+          <div className="lg:col-span-7 h-72 sm:h-80 rounded-2xl bg-white border border-[#C8EFE6]" />
           <div className="lg:col-span-5 h-72 sm:h-80 rounded-2xl bg-white border border-[#C8EFE6]" />
-          <div className="lg:col-span-4 h-72 sm:h-80 rounded-2xl bg-white border border-[#C8EFE6]" />
-          <div className="lg:col-span-3 h-72 sm:h-80 rounded-2xl bg-white border border-[#C8EFE6]" />
         </div>
       </div>
     );
@@ -456,21 +455,21 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ────────────────── 3. VISUAL ANALYTICS, COMPACT FUNNEL & ACTION HUB ────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
-        {/* Card 1 (lg:col-span-5): Cohort Enrollment Analytics Bar Visualizer */}
-        <div className="lg:col-span-5 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
+      {/* ────────────────── 3. VISUAL ANALYTICS & OPERATIONS SECTION ────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* Left Column (lg:col-span-7): Cohort Enrollment Analytics Bar Visualizer */}
+        <div className="lg:col-span-7 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
           <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#001B33] text-[#FFC400] flex items-center justify-center shrink-0">
-                <BarChart3 className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center shadow-xs shrink-0">
+                <BarChart3 className="w-4 h-4" />
               </span>
               <div className="min-w-0">
                 <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
                   Cohort Enrollment Analytics
                 </h3>
                 <p className="text-[10.5px] text-slate-500 truncate">
-                  Capacity and volume across active programs
+                  Live capacity and registrations across active programs
                 </p>
               </div>
             </div>
@@ -479,12 +478,12 @@ export default function AdminDashboardPage() {
               prefetch={true}
               className="text-xs font-extrabold text-[#FF7900] hover:text-[#102E4D] inline-flex items-center gap-1 transition-colors shrink-0"
             >
-              <span>View All</span>
-              <ArrowRight className="w-3 h-3" />
+              <span>View CRM</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="p-4 sm:p-5 flex-1 space-y-3.5">
+          <div className="p-3.5 sm:p-4.5 space-y-2.5 max-h-[620px] overflow-y-auto [scrollbar-width:thin]">
             {(data?.activityBreakdown || []).map((act) => {
               const cohortSecuredPct = act.total > 0 ? Math.round((act.secured / act.total) * 100) : 0;
               const barFillWidth = Math.max(Math.round((act.total / maxCohortTotal) * 100), act.total > 0 ? 12 : 4);
@@ -492,7 +491,7 @@ export default function AdminDashboardPage() {
               return (
                 <div
                   key={act.slug}
-                  className="p-3 rounded-xl border border-slate-100 hover:border-[#C8EFE6] bg-[#FAFCFB] hover:bg-[#EFFBF8]/40 transition-all space-y-2 group"
+                  className="p-3 rounded-xl border border-slate-100 hover:border-[#C8EFE6] bg-[#FAFCFB] hover:bg-[#EFFBF8]/40 transition-all space-y-1.5 group"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                     <div className="min-w-0">
@@ -509,13 +508,13 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0 font-num text-[11px] pt-1 sm:pt-0">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-[#102E4D] font-black">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 text-[#102E4D] font-black">
                         {act.total} Total
                       </span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#DCFCE7] text-[#15803D] font-extrabold">
+                      <span className="px-2 py-0.5 rounded bg-[#DCFCE7] text-[#15803D] font-extrabold">
                         {act.secured} Secured
                       </span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#B45309] font-extrabold">
+                      <span className="px-2 py-0.5 rounded bg-[#FEF3C7] text-[#B45309] font-extrabold">
                         {act.reserved} Reserved
                       </span>
                     </div>
@@ -550,224 +549,233 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Card 2 (lg:col-span-4): Registration Funnel (Compact & Proper) */}
-        <div className="lg:col-span-4 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#001B33] text-[#FF7900] flex items-center justify-center shrink-0">
-                <PieChart className="w-3.5 h-3.5" />
-              </span>
-              <div className="min-w-0">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
-                  Registration Funnel
-                </h3>
-                <p className="text-[10.5px] text-slate-500 truncate">
-                  Compact seat distribution breakdown
-                </p>
+        {/* Right Column (lg:col-span-5): STACK OF REGISTRATION FUNNEL + ACTION & CRM HUB */}
+        <div className="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
+          {/* Top of Stack: Registration Funnel (Compact & Proper) */}
+          <div className="rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
+            <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <Filter className="w-4 h-4" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+                    Registration Funnel
+                  </h3>
+                  <p className="text-[10.5px] text-slate-500 truncate">
+                    Seat distribution by booking state
+                  </p>
+                </div>
               </div>
+              <span className="text-[11px] font-num font-black px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] shrink-0">
+                {securedPct}% Secured
+              </span>
             </div>
-            <span className="text-[11px] font-num font-black px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D]">
-              {securedPct}% Secured
-            </span>
-          </div>
 
-          <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
-            {/* Compact SVG Donut Chart */}
-            <div className="relative flex items-center justify-center py-1">
-              <svg className="w-32 h-32 sm:w-36 sm:h-36 -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r={donutRadius}
-                  fill="transparent"
-                  stroke="#F1F5F9"
-                  strokeWidth="10"
-                />
+            <div className="p-4 sm:p-5 space-y-3.5">
+              {/* Donut and Legend side-by-side */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                {/* SVG Donut Ring */}
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <svg className="w-28 h-28 sm:w-32 sm:h-32 -rotate-90" viewBox="0 0 100 100">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r={donutRadius}
+                      fill="transparent"
+                      stroke="#F1F5F9"
+                      strokeWidth="10"
+                    />
 
-                {totalReg > 0 ? (
-                  renderedSegments.map((segment) =>
-                    segment.count > 0 ? (
+                    {totalReg > 0 ? (
+                      renderedSegments.map((segment) =>
+                        segment.count > 0 ? (
+                          <circle
+                            key={segment.label}
+                            cx="50"
+                            cy="50"
+                            r={donutRadius}
+                            fill="transparent"
+                            stroke={segment.color}
+                            strokeWidth="10"
+                            strokeDasharray={segment.strokeDasharray}
+                            strokeDashoffset={segment.strokeDashoffset}
+                            strokeLinecap="round"
+                            className="transition-all duration-700"
+                          />
+                        ) : null
+                      )
+                    ) : (
                       <circle
-                        key={segment.label}
                         cx="50"
                         cy="50"
                         r={donutRadius}
                         fill="transparent"
-                        stroke={segment.color}
+                        stroke="#E2E8F0"
                         strokeWidth="10"
-                        strokeDasharray={segment.strokeDasharray}
-                        strokeDashoffset={segment.strokeDashoffset}
-                        strokeLinecap="round"
-                        className="transition-all duration-700"
                       />
-                    ) : null
-                  )
-                ) : (
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r={donutRadius}
-                    fill="transparent"
-                    stroke="#E2E8F0"
-                    strokeWidth="10"
-                  />
-                )}
-              </svg>
+                    )}
+                  </svg>
 
-              {/* Compact Center Label */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
-                <span className="font-num font-black text-xl sm:text-2xl text-[#102E4D]" suppressHydrationWarning>
-                  {securedPct}%
-                </span>
-                <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#FF7900]">
-                  Secured
-                </span>
-                <span className="text-[8.5px] font-semibold text-slate-400">
-                  {reg.securedSeats}/{totalReg}
-                </span>
-              </div>
-            </div>
-
-            {/* Compact Legend Rows */}
-            <div className="space-y-1.5 border-t border-slate-100 pt-3">
-              {renderedSegments.map((seg) => (
-                <div key={seg.label} className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`w-2 h-2 rounded-full ${seg.bgClass} shrink-0`} />
-                    <span className="font-semibold text-slate-600 truncate">{seg.label}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0 font-num">
-                    <span className="font-black text-[#102E4D]" suppressHydrationWarning>{seg.count}</span>
-                    <span className="text-[10px] text-slate-400 font-bold" suppressHydrationWarning>({seg.percentage}%)</span>
+                  {/* Center Label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
+                    <span className="font-num font-black text-xl text-[#102E4D]" suppressHydrationWarning>
+                      {securedPct}%
+                    </span>
+                    <span className="text-[8.5px] font-extrabold uppercase tracking-wider text-[#FF7900]">
+                      Secured
+                    </span>
+                    <span className="text-[8px] font-semibold text-slate-400">
+                      {reg.securedSeats}/{totalReg}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Micro Conversion Indicators */}
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-              <div className="p-2 rounded-xl bg-[#EFFBF8] border border-[#C8EFE6] text-center">
-                <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider block">
-                  UBL Confirmed
-                </span>
-                <span className="font-num font-black text-sm sm:text-base text-[#15803D]" suppressHydrationWarning>
-                  {verifiedPct}%
-                </span>
+                {/* Legend list right next to donut */}
+                <div className="flex-1 w-full space-y-1.5">
+                  {renderedSegments.map((seg) => (
+                    <div key={seg.label} className="flex items-center justify-between text-xs py-0.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-2 h-2 rounded-full ${seg.bgClass} shrink-0`} />
+                        <span className="font-semibold text-slate-600 text-[11px] truncate">{seg.label}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 font-num">
+                        <span className="font-black text-[#102E4D] text-xs" suppressHydrationWarning>{seg.count}</span>
+                        <span className="text-[10px] text-slate-400 font-bold" suppressHydrationWarning>({seg.percentage}%)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="p-2 rounded-xl bg-[#EDF6FB] border border-[#CFE6F3] text-center">
-                <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider block">
-                  Inquiry Resolved
-                </span>
-                <span className="font-num font-black text-sm sm:text-base text-[#0284C7]" suppressHydrationWarning>
-                  {inquiryResPct}%
-                </span>
+
+              {/* Bottom 2 micro-indicators */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                <div className="p-2 rounded-xl bg-[#EFFBF8] border border-[#C8EFE6] text-center">
+                  <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider block">
+                    UBL Confirmed
+                  </span>
+                  <span className="font-num font-black text-sm text-[#15803D]" suppressHydrationWarning>
+                    {verifiedPct}%
+                  </span>
+                </div>
+                <div className="p-2 rounded-xl bg-[#EDF6FB] border border-[#CFE6F3] text-center">
+                  <span className="text-[9.5px] font-bold text-slate-500 uppercase tracking-wider block">
+                    Inquiry Resolved
+                  </span>
+                  <span className="font-num font-black text-sm text-[#0284C7]" suppressHydrationWarning>
+                    {inquiryResPct}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Card 3 (lg:col-span-3): Operations & Action Hub (New High-Value Card) */}
-        <div className="lg:col-span-3 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
-          <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#001B33] text-[#10B981] flex items-center justify-center shrink-0">
-                <Sparkles className="w-3.5 h-3.5 text-[#FFC400]" />
+          {/* Bottom of Stack: Action & CRM Hub */}
+          <div className="rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
+            <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shadow-xs shrink-0">
+                  <Zap className="w-4 h-4 text-[#FFC400]" />
+                </span>
+                <div className="min-w-0">
+                  <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+                    Action &amp; CRM Hub
+                  </h3>
+                  <p className="text-[10.5px] text-slate-500 truncate">
+                    Live operational queues and follow-ups
+                  </p>
+                </div>
+              </div>
+              <span className="text-[11px] font-num font-black px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
+                {reg.awaitingVerification + reg.pendingCallback + con.newCount} Active
               </span>
-              <div className="min-w-0">
-                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
-                  Action &amp; CRM Hub
-                </h3>
-                <p className="text-[10.5px] text-slate-500 truncate">
-                  Pending operational queues
-                </p>
+            </div>
+
+            <div className="p-4 sm:p-5 space-y-3">
+              <div className="space-y-2">
+                {/* Item 1: Receipts to Verify */}
+                <Link
+                  href="/AD_Admin/registrations"
+                  prefetch={true}
+                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#10B981]/50 bg-[#FAFCFB] hover:bg-[#DCFCE7]/30 transition-all flex items-center justify-between gap-2 group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-[#DCFCE7] text-[#15803D] flex items-center justify-center shrink-0">
+                      <FileCheck2 className="w-3.5 h-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#15803D] transition-colors truncate">
+                        Proof Receipts
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {reg.withScreenshots} total receipts on file
+                      </div>
+                    </div>
+                  </div>
+                  <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] shrink-0">
+                    {reg.awaitingVerification} to verify
+                  </span>
+                </Link>
+
+                {/* Item 2: Phone Callback Queue */}
+                <Link
+                  href="/AD_Admin/registrations"
+                  prefetch={true}
+                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#F59E0B]/50 bg-[#FAFCFB] hover:bg-[#FEF3C7]/30 transition-all flex items-center justify-between gap-2 group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shrink-0">
+                      <PhoneCall className="w-3.5 h-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#D97706] transition-colors truncate">
+                        Callback Queue
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        Provisional reservations
+                      </div>
+                    </div>
+                  </div>
+                  <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] shrink-0">
+                    {reg.pendingCallback} to call
+                  </span>
+                </Link>
+
+                {/* Item 3: Unread Messages */}
+                <Link
+                  href="/AD_Admin/contacts"
+                  prefetch={true}
+                  className="p-2.5 rounded-xl border border-slate-100 hover:border-[#0284C7]/50 bg-[#FAFCFB] hover:bg-[#EDF6FB]/40 transition-all flex items-center justify-between gap-2 group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-7 h-7 rounded-lg bg-[#EDF6FB] text-[#0284C7] flex items-center justify-center shrink-0">
+                      <MessageSquareText className="w-3.5 h-3.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#0284C7] transition-colors truncate">
+                        New Inquiries
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        School &amp; candidate leads
+                      </div>
+                    </div>
+                  </div>
+                  <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FF7900]/15 text-[#E56D00] border border-[#FF7900]/30 shrink-0">
+                    {con.newCount} new
+                  </span>
+                </Link>
               </div>
-            </div>
-          </div>
 
-          <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
-            <div className="space-y-2.5">
-              {/* Item 1: Receipts to Verify */}
+              {/* 1-Click Action Button */}
               <Link
                 href="/AD_Admin/registrations"
                 prefetch={true}
-                className="p-2.5 rounded-xl border border-slate-100 hover:border-[#10B981]/50 bg-[#FAFCFB] hover:bg-[#DCFCE7]/30 transition-all flex items-center justify-between gap-2 group"
+                className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#001B33] to-[#102E4D] hover:from-[#102E4D] hover:to-[#001B33] text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-98"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-7 h-7 rounded-lg bg-[#DCFCE7] text-[#15803D] flex items-center justify-center shrink-0">
-                    <FileCheck2 className="w-3.5 h-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#15803D] transition-colors truncate">
-                      Proof Receipts
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      {reg.withScreenshots} uploaded receipts
-                    </div>
-                  </div>
-                </div>
-                <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] shrink-0">
-                  {reg.awaitingVerification} pending
-                </span>
-              </Link>
-
-              {/* Item 2: Phone Callback Queue */}
-              <Link
-                href="/AD_Admin/registrations"
-                prefetch={true}
-                className="p-2.5 rounded-xl border border-slate-100 hover:border-[#F59E0B]/50 bg-[#FAFCFB] hover:bg-[#FEF3C7]/30 transition-all flex items-center justify-between gap-2 group"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-7 h-7 rounded-lg bg-[#FEF3C7] text-[#D97706] flex items-center justify-center shrink-0">
-                    <PhoneCall className="w-3.5 h-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#D97706] transition-colors truncate">
-                      Callback Queue
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      Provisional reservations
-                    </div>
-                  </div>
-                </div>
-                <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#B45309] shrink-0">
-                  {reg.pendingCallback} to call
-                </span>
-              </Link>
-
-              {/* Item 3: Unread Messages */}
-              <Link
-                href="/AD_Admin/contacts"
-                prefetch={true}
-                className="p-2.5 rounded-xl border border-slate-100 hover:border-[#0284C7]/50 bg-[#FAFCFB] hover:bg-[#EDF6FB]/40 transition-all flex items-center justify-between gap-2 group"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-7 h-7 rounded-lg bg-[#EDF6FB] text-[#0284C7] flex items-center justify-center shrink-0">
-                    <MessageSquareText className="w-3.5 h-3.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs text-[#102E4D] group-hover:text-[#0284C7] transition-colors truncate">
-                      New Inquiries
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      School &amp; parent leads
-                    </div>
-                  </div>
-                </div>
-                <span className="font-num text-xs font-black px-2 py-0.5 rounded-full bg-[#FF7900]/15 text-[#E56D00] shrink-0">
-                  {con.newCount} new
-                </span>
+                <span>Process Pending Verifications</span>
+                <ChevronRight className="w-4 h-4 text-[#FFC400]" />
               </Link>
             </div>
-
-            {/* Quick 1-Click Jump Button */}
-            <Link
-              href="/AD_Admin/registrations"
-              prefetch={true}
-              className="w-full py-2 px-3 rounded-xl bg-[#001B33] hover:bg-[#102E4D] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-colors shadow-xs active:scale-98"
-            >
-              <span>Process Pending Verifications</span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#FFC400]" />
-            </Link>
           </div>
         </div>
       </div>
@@ -777,13 +785,18 @@ export default function AdminDashboardPage() {
         {/* Recent Registrations Feed */}
         <div className="rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
           <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] to-white border-b border-[#C8EFE6] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#001B33] text-[#10B981] flex items-center justify-center shrink-0">
-                <CalendarCheck2 className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] flex items-center justify-center shrink-0">
+                <CalendarCheck2 className="w-4 h-4" />
               </span>
-              <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
-                Recent Registrations Feed
-              </h3>
+              <div className="min-w-0">
+                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+                  Recent Registrations Feed
+                </h3>
+                <p className="text-[10.5px] text-slate-500 truncate">
+                  Latest activity candidates &amp; applicants
+                </p>
+              </div>
             </div>
             <Link
               href="/AD_Admin/registrations"
@@ -791,7 +804,7 @@ export default function AdminDashboardPage() {
               className="text-xs font-extrabold text-[#102E4D] hover:text-[#FF7900] inline-flex items-center gap-1 transition-colors shrink-0"
             >
               <span>View All</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -839,13 +852,18 @@ export default function AdminDashboardPage() {
         {/* Recent Contact Inquiries Feed */}
         <div className="rounded-2xl bg-white border-2 border-[#CFE6F3] shadow-xs overflow-hidden flex flex-col">
           <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EDF6FB] to-white border-b border-[#CFE6F3] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#001B33] text-[#38BDF8] flex items-center justify-center shrink-0">
-                <MessageSquareText className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3] flex items-center justify-center shrink-0">
+                <MessageSquareText className="w-4 h-4" />
               </span>
-              <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
-                Recent Inquiries &amp; Leads
-              </h3>
+              <div className="min-w-0">
+                <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
+                  Recent Inquiries &amp; Leads
+                </h3>
+                <p className="text-[10.5px] text-slate-500 truncate">
+                  School, corporate and parent messages
+                </p>
+              </div>
             </div>
             <Link
               href="/AD_Admin/contacts"
@@ -853,7 +871,7 @@ export default function AdminDashboardPage() {
               className="text-xs font-extrabold text-[#102E4D] hover:text-[#FF7900] inline-flex items-center gap-1 transition-colors shrink-0"
             >
               <span>View All</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
