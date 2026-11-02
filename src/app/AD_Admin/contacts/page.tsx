@@ -74,6 +74,37 @@ const AVATAR_COLORS = [
   "bg-teal-100 text-teal-800 border-teal-300",
 ];
 
+const QUICK_NOTE_SUGGESTIONS = [
+  {
+    icon: Phone,
+    label: "Spoke on phone",
+    appendNote: "• Spoke on phone with sender",
+    color: "text-blue-700 bg-blue-50/80 border-blue-200/90 hover:bg-blue-100/80 hover:border-blue-300",
+    iconBg: "bg-blue-100 text-blue-600",
+  },
+  {
+    icon: FaWhatsapp,
+    label: "Sent WhatsApp brochure",
+    appendNote: "• Sent official brochure & details via WhatsApp",
+    color: "text-emerald-800 bg-emerald-50/80 border-emerald-200/90 hover:bg-emerald-100/80 hover:border-emerald-300",
+    iconBg: "bg-emerald-100 text-emerald-600",
+  },
+  {
+    icon: Calendar,
+    label: "Meeting scheduled",
+    appendNote: "• Meeting scheduled with leadership team",
+    color: "text-amber-800 bg-amber-50/80 border-amber-200/90 hover:bg-amber-100/80 hover:border-amber-300",
+    iconBg: "bg-amber-100 text-amber-600",
+  },
+  {
+    icon: CheckCircle2,
+    label: "Inquiry resolved",
+    appendNote: "• Inquiry resolved and follow-up completed",
+    color: "text-teal-800 bg-teal-50/80 border-teal-200/90 hover:bg-teal-100/80 hover:border-teal-300",
+    iconBg: "bg-teal-100 text-teal-600",
+  },
+];
+
 function getAvatarColor(name: string) {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -1254,41 +1285,53 @@ export default function AdminContactsCrmPage() {
                 </div>
               </div>
 
-              {/* SECTION 4: Internal Admin Notes */}
-              <div className="rounded-2xl bg-white border border-slate-200/90 p-4 space-y-2.5">
+              {/* SECTION 4: Internal Admin Notes with Professional Suggestion Grid */}
+              <div className="rounded-2xl bg-white border border-slate-200/90 p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                    Internal Admin Notes
-                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Internal Admin Notes
+                    </label>
+                  </div>
                   <span className="text-[10.5px] text-slate-400">Private log for portal team</span>
                 </div>
 
-                {/* Quick note helper chips */}
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    "📞 Spoke on phone",
-                    "💬 Sent WhatsApp brochure",
-                    "📅 Meeting scheduled",
-                    "✅ Inquiry resolved",
-                  ].map((snippet) => (
-                    <button
-                      key={snippet}
-                      type="button"
-                      onClick={() =>
-                        setEditNotes((prev) =>
-                          prev ? `${prev}\n• ${snippet}` : `• ${snippet}`
-                        )
-                      }
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-medium transition-colors cursor-pointer"
-                    >
-                      + {snippet}
-                    </button>
-                  ))}
+                {/* Professional Quick Suggestion Grid */}
+                <div className="space-y-1.5">
+                  <div className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
+                    Quick Log Suggestions (Click to append):
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {QUICK_NOTE_SUGGESTIONS.map((item) => {
+                      const IconComponent = item.icon;
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() =>
+                            setEditNotes((prev) =>
+                              prev ? `${prev}\n${item.appendNote}` : item.appendNote
+                            )
+                          }
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center gap-2 ${item.color}`}
+                        >
+                          <span
+                            className={`w-6 h-6 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0`}
+                          >
+                            <IconComponent className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="text-[11px] font-bold truncate">
+                            {item.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <textarea
-                  rows={2}
-                  placeholder="Record follow-up actions, assigned team member, or conversation notes…"
+                  rows={3}
+                  placeholder="Type detailed callback notes, follow-up dates, or action items…"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors leading-relaxed"
