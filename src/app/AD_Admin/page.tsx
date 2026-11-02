@@ -468,7 +468,7 @@ export default function AdminDashboardPage() {
 
       {/* ────────────────── 3. VISUAL ANALYTICS & OPERATIONS SECTION ────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
-        {/* Left Column (lg:col-span-7): Cohort Enrollment Analytics Bar Visualizer */}
+        {/* Left Column (lg:col-span-7): Activity Enrollment Analytics Bar Visualizer */}
         <div className="lg:col-span-7 rounded-2xl bg-white border-2 border-[#C8EFE6] shadow-xs overflow-hidden flex flex-col">
           <div className="px-4.5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/50 border-b border-[#C8EFE6] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -477,7 +477,7 @@ export default function AdminDashboardPage() {
               </span>
               <div className="min-w-0">
                 <h3 className="font-serif font-bold text-sm sm:text-base text-[#102E4D] truncate">
-                  Cohort Enrollment Analytics
+                  Activity Enrollment Analytics
                 </h3>
                 <p className="text-[10.5px] text-slate-500 truncate">
                   Live capacity and registrations across active programs
