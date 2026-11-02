@@ -329,89 +329,103 @@ export default function EventDetailModal({
                     <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight">
                       About This Event
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#102E4D] font-semibold leading-relaxed">
-                      {event.description}
-                    </p>
-                    <p className="font-num text-xs sm:text-[13.5px] text-slate-600 leading-relaxed">
-                      {event.overview}
-                    </p>
+                    {isSummit ? (
+                      <p className="font-num text-xs sm:text-[13.5px] text-slate-700 leading-relaxed">
+                        Themed <strong className="font-bold text-[#102E4D]">Discover | Voice | Impact</strong>, the <strong className="font-bold text-[#102E4D]">School Impact Summit 2026</strong> brings together school owners, principals, academic leaders, educators, and changemakers to explore the ideas, practices, and possibilities shaping the future of education. It is a platform for discovering fresh perspectives, sharing voices and experiences from across the education landscape, and engaging in meaningful conversations around effective school leadership, student development, and educational transformation. More than a gathering, the Summit aims to inspire collaboration, strengthen connections, and turn shared insights into purposeful action for stronger schools and a greater impact on education.
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-xs sm:text-sm text-[#102E4D] font-semibold leading-relaxed">
+                          {event.description}
+                        </p>
+                        <p className="font-num text-xs sm:text-[13.5px] text-slate-600 leading-relaxed">
+                          {event.overview}
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   {/* Key Highlights & Outcomes */}
-                  <div className="space-y-2.5">
-                    <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight">
-                      What You Will Experience &amp; Gain
-                    </h3>
-                    <ul className="space-y-2">
-                      {event.highlights.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-start gap-2.5 text-xs sm:text-[13.5px] text-slate-700 font-medium leading-relaxed"
-                        >
-                          <MdCheckCircle
-                            className={`${theme.text} text-[17px] shrink-0 mt-0.5`}
-                          />
-                          <span className="font-num">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  {!isSummit && event.highlights?.length > 0 && (
+                    <div className="space-y-2.5">
+                      <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight">
+                        What You Will Experience &amp; Gain
+                      </h3>
+                      <ul className="space-y-2">
+                        {event.highlights.map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2.5 text-xs sm:text-[13.5px] text-slate-700 font-medium leading-relaxed"
+                          >
+                            <MdCheckCircle
+                              className={`${theme.text} text-[17px] shrink-0 mt-0.5`}
+                            />
+                            <span className="font-num">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {/* Who Should Attend */}
-                  <div className="space-y-2.5">
-                    <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight flex items-center gap-2">
-                      <MdGroups className={`${theme.text} text-xl shrink-0`} />
-                      <span>Who Should Attend</span>
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-                      {event.whoShouldAttend.map((role) => (
-                        <div
-                          key={role}
-                          className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs sm:text-[13px] font-semibold text-[#102E4D] flex items-center gap-2"
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${theme.gradient} shrink-0`}
-                          />
-                          <span>{role}</span>
-                        </div>
-                      ))}
+                  {!isSummit && event.whoShouldAttend?.length > 0 && (
+                    <div className="space-y-2.5">
+                      <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight flex items-center gap-2">
+                        <MdGroups className={`${theme.text} text-xl shrink-0`} />
+                        <span>Who Should Attend</span>
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                        {event.whoShouldAttend.map((role) => (
+                          <div
+                            key={role}
+                            className="px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs sm:text-[13px] font-semibold text-[#102E4D] flex items-center gap-2"
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${theme.gradient} shrink-0`}
+                            />
+                            <span>{role}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Group & Direct Support Strip */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#EFFBF8] border border-[#D7F5EF] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-                    <div>
-                      <div className="text-xs sm:text-sm font-bold text-[#102E4D]">
-                        Questions or Group / School Bookings?
+                  {!isSummit && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-[#EFFBF8] border border-[#D7F5EF] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-[#102E4D]">
+                          Questions or Group / School Bookings?
+                        </div>
+                        <div className="text-[11.5px] sm:text-xs text-slate-600 mt-0.5">
+                          Our activities team responds within{" "}
+                          <span className="font-num font-bold">24</span> hours
+                          with seat availability &amp; joining details.
+                        </div>
                       </div>
-                      <div className="text-[11.5px] sm:text-xs text-slate-600 mt-0.5">
-                        Our activities team responds within{" "}
-                        <span className="font-num font-bold">24</span> hours
-                        with seat availability &amp; joining details.
+                      <div className="shrink-0 flex flex-wrap items-center gap-2">
+                        <Link
+                          href="/contact#enquiry-form"
+                          onClick={onClose}
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-[#C8EFE6] bg-white hover:bg-[#EFFBF8] text-[#102E4D] text-xs sm:text-[12.5px] font-bold shadow-2xs transition-colors cursor-pointer active:scale-98"
+                        >
+                          <MdMailOutline className="text-base text-[#FF7900]" />
+                          <span>Contact Us</span>
+                        </Link>
+                        <a
+                          href={`https://wa.me/923192091249?text=${encodeURIComponent(
+                            `Hello! I would like to enquire about "${event.title}" (${event.startDate}).`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs sm:text-[12.5px] font-bold shadow-xs transition-colors active:scale-98"
+                        >
+                          <FaWhatsapp className="text-base" />
+                          <span className="font-num">+92 319 2091249</span>
+                        </a>
                       </div>
                     </div>
-                    <div className="shrink-0 flex flex-wrap items-center gap-2">
-                      <Link
-                        href="/contact#enquiry-form"
-                        onClick={onClose}
-                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-[#C8EFE6] bg-white hover:bg-[#EFFBF8] text-[#102E4D] text-xs sm:text-[12.5px] font-bold shadow-2xs transition-colors cursor-pointer active:scale-98"
-                      >
-                        <MdMailOutline className="text-base text-[#FF7900]" />
-                        <span>Contact Us</span>
-                      </Link>
-                      <a
-                        href={`https://wa.me/923192091249?text=${encodeURIComponent(
-                          `Hello! I would like to enquire about "${event.title}" (${event.startDate}).`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs sm:text-[12.5px] font-bold shadow-xs transition-colors active:scale-98"
-                      >
-                        <FaWhatsapp className="text-base" />
-                        <span className="font-num">+92 319 2091249</span>
-                      </a>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
 

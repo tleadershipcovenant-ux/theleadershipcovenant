@@ -433,7 +433,7 @@ export const EVENTS: LeadershipEvent[] = [
     certificate: "Summit Participant Kit & Certificate",
     facilitator: "Mr. Fazal Niazi, Mr. Ubaid ur Rehman & Guest Speakers",
     overview:
-      "Themed 'Discover • Voice • Impact', The School Impact Summit 2026 convenes school owners, principals, academic heads, and change-makers from across Pakistan. Hear candid case stories from schools moving the needle on student leadership, engage in guided working sessions, and leave with a concrete 90-day impact plan and scorecard ready to start Monday morning.",
+      "Themed Discover | Voice | Impact, the School Impact Summit 2026 brings together school owners, principals, academic leaders, educators, and changemakers to explore the ideas, practices, and possibilities shaping the future of education. It is a platform for discovering fresh perspectives, sharing voices and experiences from across the education landscape, and engaging in meaningful conversations around effective school leadership, student development, and educational transformation. More than a gathering, the Summit aims to inspire collaboration, strengthen connections, and turn shared insights into purposeful action for stronger schools and a greater impact on education.",
     highlights: [
       "Clarify one narrowly-defined Wildly Important Goal (WIG) and scorecard for your school",
       "Candid case stories from schools across Pakistan transforming student leadership culture",
