@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/admin-auth";
 import {
+  createContactSubmission,
   deleteContactSubmission,
   listContactSubmissions,
   updateContactSubmission,
@@ -16,6 +17,61 @@ export async function GET(req: NextRequest) {
 
   const contacts = await listContactSubmissions();
   return NextResponse.json({ ok: true, contacts });
+}
+
+export async function POST(req: NextRequest) {
+  const session = await authenticateAdminRequest(req);
+  if (!session) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const body = await req.json();
+    const full_name = String(body?.full_name || "").trim();
+    const email = String(body?.email || "").trim();
+    const organization = String(body?.organization || "").trim();
+    const message = String(body?.message || "").trim();
+    const phone = String(body?.phone || "").trim();
+    const interest = String(body?.interest || "general").trim();
+    const priority = (body?.priority || "normal") as ContactPriority;
+    const crm_status = (body?.crm_status || "new") as ContactCrmStatus;
+    const admin_notes = String(body?.admin_notes || "").trim();
+
+    if (!full_name || !email) {
+      return NextResponse.json(
+        { ok: false, error: "Full Name and Email are required." },
+        { status: 400 }
+      );
+    }
+
+    const ref = `TLC-INQ-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const newContact = await createContactSubmission({
+      reference_code: ref,
+      full_name,
+      email,
+      phone,
+      organization: organization || "Independent",
+      interest,
+      message: message || "Direct inbound contact inquiry",
+    });
+
+    if (priority !== "normal" || crm_status !== "new" || admin_notes) {
+      const updated = await updateContactSubmission(newContact.id, {
+        priority,
+        crm_status,
+        admin_notes,
+      });
+      return NextResponse.json({ ok: true, contact: updated || newContact });
+    }
+
+    return NextResponse.json({ ok: true, contact: newContact });
+  } catch (err: unknown) {
+    console.error("[ADMIN CONTACTS POST ERROR]", err);
+    return NextResponse.json(
+      { ok: false, error: "Failed to create contact record." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(req: NextRequest) {
