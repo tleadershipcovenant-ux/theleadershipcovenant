@@ -135,6 +135,60 @@ const QUICK_REG_SUGGESTIONS = [
   },
 ];
 
+const VERIFICATION_STATUS_CARDS: Array<{
+  value: VerificationStatus;
+  stepNum: string;
+  label: string;
+  shortDesc: string;
+  icon: React.ComponentType<{ className?: string }>;
+  activeClass: string;
+  inactiveClass: string;
+  activeBadge: string;
+  requiresProof?: boolean;
+}> = [
+  {
+    value: "awaiting_verification",
+    stepNum: "1",
+    label: "Admin Review",
+    shortDesc: "Proof under review",
+    icon: Eye,
+    activeClass: "bg-sky-600 text-white border-sky-600 shadow-sm ring-2 ring-sky-400/40",
+    inactiveClass: "bg-sky-50/70 text-sky-900 border-sky-200 hover:bg-sky-100 hover:border-sky-300",
+    activeBadge: "bg-sky-500 text-white",
+  },
+  {
+    value: "pending_callback",
+    stepNum: "2",
+    label: "Pending Callback",
+    shortDesc: "Provisional reservation",
+    icon: Phone,
+    activeClass: "bg-amber-500 text-white border-amber-500 shadow-sm ring-2 ring-amber-400/40",
+    inactiveClass: "bg-amber-50/70 text-amber-900 border-amber-200 hover:bg-amber-100 hover:border-amber-300",
+    activeBadge: "bg-amber-400 text-amber-950",
+  },
+  {
+    value: "verified_confirmed",
+    stepNum: "3",
+    label: "Confirmed",
+    shortDesc: "Seat locked & confirmed",
+    icon: CheckCircle2,
+    activeClass: "bg-emerald-600 text-white border-emerald-600 shadow-sm ring-2 ring-emerald-400/40",
+    inactiveClass: "bg-emerald-50/70 text-emerald-900 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300",
+    activeBadge: "bg-emerald-500 text-white",
+    requiresProof: true,
+  },
+  {
+    value: "cancelled",
+    stepNum: "4",
+    label: "Cancelled",
+    shortDesc: "Booking rejected & locked",
+    icon: X,
+    activeClass: "bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-400/40",
+    inactiveClass: "bg-rose-50/70 text-rose-900 border-rose-200 hover:bg-rose-100 hover:border-rose-300",
+    activeBadge: "bg-rose-500 text-white",
+  },
+];
+
 function RegistrationsCrmInner() {
   const searchParams = useSearchParams();
   const initialActivityParam = searchParams?.get("activity") || "all";
@@ -162,6 +216,7 @@ function RegistrationsCrmInner() {
   const [saving, setSaving] = useState(false);
   const [uploadingProof, setUploadingProof] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [proofRequirementWarning, setProofRequirementWarning] = useState<string | null>(null);
   const [isStatusUnlocked, setIsStatusUnlocked] = useState(false);
 
   // Fullscreen Screenshot Lightbox
@@ -328,6 +383,7 @@ function RegistrationsCrmInner() {
     setEditFeeLabel(reg.fee_label || "");
     setEditNotes(reg.admin_notes || "");
     setIsStatusUnlocked(false);
+    setProofRequirementWarning(null);
     setFeedback(null);
   };
 
@@ -372,17 +428,31 @@ function RegistrationsCrmInner() {
     overridePatch?: Partial<ActivityRegistrationRecord>
   ) => {
     if (!selected) return;
+    const targetMode = overridePatch?.booking_mode ?? editMode;
+    const targetVerification = overridePatch?.verification_status ?? editVerification;
+
+    // Screenshot proof check before securing seat or confirming
+    if (
+      (targetMode === "secure_seat" || targetVerification === "verified_confirmed") &&
+      !selected.screenshot_url
+    ) {
+      setProofRequirementWarning(
+        "Payment proof screenshot required before saving as Secured Seat or Confirmed. Please upload screenshot proof first."
+      );
+      return;
+    }
+
     setSaving(true);
     setFeedback(null);
+    setProofRequirementWarning(null);
     try {
       const res = await fetch("/api/admin/registrations", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: selected.id,
-          booking_mode: overridePatch?.booking_mode ?? editMode,
-          verification_status:
-            overridePatch?.verification_status ?? editVerification,
+          booking_mode: targetMode,
+          verification_status: targetVerification,
           transaction_ref: overridePatch?.transaction_ref ?? editTransactionRef,
           fee_label: overridePatch?.fee_label ?? editFeeLabel,
           admin_notes: overridePatch?.admin_notes ?? editNotes,
@@ -404,9 +474,14 @@ function RegistrationsCrmInner() {
         setSelected(updated);
         setEditMode(updated.booking_mode);
         setEditVerification(updated.verification_status);
+        setIsStatusUnlocked(false);
         setFeedback("Registration CRM record updated successfully!");
         setTimeout(() => setFeedback(null), 3000);
+      } else {
+        alert("Save failed: " + (json.error || "Unknown server error"));
       }
+    } catch (err: any) {
+      alert("Save failed: " + (err?.message || "Network error"));
     } finally {
       setSaving(false);
     }
@@ -418,6 +493,7 @@ function RegistrationsCrmInner() {
     const file = e.target.files?.[0];
     if (!file || !selected) return;
     setUploadingProof(true);
+    setProofRequirementWarning(null);
     setFeedback(null);
     try {
       const fd = new FormData();
@@ -429,15 +505,39 @@ function RegistrationsCrmInner() {
       const upRes = await fetch("/api/upload", { method: "POST", body: fd });
       const upJson = await upRes.json();
       if (upRes.ok && upJson.url) {
-        await handleSaveRecord({
-          booking_mode: "secure_seat",
-          verification_status: "verified_confirmed",
+        // Persist uploaded screenshot URL to database
+        const saveRes = await fetch("/api/admin/registrations", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: selected.id,
+            screenshot_url: upJson.url,
+            screenshot_public_id: upJson.publicId || "",
+            screenshot_name: file.name,
+          }),
+        });
+        const saveJson = await saveRes.json();
+        const updatedRecord: ActivityRegistrationRecord = saveJson.registration || {
+          ...selected,
           screenshot_url: upJson.url,
           screenshot_public_id: upJson.publicId || "",
           screenshot_name: file.name,
-        });
-        setFeedback("Payment screenshot uploaded & seat marked Verified!");
+        };
+
+        setRegistrations((prev) =>
+          prev.map((item) => (item.id === updatedRecord.id ? updatedRecord : item))
+        );
+        setSelected(updatedRecord);
+        // Stage status to Admin Review (awaiting_verification) and Booking Mode to Secured Seat
+        setEditMode("secure_seat");
+        setEditVerification("awaiting_verification");
+        setFeedback("Payment screenshot uploaded! You can now select Secured Seat & Confirmed, then click Save Changes.");
+        setTimeout(() => setFeedback(null), 4000);
+      } else {
+        alert("Upload failed: " + (upJson.error || "Unknown error"));
       }
+    } catch (err: any) {
+      alert("Upload failed: " + (err?.message || "Network error"));
     } finally {
       setUploadingProof(false);
       e.target.value = "";
@@ -1665,201 +1765,217 @@ function RegistrationsCrmInner() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 p-4 text-center text-xs text-slate-500">
-                    No payment screenshot attached yet (Provisional Reservation). Once received via WhatsApp or bank notification, upload it above.
-                  </div>
-                )}
-
-                {/* Admin Review Decision / Status Lock Controller */}
-                {(() => {
-                  const isRecordLocked =
-                    (selected.verification_status === "verified_confirmed" ||
-                      selected.verification_status === "cancelled") &&
-                    !isStatusUnlocked;
-
-                  if (isRecordLocked) {
-                    return selected.verification_status === "verified_confirmed" ? (
-                      <div className="rounded-xl p-3 sm:p-3.5 bg-emerald-50 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                        <div className="flex items-start sm:items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                            <Lock className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-xs sm:text-sm text-emerald-950 flex items-center gap-2 flex-wrap">
-                              <span>Seat Confirmed & Verified</span>
-                              <span className="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
-                                Status Locked
-                              </span>
-                            </div>
-                            <div className="text-[11px] text-emerald-700 mt-0.5">
-                              Payment confirmed. This record is locked against accidental changes.
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsStatusUnlocked(true)}
-                          className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
-                        >
-                          <Unlock className="w-3.5 h-3.5 text-emerald-700" />
-                          <span>Unlock Status</span>
-                        </button>
+                  <div className="rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/50 p-4 sm:p-5 flex flex-col items-center justify-center text-center space-y-2.5">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shadow-2xs">
+                      <UploadCloud className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="font-bold text-xs sm:text-sm text-[#102E4D]">
+                        No Payment Proof Screenshot Uploaded (Reservation Mode)
                       </div>
-                    ) : (
-                      <div className="rounded-xl p-3 sm:p-3.5 bg-rose-50 border border-rose-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                        <div className="flex items-start sm:items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0">
-                            <Lock className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <div className="font-bold text-xs sm:text-sm text-rose-950 flex items-center gap-2 flex-wrap">
-                              <span>Registration Cancelled</span>
-                              <span className="text-[10px] bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
-                                Status Locked
-                              </span>
-                            </div>
-                            <div className="text-[11px] text-rose-700 mt-0.5">
-                              This booking has been cancelled and locked.
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsStatusUnlocked(true)}
-                          className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 hover:bg-rose-100 text-rose-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
-                        >
-                          <Unlock className="w-3.5 h-3.5 text-rose-700" />
-                          <span>Unlock Status</span>
-                        </button>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="rounded-xl p-3 sm:p-3.5 bg-slate-50 border border-slate-200 space-y-2.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#102E4D] flex items-center gap-1.5">
-                          <Eye className="w-3.5 h-3.5 text-[#005696]" />
-                          <span>Admin Review Decision</span>
-                        </span>
-                        <span className="text-[10.5px] text-slate-500 font-medium">
-                          Select status to apply:
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        {/* 1. Payment Done -> Confirm & Lock */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleSaveRecord({
-                              booking_mode: "secure_seat",
-                              verification_status: "verified_confirmed",
-                            })
-                          }
-                          className="h-10 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                          title="Confirm bank payment and lock seat"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          <span>Payment Done (Confirm)</span>
-                        </button>
-
-                        {/* 2. Move to Reserved / Pending Callback */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleSaveRecord({
-                              booking_mode: "reserve_later",
-                              verification_status: "pending_callback",
-                            })
-                          }
-                          className="h-10 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                          title="Keep as provisional reservation for phone callback"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Reserve (Callback)</span>
-                        </button>
-
-                        {/* 3. Reject / Cancel & Lock */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Cancel registration for ${selected.full_name}? The record will be locked as Cancelled.`
-                              )
-                            ) {
-                              handleSaveRecord({
-                                verification_status: "cancelled",
-                              });
-                            }
-                          }}
-                          className="h-10 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition-colors"
-                          title="Cancel registration and lock record"
-                        >
-                          <X className="w-4 h-4" />
-                          <span>Cancel & Lock</span>
-                        </button>
+                      <div className="text-[11px] text-slate-600 max-w-md">
+                        Upload bank transfer screenshot or deposit slip to unlock <strong className="text-emerald-700">Secured Seat</strong> and <strong className="text-emerald-700">Confirmed</strong> status.
                       </div>
                     </div>
-                  );
-                })()}
+                    <label className="mt-1 h-9 px-4 rounded-xl bg-[#005696] hover:bg-[#004477] text-white text-xs font-bold inline-flex items-center gap-2 cursor-pointer shadow-xs transition-all active:scale-[0.98]">
+                      {uploadingProof ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Uploading Proof...</span>
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-4 h-4" />
+                          <span>Upload Payment Screenshot</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        disabled={uploadingProof}
+                        onChange={handleAdminProofUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
               </div>
 
               {/* SECTION 5: CRM Controls (Booking Mode & Verification Status) */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3.5">
+                <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D] inline-flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#005696]" />
+                    CRM Booking & Verification Controls
+                  </span>
+                  {(() => {
+                    const isRecordLocked =
+                      (selected.verification_status === "verified_confirmed" ||
+                        selected.verification_status === "cancelled") &&
+                      !isStatusUnlocked;
+                    return isRecordLocked ? (
+                      <span className="text-[10.5px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md inline-flex items-center gap-1 border border-amber-200">
+                        <Lock className="w-3 h-3 text-amber-700" />
+                        <span>Status Locked</span>
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+
+                {/* Locked Banner Notification */}
                 {(() => {
                   const isRecordLocked =
                     (selected.verification_status === "verified_confirmed" ||
                       selected.verification_status === "cancelled") &&
                     !isStatusUnlocked;
 
+                  if (!isRecordLocked) return null;
+
+                  return selected.verification_status === "verified_confirmed" ? (
+                    <div className="rounded-xl p-3 sm:p-3.5 bg-emerald-50 border border-emerald-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                      <div className="flex items-start sm:items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-xs sm:text-sm text-emerald-950 flex items-center gap-2 flex-wrap">
+                            <span>Seat Confirmed & Verified</span>
+                            <span className="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
+                              Status Locked
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-emerald-700 mt-0.5">
+                            Payment verified. This record is protected from accidental modifications.
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsStatusUnlocked(true)}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                      >
+                        <Unlock className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Unlock Status</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl p-3 sm:p-3.5 bg-rose-50 border border-rose-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                      <div className="flex items-start sm:items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-xs sm:text-sm text-rose-950 flex items-center gap-2 flex-wrap">
+                            <span>Registration Cancelled</span>
+                            <span className="text-[10px] bg-rose-200 text-rose-900 px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide">
+                              Status Locked
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-rose-700 mt-0.5">
+                            This booking is cancelled and locked against changes.
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsStatusUnlocked(true)}
+                        className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 hover:bg-rose-100 text-rose-900 text-xs font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 shrink-0 shadow-2xs"
+                      >
+                        <Unlock className="w-3.5 h-3.5 text-rose-700" />
+                        <span>Unlock Status</span>
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* Proof Requirement Warning Alert */}
+                {proofRequirementWarning && (
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-semibold flex items-center justify-between gap-2 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>{proofRequirementWarning}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setProofRequirementWarning(null)}
+                      className="text-amber-700 hover:text-amber-900 font-bold p-1 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {(() => {
+                  const isRecordLocked =
+                    (selected.verification_status === "verified_confirmed" ||
+                      selected.verification_status === "cancelled") &&
+                    !isStatusUnlocked;
+                  const hasProof = Boolean(selected.screenshot_url);
+
                   return (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="space-y-3.5">
                       {/* Booking Mode */}
                       <div className="space-y-1.5">
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
-                          Booking Mode
-                        </label>
-                        <div className="grid grid-cols-2 gap-1.5 h-10">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
+                            Booking Mode
+                          </label>
+                          <span className="text-[10.5px] text-slate-400">
+                            {editMode === "secure_seat" ? "Seat Guaranteed" : "Provisional Hold"}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 h-10">
                           <button
                             type="button"
                             disabled={isRecordLocked}
-                            onClick={() => setEditMode("secure_seat")}
-                            className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            onClick={() => {
+                              if (isRecordLocked) return;
+                              if (!hasProof) {
+                                setProofRequirementWarning("Payment proof screenshot required before switching to Secured Seat. Please upload a screenshot proof first.");
+                                return;
+                              }
+                              setProofRequirementWarning(null);
+                              setEditMode("secure_seat");
+                            }}
+                            className={`h-10 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                               isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                             } ${
                               editMode === "secure_seat"
-                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/30"
-                                : "bg-slate-50 text-slate-700 border-slate-200"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/30 font-extrabold"
+                                : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
-                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <ShieldCheck className="w-4 h-4" />
                             <span>Secured Seat</span>
                           </button>
+
                           <button
                             type="button"
                             disabled={isRecordLocked}
-                            onClick={() => setEditMode("reserve_later")}
-                            className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                            onClick={() => {
+                              if (isRecordLocked) return;
+                              setProofRequirementWarning(null);
+                              setEditMode("reserve_later");
+                            }}
+                            className={`h-10 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                               isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
                             } ${
                               editMode === "reserve_later"
-                                ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-500/30"
-                                : "bg-slate-50 text-slate-700 border-slate-200"
+                                ? "bg-amber-500 text-white border-amber-500 shadow-xs ring-2 ring-amber-400/30 font-extrabold"
+                                : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
                             }`}
                           >
-                            <CalendarCheck2 className="w-3.5 h-3.5" />
+                            <CalendarCheck2 className="w-4 h-4" />
                             <span>Reservation</span>
                           </button>
                         </div>
                       </div>
 
-                      {/* Verification Status */}
+                      {/* Verification Status (Colorful, Sequenced Selection Grid) */}
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
-                            Verification Status
+                            Verification Status (Select status to stage, then click Save)
                           </label>
                           {isRecordLocked && (
                             <span className="text-[10px] text-slate-400 font-semibold inline-flex items-center gap-1">
@@ -1868,27 +1984,66 @@ function RegistrationsCrmInner() {
                             </span>
                           )}
                         </div>
-                        <select
-                          disabled={isRecordLocked}
-                          value={editVerification}
-                          onChange={(e) => setEditVerification(e.target.value as VerificationStatus)}
-                          className={`w-full h-10 px-3 rounded-xl border border-slate-200 font-bold text-xs focus:outline-none focus:border-[#102E4D] ${
-                            isRecordLocked
-                              ? "bg-slate-100 text-slate-500 cursor-not-allowed"
-                              : "bg-white text-[#102E4D] cursor-pointer"
-                          }`}
-                        >
-                          <option value="awaiting_verification">Admin Review (Proof Uploaded)</option>
-                          <option value="pending_callback">Pending Callback (Reservation)</option>
-                          <option value="verified_confirmed">Confirmed (Seat Locked)</option>
-                          <option value="cancelled">Cancelled (Booking Locked)</option>
-                        </select>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                          {VERIFICATION_STATUS_CARDS.map((opt) => {
+                            const isSelected = editVerification === opt.value;
+                            const IconComp = opt.icon;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                disabled={isRecordLocked}
+                                onClick={() => {
+                                  if (isRecordLocked) return;
+                                  if (opt.requiresProof && !hasProof) {
+                                    setProofRequirementWarning(
+                                      "Payment proof screenshot required before confirming seat. Please upload a screenshot proof first."
+                                    );
+                                    return;
+                                  }
+                                  setProofRequirementWarning(null);
+                                  setEditVerification(opt.value);
+                                  if (opt.value === "verified_confirmed") {
+                                    setEditMode("secure_seat");
+                                  } else if (opt.value === "pending_callback") {
+                                    setEditMode("reserve_later");
+                                  }
+                                }}
+                                className={`p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between gap-1 min-h-[68px] ${
+                                  isRecordLocked ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:shadow-xs active:scale-[0.99]"
+                                } ${isSelected ? opt.activeClass : opt.inactiveClass}`}
+                              >
+                                <div className="flex items-center justify-between gap-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <IconComp className="w-3.5 h-3.5 shrink-0" />
+                                    <span className="text-xs font-extrabold leading-tight">
+                                      {opt.label}
+                                    </span>
+                                  </div>
+                                  <span
+                                    className={`text-[9.5px] px-1.5 py-0.2 rounded font-extrabold uppercase tracking-wide ${
+                                      isSelected ? opt.activeBadge : "bg-black/5 text-slate-600"
+                                    }`}
+                                  >
+                                    Step {opt.stepNum}
+                                  </span>
+                                </div>
+                                <div className={`text-[10px] font-medium leading-tight ${
+                                  isSelected ? "text-white/90" : "text-slate-500"
+                                }`}>
+                                  {opt.shortDesc}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   );
                 })()}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                   {/* Transaction Ref */}
                   <div className="space-y-1.5">
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
@@ -1934,9 +2089,9 @@ function RegistrationsCrmInner() {
                 {/* Quick Log Suggestions Grid */}
                 <div className="space-y-1.5">
                   <div className="text-[10px] sm:text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
-                    Quick Log Suggestions:
+                    Quick Log Suggestions (Click to append):
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                     {QUICK_REG_SUGGESTIONS.map((item) => {
                       const IconComp = item.icon;
                       return (
@@ -1948,12 +2103,12 @@ function RegistrationsCrmInner() {
                               prev ? `${prev}\n${item.appendNote}` : item.appendNote
                             )
                           }
-                          className={`h-11 px-2.5 rounded-xl border text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center gap-2 min-w-0 ${item.color}`}
+                          className={`min-h-[46px] h-auto py-2 px-3 rounded-xl border text-left transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center gap-2.5 ${item.color}`}
                         >
                           <span className={`w-6 h-6 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0`}>
                             <IconComp className="w-3.5 h-3.5" />
                           </span>
-                          <span className="text-[11px] sm:text-xs font-bold leading-tight truncate">
+                          <span className="text-xs font-bold leading-snug whitespace-normal break-words text-left">
                             {item.label}
                           </span>
                         </button>
@@ -2005,8 +2160,17 @@ function RegistrationsCrmInner() {
                   onClick={() => handleSaveRecord()}
                   className="h-9 px-4 sm:px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-colors"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>{saving ? "Saving…" : "Save CRM Changes"}</span>
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Changes…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
