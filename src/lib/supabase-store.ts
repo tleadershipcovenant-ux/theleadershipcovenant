@@ -473,6 +473,52 @@ export async function resolveActivityMetadata(slug: string): Promise<{
   city: string;
   schedule: string;
 }> {
+  // 1. Zero-latency static lookup (matches 100% of standard events without network lag)
+  const staticFound = EVENTS.find((ev) => ev.slug === slug);
+  if (staticFound) {
+    const formattedDate = staticFound.startDate
+      ? new Date(staticFound.startDate + "T00:00:00").toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
+      : "2026 Schedule";
+    return {
+      title: staticFound.title,
+      category: CATEGORY_LABELS[staticFound.category] || staticFound.category,
+      date: formattedDate,
+      city: staticFound.city || "Islamabad",
+      schedule: staticFound.schedule || "Full Day PKT",
+    };
+  }
+
+  // 2. Memory cache lookup
+  if (
+    memoryDb?.cms?.events?.content?.events &&
+    Array.isArray(memoryDb.cms.events.content.events)
+  ) {
+    const memFound = (
+      memoryDb.cms.events.content.events as LeadershipEvent[]
+    ).find((ev) => ev.slug === slug);
+    if (memFound) {
+      const formattedDate = memFound.startDate
+        ? new Date(memFound.startDate + "T00:00:00").toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "2026 Schedule";
+      return {
+        title: memFound.title,
+        category: CATEGORY_LABELS[memFound.category] || memFound.category,
+        date: formattedDate,
+        city: memFound.city || "Islamabad",
+        schedule: memFound.schedule || "Full Day PKT",
+      };
+    }
+  }
+
+  // 3. Dynamic CMS fallback if customized via Admin CMS
   const eventsPage = await getCmsPage("events");
   const cmsEvents = Array.isArray(eventsPage?.content?.events)
     ? (eventsPage.content.events as LeadershipEvent[])
@@ -597,12 +643,29 @@ export async function createActivityRegistration(input: {
           body: JSON.stringify(record),
         }
       );
-      if (inserted?.[0]) return inserted[0];
-    } catch {
+      if (inserted?.[0]) {
+        // Keep in-memory cache and local DB synchronized immediately
+        if (memoryDb) {
+          memoryDb.registrations.unshift(inserted[0]);
+        }
+        try {
+          const db = await readLocalDb();
+          db.registrations.unshift(inserted[0]);
+          await writeLocalDb(db).catch(() => {});
+        } catch {
+          // Ignored
+        }
+        return inserted[0];
+      }
+    } catch (err) {
+      console.warn("[Supabase Insert Error, saving to local store]:", err);
       // Fallback safely to local DB
     }
   }
 
+  if (memoryDb) {
+    memoryDb.registrations.unshift(record);
+  }
   const db = await readLocalDb();
   db.registrations.unshift(record);
   await writeLocalDb(db);
@@ -690,6 +753,11 @@ export async function deleteActivityRegistration(
 // =============================================================================
 
 export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
+  // Fast path: memory cache hit
+  if (memoryDb?.cms?.[key]) {
+    return memoryDb.cms[key];
+  }
+
   const cfg = getSupabaseConfig();
   if (cfg.isConfigured) {
     try {
