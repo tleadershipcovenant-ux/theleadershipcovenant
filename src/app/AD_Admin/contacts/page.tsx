@@ -25,6 +25,7 @@ import {
   MessageSquare,
   ArrowUpDown,
   Filter,
+  User,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import type {
@@ -1004,167 +1005,228 @@ export default function AdminContactsCrmPage() {
           />
 
           {/* Centered Modal Card */}
-          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[90vh]">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
-            {/* Modal Header */}
-            <div className="bg-[#102E4D] text-white px-5 py-4 flex items-center justify-between gap-3 shrink-0">
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className={`w-9 h-9 rounded-xl border ${getAvatarColor(
-                    selected.full_name
-                  )} flex items-center justify-center font-bold text-xs shrink-0`}
-                >
-                  {getInitials(selected.full_name)}
+            {/* Modal Header with High-Visibility ID Number */}
+            <div className="bg-[#102E4D] text-white px-5 sm:px-6 py-4 flex items-center justify-between gap-3 shrink-0">
+              <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+                {/* Prominent High-Visibility Reference ID Badge */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FF7900] text-white font-num font-extrabold text-sm sm:text-base tracking-wider shadow-sm shadow-[#FF7900]/30">
+                  <span className="text-orange-200 text-xs font-sans font-bold">ID:</span>
+                  <span>#{selected.reference_code}</span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      copyToClipboard(selected.reference_code, "ref_modal")
+                    }
+                    className="ml-1 p-1 hover:bg-black/10 rounded transition-colors cursor-pointer"
+                    title="Copy Reference Code"
+                  >
+                    {copiedKey === "ref_modal" ? (
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5 text-white/80" />
+                    )}
+                  </button>
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-num text-[11px] font-bold text-[#FFC400]">
-                      #{selected.reference_code}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(selected.reference_code, "ref_modal")
-                      }
-                      className="text-white/60 hover:text-white transition-colors"
-                      title="Copy Reference Code"
+
+                {/* Status Pill Badge */}
+                {(() => {
+                  const st = statusStyles(selected.crm_status);
+                  return (
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1.5 ${st.pill}`}
                     >
-                      {copiedKey === "ref_modal" ? (
-                        <Check className="w-3 h-3 text-[#10B981]" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                    </button>
-                  </div>
-                  <h2 className="font-bold text-base text-white truncate">
-                    {selected.full_name}
-                  </h2>
-                </div>
+                      <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
+                      <span>{st.label}</span>
+                    </span>
+                  );
+                })()}
               </div>
 
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
                 title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Modal Scrollable Body */}
-            <div className="p-5 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
-              {/* SECTION 1: Contact Information Channels */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {/* Email */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3 h-3 text-[#005696]" /> Email
+            {/* Modal Scrollable Body with Clean Alignment & Spacing */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
+              {/* SECTION 1: Sender Profile (FROM) */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/90 p-4 space-y-3.5">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/70">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-[#102E4D] text-white flex items-center justify-center">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Inquiry From (Sender Profile)
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-num flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span>
+                      {new Date(selected.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Sender Name & Organization */}
+                  <div className="space-y-1.5">
+                    <div className="text-[10.5px] uppercase font-bold text-slate-400">
+                      Sender Name
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-8 h-8 rounded-lg border ${getAvatarColor(
+                          selected.full_name
+                        )} flex items-center justify-center font-bold text-xs shrink-0`}
+                      >
+                        {getInitials(selected.full_name)}
+                      </div>
+                      <div className="font-bold text-base text-[#102E4D] leading-tight">
+                        {selected.full_name}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{selected.organization || "Independent / Individual"}</span>
+                    </div>
+                  </div>
+
+                  {/* Contact Channels: Email & WhatsApp */}
+                  <div className="space-y-2">
+                    {/* Email row */}
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-slate-200">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="w-3.5 h-3.5 text-[#005696] shrink-0" />
+                        <span
+                          className="text-xs font-semibold text-slate-800 truncate"
+                          title={selected.email}
+                        >
+                          {selected.email}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(selected.email, "email_modal")}
+                          className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                          title="Copy Email"
+                        >
+                          {copiedKey === "email_modal" ? (
+                            <Check className="w-3 h-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                        </button>
+                        <a
+                          href={`mailto:${selected.email}?subject=${encodeURIComponent(
+                            `Re: Inquiry #${selected.reference_code} — The Leadership Covenant`
+                          )}`}
+                          className="px-2 py-0.5 rounded-md bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors"
+                        >
+                          Email
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Phone / WhatsApp row */}
+                    <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-slate-200">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Phone className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+                        <span className="text-xs font-semibold text-slate-800 truncate font-num">
+                          {selected.phone || "No phone provided"}
+                        </span>
+                      </div>
+                      {selected.phone && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(selected.phone, "phone_modal")}
+                            className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                            title="Copy Phone"
+                          >
+                            {copiedKey === "phone_modal" ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                          <a
+                            href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                              `Assalam-o-Alaikum ${selected.full_name}, thank you for contacting The Leadership Covenant regarding your inquiry (Ref #${selected.reference_code}).`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2 py-0.5 rounded-md bg-[#25D366] hover:bg-[#20BD5A] text-white text-[10.5px] font-bold inline-flex items-center gap-1 transition-colors"
+                          >
+                            <FaWhatsapp className="w-3 h-3" />
+                            <span>WhatsApp</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 2: Topic & Inquiry Message */}
+              <div className="rounded-2xl bg-white border border-slate-200/90 p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 text-[#FF7900]" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                      Inquiry Message
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[11px] border border-[#C8EFE6]">
+                      Topic: {formatTopicName(selected.interest)}
                     </span>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard(selected.email, "email_modal")}
-                      className="text-slate-400 hover:text-slate-600"
+                      onClick={() => copyToClipboard(selected.message, "msg_modal")}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-[#102E4D] inline-flex items-center gap-1 cursor-pointer"
+                      title="Copy Message Text"
                     >
-                      {copiedKey === "email_modal" ? (
-                        <Check className="w-3 h-3 text-emerald-600" />
+                      {copiedKey === "msg_modal" ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span className="text-emerald-600 font-bold">Copied</span>
+                        </>
                       ) : (
-                        <Copy className="w-3 h-3" />
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </>
                       )}
                     </button>
                   </div>
-                  <div className="font-semibold text-slate-800 text-xs truncate" title={selected.email}>
-                    {selected.email}
-                  </div>
                 </div>
 
-                {/* Phone / WhatsApp */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-[#16A34A]" /> Phone
-                    </span>
-                    {selected.phone && (
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard(selected.phone, "phone_modal")}
-                        className="text-slate-400 hover:text-slate-600"
-                      >
-                        {copiedKey === "phone_modal" ? (
-                          <Check className="w-3 h-3 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                  <div className="font-num font-semibold text-slate-800 text-xs truncate">
-                    {selected.phone || "Not provided"}
-                  </div>
-                </div>
-
-                {/* Organization */}
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-                  <div className="text-[11px] font-bold text-slate-500 flex items-center gap-1">
-                    <Building2 className="w-3 h-3 text-[#FF7900]" /> School / Org
-                  </div>
-                  <div className="font-semibold text-slate-800 text-xs truncate" title={selected.organization}>
-                    {selected.organization || "Independent"}
-                  </div>
-                </div>
-              </div>
-
-              {/* Direct Quick Launch Buttons */}
-              <div className="flex flex-wrap gap-2">
-                <a
-                  href={`mailto:${selected.email}?subject=${encodeURIComponent(
-                    `Re: Inquiry #${selected.reference_code} — The Leadership Covenant`
-                  )}`}
-                  className="py-1.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <Mail className="w-3.5 h-3.5 text-[#FFC400]" />
-                  <span>Send Email</span>
-                </a>
-                {selected.phone && (
-                  <a
-                    href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                      `Assalam-o-Alaikum ${selected.full_name}, thank you for contacting The Leadership Covenant (Ref #${selected.reference_code}).`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-1.5 px-3 rounded-lg bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
-                  >
-                    <FaWhatsapp className="w-3.5 h-3.5" />
-                    <span>WhatsApp Chat</span>
-                  </a>
-                )}
-              </div>
-
-              {/* SECTION 2: Message Quote & Topic Tag */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                    Inquiry Message
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[11px] border border-[#C8EFE6]">
-                    Topic: {formatTopicName(selected.interest)}
-                  </span>
-                </div>
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-slate-800 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap">
+                <div className="rounded-xl bg-slate-50/90 border border-slate-200/70 p-3.5 text-slate-800 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap font-sans">
                   {selected.message}
                 </div>
-                <div className="text-[10.5px] text-slate-400 font-num">
-                  Submitted: {new Date(selected.created_at).toLocaleString()}
-                </div>
               </div>
 
-              {/* SECTION 3: CRM Status Selection (Priority removed) */}
-              <div className="space-y-2 pt-1 border-t border-slate-100">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block">
-                  Workflow Status
+              {/* SECTION 3: CRM Workflow Status */}
+              <div className="rounded-2xl bg-white border border-slate-200/90 p-4 space-y-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#102E4D] block">
+                  CRM Workflow Status
                 </span>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1177,10 +1239,10 @@ export default function AdminContactsCrmPage() {
                           key={st}
                           type="button"
                           onClick={() => setEditStatus(st)}
-                          className={`p-2 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-2 ${
+                          className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer flex items-center gap-2 ${
                             active
-                              ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs"
-                              : "bg-white hover:bg-slate-50 text-slate-700 border-slate-200"
+                              ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
+                              : "bg-slate-50/70 hover:bg-slate-100/70 text-slate-700 border-slate-200"
                           }`}
                         >
                           <span className={`w-2 h-2 rounded-full ${info.dot}`} />
@@ -1192,29 +1254,32 @@ export default function AdminContactsCrmPage() {
                 </div>
               </div>
 
-              {/* SECTION 4: Internal CRM Notes */}
-              <div className="space-y-1.5 pt-1 border-t border-slate-100">
+              {/* SECTION 4: Internal Admin Notes */}
+              <div className="rounded-2xl bg-white border border-slate-200/90 p-4 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                    Internal Notes
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#102E4D]">
+                    Internal Admin Notes
                   </label>
-                  <span className="text-[10px] text-slate-400">Admin private log</span>
+                  <span className="text-[10.5px] text-slate-400">Private log for portal team</span>
                 </div>
 
-                <div className="flex flex-wrap gap-1">
+                {/* Quick note helper chips */}
+                <div className="flex flex-wrap gap-1.5">
                   {[
                     "📞 Spoke on phone",
-                    "💬 Sent WhatsApp info",
-                    "📅 Meeting booked",
-                    "✅ Resolved",
+                    "💬 Sent WhatsApp brochure",
+                    "📅 Meeting scheduled",
+                    "✅ Inquiry resolved",
                   ].map((snippet) => (
                     <button
                       key={snippet}
                       type="button"
                       onClick={() =>
-                        setEditNotes((prev) => (prev ? `${prev}\n• ${snippet}` : `• ${snippet}`))
+                        setEditNotes((prev) =>
+                          prev ? `${prev}\n• ${snippet}` : `• ${snippet}`
+                        )
                       }
-                      className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-medium transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10.5px] font-medium transition-colors cursor-pointer"
                     >
                       + {snippet}
                     </button>
@@ -1223,16 +1288,16 @@ export default function AdminContactsCrmPage() {
 
                 <textarea
                   rows={2}
-                  placeholder="Add notes, follow-up callbacks, or action items…"
+                  placeholder="Record follow-up actions, assigned team member, or conversation notes…"
                   value={editNotes}
                   onChange={(e) => setEditNotes(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white text-xs text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors"
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 focus:bg-white text-xs text-slate-800 focus:outline-none focus:border-[#102E4D] transition-colors leading-relaxed"
                 />
               </div>
 
               {/* Feedback toast */}
               {feedback && (
-                <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-1.5 border border-emerald-200">
+                <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in">
                   <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
                   <span>{feedback}</span>
                 </div>
@@ -1240,11 +1305,11 @@ export default function AdminContactsCrmPage() {
             </div>
 
             {/* Modal Footer Controls */}
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
+            <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleDeleteRecord(selected.id)}
-                className="h-8.5 px-3 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer"
+                className="h-9 px-3.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete</span>
@@ -1254,7 +1319,7 @@ export default function AdminContactsCrmPage() {
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
-                  className="h-8.5 px-3 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                  className="h-9 px-3.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1262,7 +1327,7 @@ export default function AdminContactsCrmPage() {
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord("responded")}
-                  className="h-8.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  className="h-9 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors shadow-2xs"
                   title="Mark as Responded and Save"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
@@ -1272,7 +1337,7 @@ export default function AdminContactsCrmPage() {
                   type="button"
                   disabled={saving}
                   onClick={() => handleSaveRecord()}
-                  className="h-8.5 px-4 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                  className="h-9 px-4.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{saving ? "Saving…" : "Save"}</span>
