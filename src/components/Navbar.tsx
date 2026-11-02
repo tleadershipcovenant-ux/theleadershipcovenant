@@ -17,10 +17,27 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const next = window.scrollY > 20;
-      setIsScrolled((prev) => (prev === next ? prev : next));
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const y = window.scrollY;
+          setIsScrolled((prev) => {
+            // Hysteresis buffer zone:
+            // Scroll down past 32px -> smoothly collapse upper info top bar
+            // Scroll up below 14px -> smoothly restore upper info top bar
+            // This completely eliminates layout thrashing & stutter when scrolling back up
+            if (!prev && y > 32) return true;
+            if (prev && y < 14) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -35,13 +52,13 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
+    <header className="fixed top-0 left-0 right-0 z-50 transform-gpu will-change-transform">
       {/* 1. Professional Upper Top Bar — Midnight Navy (#001B33) (Clean, Executive, No Badges) */}
       <div
-        className={`w-full bg-[#001B33] text-white/90 border-b border-white/10 transition-[height,opacity] duration-200 ease-out hidden md:block ${
+        className={`w-full bg-[#001B33] text-white/90 border-b overflow-hidden transition-[height,opacity] duration-300 ease-in-out transform-gpu will-change-[height,opacity] hidden md:block ${
           isScrolled
-            ? "h-0 opacity-0 pointer-events-none overflow-hidden border-b-0"
-            : "h-9 opacity-100"
+            ? "h-0 opacity-0 pointer-events-none border-transparent"
+            : "h-9 opacity-100 border-white/10"
         }`}
       >
         <div className="max-w-[1280px] h-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs font-medium">
@@ -76,7 +93,7 @@ export default function Navbar() {
 
       {/* 2. Main Navigation Bar */}
       <div
-        className={`w-full bg-white border-b border-slate-200/90 transition-[height,box-shadow] duration-200 ease-out ${
+        className={`w-full bg-white border-b border-slate-200/90 transition-[height,box-shadow] duration-300 ease-in-out transform-gpu will-change-[height,box-shadow] ${
           isScrolled
             ? "h-[60px] md:h-[68px] shadow-sm"
             : "h-[68px] md:h-[76px] shadow-xs"
@@ -86,10 +103,8 @@ export default function Navbar() {
           {/* Logo & Brand Identity (Refined & Professional Logo Size) */}
           <Link href="/" className="flex items-center gap-3 sm:gap-3.5 group min-w-0">
             <div
-              className={`relative shrink-0 transition-all duration-300 flex items-center justify-center ${
-                isScrolled
-                  ? "w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12"
-                  : "w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 lg:w-14 lg:h-14"
+              className={`relative shrink-0 flex items-center justify-center transition-transform duration-300 ease-out transform-gpu w-11 h-11 sm:w-12 sm:h-12 md:w-13 md:h-13 lg:w-14 lg:h-14 ${
+                isScrolled ? "scale-90 md:scale-92" : "scale-100"
               }`}
             >
               <img
@@ -99,13 +114,7 @@ export default function Navbar() {
               />
             </div>
             <div className="flex flex-col justify-center text-left min-w-0">
-              <span
-                className={`font-serif font-extrabold text-[#102E4D] tracking-tight leading-tight transition-all duration-300 whitespace-nowrap truncate ${
-                  isScrolled
-                    ? "text-base sm:text-lg lg:text-[20px]"
-                    : "text-lg sm:text-xl lg:text-[22px]"
-                }`}
-              >
+              <span className="font-serif font-extrabold text-[#102E4D] tracking-tight leading-tight whitespace-nowrap truncate text-base sm:text-lg lg:text-[21px]">
                 The Leadership Covenant
               </span>
               <span className="text-[9.5px] sm:text-[10.5px] text-[#FF7900] font-bold tracking-wider truncate mt-0.5 uppercase">
