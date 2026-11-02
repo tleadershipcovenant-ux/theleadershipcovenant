@@ -199,19 +199,49 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const id = req.nextUrl.searchParams.get("id")?.trim();
-  if (!id) {
+  let ids: string[] = [];
+  const singleId = req.nextUrl.searchParams.get("id")?.trim();
+  const multipleIds = req.nextUrl.searchParams.get("ids")?.trim();
+
+  if (singleId) {
+    ids.push(singleId);
+  } else if (multipleIds) {
+    ids = multipleIds.split(",").map((s) => s.trim()).filter(Boolean);
+  } else {
+    try {
+      const body = await req.json().catch(() => null);
+      if (Array.isArray(body?.ids)) {
+        ids = body.ids.map((s: unknown) => String(s).trim()).filter(Boolean);
+      } else if (typeof body?.id === "string" && body.id.trim()) {
+        ids.push(body.id.trim());
+      }
+    } catch {
+      // no body
+    }
+  }
+
+  if (ids.length === 0) {
     return NextResponse.json(
       { ok: false, error: "Registration ID is required." },
       { status: 400 }
     );
   }
 
-  const deleted = await deleteActivityRegistration(id);
-  if (deleted?.screenshot_public_id) {
-    await deleteCloudinaryAsset(deleted.screenshot_public_id);
+  let deletedCount = 0;
+  for (const id of ids) {
+    const deleted = await deleteActivityRegistration(id);
+    if (deleted) {
+      deletedCount++;
+      if (deleted.screenshot_public_id) {
+        try {
+          await deleteCloudinaryAsset(deleted.screenshot_public_id);
+        } catch (e) {
+          console.warn("[CLOUDINARY DELETE ERROR]", e);
+        }
+      }
+    }
   }
 
-  return NextResponse.json({ ok: Boolean(deleted) });
+  return NextResponse.json({ ok: true, count: deletedCount, ids });
 }
 

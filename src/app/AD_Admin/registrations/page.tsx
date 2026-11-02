@@ -274,9 +274,16 @@ function RegistrationsCrmInner() {
     message: "",
   });
 
-  // Lock background scroll when modal or lightbox is active (smooth mobile touch performance)
+  // Batch Selection & Deletion State
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [recordsToDelete, setRecordsToDelete] = useState<ActivityRegistrationRecord[]>([]);
+
+  // Lock background scroll when modal, lightbox or confirmation is active (smooth mobile touch performance)
   useEffect(() => {
-    if (selected || addModalOpen || lightboxUrl) {
+    if (selected || addModalOpen || lightboxUrl || deleteConfirmOpen) {
       const prevOverflow = document.body.style.overflow;
       const prevTouchAction = document.body.style.touchAction;
       document.body.style.overflow = "hidden";
@@ -286,7 +293,7 @@ function RegistrationsCrmInner() {
         document.body.style.touchAction = prevTouchAction;
       };
     }
-  }, [selected, addModalOpen, lightboxUrl]);
+  }, [selected, addModalOpen, lightboxUrl, deleteConfirmOpen]);
 
   // Restore saved view mode preference
   useEffect(() => {
@@ -428,6 +435,101 @@ function RegistrationsCrmInner() {
 
     return result;
   }, [tabFilteredByActivity, bookingFilter, verificationFilter, deferredSearchQuery, sortBy]);
+
+  // Selection helpers
+  const isAllSelected = useMemo(() => {
+    if (filteredRegistrations.length === 0) return false;
+    return filteredRegistrations.every((r) => selectedIds.has(r.id));
+  }, [filteredRegistrations, selectedIds]);
+
+  const isSomeSelected = useMemo(() => {
+    if (isAllSelected) return false;
+    return filteredRegistrations.some((r) => selectedIds.has(r.id));
+  }, [filteredRegistrations, selectedIds, isAllSelected]);
+
+  const handleToggleSelectOne = (id: string, e?: React.SyntheticEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        filteredRegistrations.forEach((r) => next.delete(r.id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        filteredRegistrations.forEach((r) => next.add(r.id));
+        return next;
+      });
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const promptDeleteSingle = (record: ActivityRegistrationRecord, e?: React.SyntheticEvent) => {
+    if (e) e.stopPropagation();
+    setRecordsToDelete([record]);
+    setDeleteConfirmOpen(true);
+  };
+
+  const promptBatchDelete = () => {
+    const toDelete = registrations.filter((r) => selectedIds.has(r.id));
+    if (toDelete.length === 0) return;
+    setRecordsToDelete(toDelete);
+    setDeleteConfirmOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (recordsToDelete.length === 0) return;
+    setDeleting(true);
+    try {
+      const ids = recordsToDelete.map((r) => r.id);
+      const res = await fetch("/api/admin/registrations", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setRegistrations((prev) => prev.filter((r) => !ids.includes(r.id)));
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          ids.forEach((id) => next.delete(id));
+          return next;
+        });
+        setDeleteConfirmOpen(false);
+        setRecordsToDelete([]);
+        if (selected && ids.includes(selected.id)) {
+          setSelected(null);
+        }
+        setFeedback(
+          `Successfully deleted ${ids.length} registration record${ids.length > 1 ? "s" : ""} from the database.`
+        );
+        setTimeout(() => setFeedback(null), 4000);
+      } else {
+        alert(data.error || "Failed to delete records from database.");
+      }
+    } catch (err) {
+      console.error("[DELETE REGISTRATIONS ERROR]", err);
+      alert("An error occurred while deleting records.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const openInspector = (reg: ActivityRegistrationRecord) => {
     setSelected(reg);
@@ -870,6 +972,32 @@ function RegistrationsCrmInner() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
+                onClick={() => {
+                  if (selectMode) {
+                    setSelectMode(false);
+                    setSelectedIds(new Set());
+                  } else {
+                    setSelectMode(true);
+                  }
+                }}
+                className={`h-9 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer border ${
+                  selectMode
+                    ? "bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100"
+                    : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700"
+                }`}
+                title={selectMode ? "Exit selection mode" : "Select records to delete"}
+              >
+                <Trash2 className={`w-3.5 h-3.5 ${selectMode ? "text-rose-600" : "text-rose-500"}`} />
+                <span>{selectMode ? "Exit Select" : "Delete Records"}</span>
+                {selectedIds.size > 0 && (
+                  <span className="font-num px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-rose-600 text-white">
+                    {selectedIds.size}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setAddModalOpen(true)}
                 className="h-9 px-3.5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
@@ -958,6 +1086,72 @@ function RegistrationsCrmInner() {
               </div>
             </div>
           </div>
+
+          {/* BATCH SELECTION & ACTION BAR */}
+          {(selectMode || selectedIds.size > 0) && (
+            <div className="p-3 bg-gradient-to-r from-rose-50 via-amber-50 to-sky-50 border-b border-rose-200/90 flex flex-wrap items-center justify-between gap-3 animate-in fade-in duration-150">
+              <div className="flex items-center gap-2.5">
+                <label className="inline-flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800 select-none">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = isSomeSelected;
+                    }}
+                    onChange={handleToggleSelectAll}
+                    className="w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer"
+                  />
+                  <span>Select All ({filteredRegistrations.length})</span>
+                </label>
+
+                <span className="h-4 w-px bg-slate-300 mx-1 hidden sm:inline-block" />
+
+                <span className="text-xs font-bold text-slate-600">
+                  <span className="font-num text-rose-700 font-extrabold">{selectedIds.size}</span> of{" "}
+                  <span className="font-num">{filteredRegistrations.length}</span> records selected
+                </span>
+
+                {selectedIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearSelection}
+                    className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                  >
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  type="button"
+                  onClick={promptBatchDelete}
+                  disabled={selectedIds.size === 0 || deleting}
+                  className="h-8 px-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>
+                    {deleting
+                      ? "Deleting…"
+                      : selectedIds.size > 0
+                      ? `Delete Selected (${selectedIds.size})`
+                      : "Delete Selected"}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectMode(false);
+                    setSelectedIds(new Set());
+                  }}
+                  className="h-8 px-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1044,6 +1238,23 @@ function RegistrationsCrmInner() {
           })}
         </div>
       </div>
+
+      {/* Toast Feedback for Actions */}
+      {feedback && !selected && (
+        <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center justify-between gap-2 border border-emerald-200 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <span>{feedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-emerald-700 hover:text-emerald-900 cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* 3. UNIFIED SINGLE-ROW TOOLBAR: Filter Tabs + Search + View Mode    */}
@@ -1208,22 +1419,35 @@ function RegistrationsCrmInner() {
               const avatarColor = getAvatarColor(r.full_name);
               const initials = getInitials(r.full_name);
               const relativeTime = getRelativeTimeString(r.created_at);
+              const isSelected = selectedIds.has(r.id);
 
               return (
                 <div
                   key={r.id}
                   onClick={() => openInspector(r)}
-                  className="group relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer"
+                  className={`group relative rounded-2xl bg-white border hover:border-slate-300 hover:shadow-md transition-all duration-150 flex flex-col justify-between overflow-hidden cursor-pointer ${
+                    isSelected
+                      ? "border-rose-400 ring-2 ring-rose-300/60 bg-rose-50/20"
+                      : "border-slate-200/90"
+                  }`}
                 >
                   {/* Status Top Strip */}
                   <div className={`h-1.5 w-full bg-gradient-to-r ${bStyle.borderTop}`} />
 
                   <div className="p-4 space-y-3 flex-1">
-                    {/* Top Row: Ref ID + Booking Mode Pill */}
+                    {/* Top Row: Checkbox + Ref ID + Booking Mode Pill */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-num font-extrabold text-[11px] text-[#102E4D] bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                        #{r.reference_code}
-                      </span>
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => handleToggleSelectOne(r.id, e)}
+                          className="w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer"
+                        />
+                        <span className="font-num font-extrabold text-[11px] text-[#102E4D] bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                          #{r.reference_code}
+                        </span>
+                      </div>
 
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${bStyle.pill}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
@@ -1330,6 +1554,14 @@ function RegistrationsCrmInner() {
                       >
                         Manage
                       </button>
+                      <button
+                        type="button"
+                        onClick={(e) => promptDeleteSingle(r, e)}
+                        className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white flex items-center justify-center transition-colors border border-rose-200 cursor-pointer"
+                        title="Delete Record from Database"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1342,13 +1574,25 @@ function RegistrationsCrmInner() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/90 border-b border-slate-200 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                  <th className="py-2.5 px-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      ref={(el) => {
+                        if (el) el.indeterminate = isSomeSelected;
+                      }}
+                      onChange={handleToggleSelectAll}
+                      className="w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer"
+                      title="Select / Deselect all records"
+                    />
+                  </th>
                   <th className="py-2.5 px-3 w-28 whitespace-nowrap">Booking Ref</th>
                   <th className="py-2.5 px-3 min-w-[120px] max-w-[160px]">Participant</th>
                   <th className="py-2.5 px-3 min-w-[130px] max-w-[180px]">Activity Cohort</th>
                   <th className="py-2.5 px-3 w-32 whitespace-nowrap">Booking Mode</th>
                   <th className="py-2.5 px-3 w-28 whitespace-nowrap">Payment Proof</th>
                   <th className="py-2.5 px-3 w-32 whitespace-nowrap">Verification</th>
-                  <th className="py-2.5 px-3 w-24 text-right whitespace-nowrap">Actions</th>
+                  <th className="py-2.5 px-3 w-28 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1357,13 +1601,31 @@ function RegistrationsCrmInner() {
                   const vBadge = verificationBadge(r.verification_status);
                   const avatarColor = getAvatarColor(r.full_name);
                   const initials = getInitials(r.full_name);
+                  const isSelected = selectedIds.has(r.id);
 
                   return (
                     <tr
                       key={r.id}
                       onClick={() => openInspector(r)}
-                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
+                      className={`transition-colors cursor-pointer group ${
+                        isSelected
+                          ? "bg-rose-50/60 hover:bg-rose-100/60"
+                          : "hover:bg-slate-50/70"
+                      }`}
                     >
+                      {/* Selection Checkbox */}
+                      <td
+                        className="py-2.5 px-3 w-10 text-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => handleToggleSelectOne(r.id, e)}
+                          className="w-4 h-4 rounded text-rose-600 border-slate-300 focus:ring-rose-500 cursor-pointer"
+                        />
+                      </td>
+
                       {/* Booking Ref */}
                       <td className="py-2.5 px-3 whitespace-nowrap">
                         <div className="space-y-0.5">
@@ -1490,6 +1752,14 @@ function RegistrationsCrmInner() {
                             className="px-2 py-1 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors cursor-pointer shadow-2xs"
                           >
                             Manage
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => promptDeleteSingle(r, e)}
+                            className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white flex items-center justify-center transition-colors border border-rose-200 cursor-pointer"
+                            title="Delete Record from Database"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -2302,11 +2572,12 @@ function RegistrationsCrmInner() {
             <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => handleDelete(selected.id)}
+                onClick={() => promptDeleteSingle(selected)}
                 className="h-9 px-3 sm:px-3.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                title="Permanently delete this registration record"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete</span>
+                <span>Delete Record</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -2628,6 +2899,98 @@ function RegistrationsCrmInner() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* 7. DELETE CONFIRMATION MODAL (Safe, Explicit & Professional)       */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-hidden pointer-events-auto">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-2xs transition-opacity"
+            onClick={() => !deleting && setDeleteConfirmOpen(false)}
+          />
+
+          <div className="relative z-10 w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            {/* Top red accent line */}
+            <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 via-red-500 to-orange-500 rounded-full" />
+
+            <div className="flex items-start gap-3.5 pt-1">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D]">
+                  {recordsToDelete.length === 1
+                    ? "Delete Registration Record?"
+                    : `Delete ${recordsToDelete.length} Registration Records?`}
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Are you sure you want to permanently delete{" "}
+                  {recordsToDelete.length === 1 ? (
+                    <strong className="text-slate-800">
+                      #{recordsToDelete[0].reference_code} ({recordsToDelete[0].full_name})
+                    </strong>
+                  ) : (
+                    <strong className="text-slate-800">{recordsToDelete.length} selected records</strong>
+                  )}{" "}
+                  from the database?
+                </p>
+              </div>
+            </div>
+
+            {/* List preview if <= 4 records */}
+            {recordsToDelete.length > 0 && recordsToDelete.length <= 4 && (
+              <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-3 space-y-1.5 text-xs text-slate-600">
+                {recordsToDelete.map((r) => (
+                  <div key={r.id} className="flex items-center justify-between gap-2 truncate">
+                    <span className="font-bold text-[#102E4D]">
+                      #{r.reference_code} — {r.full_name}
+                    </span>
+                    <span className="text-[10.5px] text-slate-400 truncate">{r.activity_title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="p-3 bg-rose-50/80 border border-rose-200/90 rounded-xl text-[11px] text-rose-800 flex items-start gap-2">
+              <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <span>
+                This will permanently remove the record(s) from Supabase and delete any uploaded payment proof screenshots from Cloudinary. <strong>This action cannot be undone.</strong>
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(false)}
+                disabled={deleting}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDelete}
+                disabled={deleting}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting from DB…</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Yes, Permanently Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
