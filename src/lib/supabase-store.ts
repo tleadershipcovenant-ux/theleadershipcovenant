@@ -1,13 +1,24 @@
 import path from "path";
 import { promises as fs } from "fs";
-import { SITE, ANNOUNCEMENTS, MAIN_NAV, HEADER_CTA } from "@/config/site";
-import { HOME_CONTENT } from "@/content/home";
 import { EVENTS, CATEGORY_LABELS, type LeadershipEvent } from "@/content/events";
-import { SUMMIT_CONTENT } from "@/content/summit";
-import { SERVICES } from "@/content/services";
-import { ABOUT_CONTENT } from "@/content/about";
-import { PAYMENT_METHODS } from "@/content/payment";
-import { FORM_COPY } from "@/content/forms";
+import { getCmsPage } from "@/lib/firebase-cms";
+
+/**
+ * Re-export all CMS operations and types from Firebase Firestore module.
+ * For dedicated CMS work, import directly from `@/lib/firebase-cms`.
+ */
+export {
+  type CmsPageKey,
+  type CmsPageRecord,
+  CMS_PAGE_TITLES,
+  ALL_CMS_KEYS,
+  getDefaultCmsContent,
+  getCmsPage,
+  getAllCmsPages,
+  upsertCmsPage,
+  resetCmsPageToDefault,
+  testFirebaseCmsStatus,
+} from "@/lib/firebase-cms";
 
 export type ContactCrmStatus = "new" | "in_progress" | "responded" | "archived";
 export type ContactPriority = "low" | "normal" | "high" | "urgent";
@@ -65,96 +76,10 @@ export interface ActivityRegistrationRecord {
   updated_at: string;
 }
 
-export type CmsPageKey =
-  | "site"
-  | "home"
-  | "events"
-  | "pricing"
-  | "summit"
-  | "services"
-  | "about"
-  | "payment"
-  | "forms";
-
-export interface CmsPageRecord {
-  page_key: CmsPageKey;
-  title: string;
-  content: Record<string, unknown>;
-  updated_by: string;
-  updated_at: string;
-}
-
 interface LocalDbSchema {
   contacts: ContactSubmissionRecord[];
   registrations: ActivityRegistrationRecord[];
-  cms: Record<string, CmsPageRecord>;
 }
-
-const CMS_PAGE_TITLES: Record<CmsPageKey, string> = {
-  site: "Global Site Settings & Ticker Announcements",
-  home: "Home Page Content & Impact Metrics",
-  events: "Activities, Workshops & Cohorts Catalog",
-  pricing: "Activity Pricing & Early Bird Discount Rules",
-  summit: "The School Impact Summit 2026 Page",
-  services: "Services & Flagship Programs Page",
-  about: "Our Story, Covenant & CEO Message Page",
-  payment: "Official Bank & QR Payment Settings",
-  forms: "Application & Contact Forms Copy",
-};
-
-export function getDefaultCmsContent(
-  key: CmsPageKey
-): Record<string, unknown> {
-  switch (key) {
-    case "site":
-      return {
-        site: JSON.parse(JSON.stringify(SITE)),
-        announcements: JSON.parse(JSON.stringify(ANNOUNCEMENTS)),
-        mainNav: JSON.parse(JSON.stringify(MAIN_NAV)),
-        headerCta: JSON.parse(JSON.stringify(HEADER_CTA)),
-      };
-    case "home":
-      return JSON.parse(JSON.stringify(HOME_CONTENT));
-    case "events":
-      return {
-        events: JSON.parse(JSON.stringify(EVENTS)),
-      };
-    case "pricing":
-      return {
-        summitSlug: "school-impact-summit-2026",
-        regularPrice: 5000,
-        discountPercent: 20,
-        earlyBirdDeadline: "2026-11-07T23:59:59+05:00",
-        currency: "PKR",
-      };
-    case "summit":
-      return JSON.parse(JSON.stringify(SUMMIT_CONTENT));
-    case "services":
-      return {
-        services: JSON.parse(JSON.stringify(SERVICES)),
-      };
-    case "about":
-      return JSON.parse(JSON.stringify(ABOUT_CONTENT));
-    case "payment":
-      return {
-        methods: JSON.parse(JSON.stringify(PAYMENT_METHODS)),
-      };
-    case "forms":
-      return JSON.parse(JSON.stringify(FORM_COPY));
-  }
-}
-
-export const ALL_CMS_KEYS: CmsPageKey[] = [
-  "site",
-  "home",
-  "events",
-  "pricing",
-  "summit",
-  "services",
-  "about",
-  "payment",
-  "forms",
-];
 
 export function getSupabaseConfig() {
   const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "")
@@ -193,21 +118,9 @@ function getLocalDbPath(): string {
 }
 
 function buildSeedDb(): LocalDbSchema {
-  const now = new Date().toISOString();
-  const cms: Record<string, CmsPageRecord> = {};
-  for (const key of ALL_CMS_KEYS) {
-    cms[key] = {
-      page_key: key,
-      title: CMS_PAGE_TITLES[key],
-      content: getDefaultCmsContent(key),
-      updated_by: "system-seed",
-      updated_at: now,
-    };
-  }
   return {
     contacts: [],
     registrations: [],
-    cms,
   };
 }
 
@@ -216,13 +129,11 @@ async function readLocalDb(): Promise<LocalDbSchema> {
     const filePath = getLocalDbPath();
     const raw = await fs.readFile(filePath, "utf8");
     const parsed = JSON.parse(raw) as Partial<LocalDbSchema>;
-    const seed = buildSeedDb();
     return {
       contacts: Array.isArray(parsed.contacts) ? parsed.contacts : [],
       registrations: Array.isArray(parsed.registrations)
         ? parsed.registrations
         : [],
-      cms: { ...seed.cms, ...(parsed.cms || {}) },
     };
   } catch {
     if (!memoryDb) {
@@ -301,12 +212,12 @@ export async function testSupabaseConnection(): Promise<{
   }
 
   try {
-    await supabaseFetch<unknown[]>("cms_pages?select=page_key&limit=1");
+    await supabaseFetch<unknown[]>("contact_submissions?select=id&limit=1");
     return {
       configured: true,
       connected: true,
       provider: "supabase",
-      message: "Connected to Supabase PostgreSQL (tables verified & active).",
+      message: "Connected to Supabase PostgreSQL (CRM tables verified & active).",
     };
   } catch (err: unknown) {
     return {
@@ -495,7 +406,38 @@ export async function resolveActivityMetadata(slug: string): Promise<{
   city: string;
   schedule: string;
 }> {
-  // 1. Zero-latency static lookup (matches 100% of standard events without network lag)
+  // 1. Dynamic Firebase CMS lookup
+  try {
+    const eventsPage = await getCmsPage("events");
+    const cmsEvents = Array.isArray(eventsPage?.content?.events)
+      ? (eventsPage.content.events as LeadershipEvent[])
+      : EVENTS;
+
+    const found =
+      cmsEvents.find((ev) => ev.slug === slug) ||
+      EVENTS.find((ev) => ev.slug === slug);
+
+    if (found) {
+      const formattedDate = found.startDate
+        ? new Date(found.startDate + "T00:00:00").toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : "2026 Schedule";
+      return {
+        title: found.title,
+        category: CATEGORY_LABELS[found.category] || found.category,
+        date: formattedDate,
+        city: found.city || "Islamabad",
+        schedule: found.schedule || "Full Day PKT",
+      };
+    }
+  } catch {
+    // Non-fatal, fallback to static EVENTS
+  }
+
+  // 2. Static events fallback
   const staticFound = EVENTS.find((ev) => ev.slug === slug);
   if (staticFound) {
     const formattedDate = staticFound.startDate
@@ -511,59 +453,6 @@ export async function resolveActivityMetadata(slug: string): Promise<{
       date: formattedDate,
       city: staticFound.city || "Islamabad",
       schedule: staticFound.schedule || "Full Day PKT",
-    };
-  }
-
-  // 2. Memory cache lookup
-  if (
-    memoryDb?.cms?.events?.content?.events &&
-    Array.isArray(memoryDb.cms.events.content.events)
-  ) {
-    const memFound = (
-      memoryDb.cms.events.content.events as LeadershipEvent[]
-    ).find((ev) => ev.slug === slug);
-    if (memFound) {
-      const formattedDate = memFound.startDate
-        ? new Date(memFound.startDate + "T00:00:00").toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-        : "2026 Schedule";
-      return {
-        title: memFound.title,
-        category: CATEGORY_LABELS[memFound.category] || memFound.category,
-        date: formattedDate,
-        city: memFound.city || "Islamabad",
-        schedule: memFound.schedule || "Full Day PKT",
-      };
-    }
-  }
-
-  // 3. Dynamic CMS fallback if customized via Admin CMS
-  const eventsPage = await getCmsPage("events");
-  const cmsEvents = Array.isArray(eventsPage?.content?.events)
-    ? (eventsPage.content.events as LeadershipEvent[])
-    : EVENTS;
-
-  const found =
-    cmsEvents.find((ev) => ev.slug === slug) ||
-    EVENTS.find((ev) => ev.slug === slug);
-
-  if (found) {
-    const formattedDate = found.startDate
-      ? new Date(found.startDate + "T00:00:00").toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "2026 Schedule";
-    return {
-      title: found.title,
-      category: CATEGORY_LABELS[found.category] || found.category,
-      date: formattedDate,
-      city: found.city || "Islamabad",
-      schedule: found.schedule || "Full Day PKT",
     };
   }
 
@@ -923,149 +812,5 @@ export async function deleteActivityRegistration(
   return found;
 }
 
-// =============================================================================
-// WEBSITE CMS PORTAL OPERATIONS (ALL PAGES)
-// =============================================================================
 
-export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
-  // Fast path: memory cache hit
-  if (memoryDb?.cms?.[key]) {
-    return memoryDb.cms[key];
-  }
-
-  const cfg = getSupabaseConfig();
-  if (cfg.isConfigured) {
-    try {
-      const rows = await supabaseFetch<CmsPageRecord[]>(
-        `cms_pages?page_key=eq.${encodeURIComponent(key)}&select=*&limit=1`
-      );
-      if (rows?.[0]) {
-        if (!memoryDb) {
-          memoryDb = buildSeedDb();
-        }
-        memoryDb.cms[key] = rows[0];
-        return rows[0];
-      }
-    } catch (err) {
-      console.warn(`[CMS] Supabase fetch failed for ${key}, using cached/local store:`, err);
-    }
-  }
-
-  try {
-    const db = await readLocalDb();
-    if (db?.cms?.[key]) return db.cms[key];
-  } catch {
-    // Local DB read failure
-  }
-
-  return {
-    page_key: key,
-    title: CMS_PAGE_TITLES[key],
-    content: getDefaultCmsContent(key),
-    updated_by: "system-code-fallback",
-    updated_at: new Date().toISOString(),
-  };
-}
-
-export async function getAllCmsPages(): Promise<Record<CmsPageKey, CmsPageRecord>> {
-  const result = {} as Record<CmsPageKey, CmsPageRecord>;
-  for (const key of ALL_CMS_KEYS) {
-    result[key] = {
-      page_key: key,
-      title: CMS_PAGE_TITLES[key],
-      content: getDefaultCmsContent(key),
-      updated_by: "system-code-fallback",
-      updated_at: new Date().toISOString(),
-    };
-  }
-
-  const cfg = getSupabaseConfig();
-  if (cfg.isConfigured) {
-    try {
-      const rows = await supabaseFetch<CmsPageRecord[]>(
-        "cms_pages?select=*"
-      );
-      for (const row of rows || []) {
-        if (ALL_CMS_KEYS.includes(row.page_key as CmsPageKey)) {
-          result[row.page_key as CmsPageKey] = row;
-          if (!memoryDb) {
-            memoryDb = buildSeedDb();
-          }
-          memoryDb.cms[row.page_key] = row;
-        }
-      }
-      return result;
-    } catch (err) {
-      console.warn("[CMS] Supabase fetch all failed, using cached/local store:", err);
-    }
-  }
-
-  try {
-    const db = await readLocalDb();
-    for (const key of ALL_CMS_KEYS) {
-      if (db?.cms?.[key]) {
-        result[key] = db.cms[key];
-      }
-    }
-  } catch {
-    // Keep initialized code defaults
-  }
-  return result;
-}
-
-export async function upsertCmsPage(
-  key: CmsPageKey,
-  content: Record<string, unknown>,
-  actorEmail: string
-): Promise<CmsPageRecord> {
-  const now = new Date().toISOString();
-  const record: CmsPageRecord = {
-    page_key: key,
-    title: CMS_PAGE_TITLES[key],
-    content,
-    updated_by: actorEmail,
-    updated_at: now,
-  };
-
-  // Always update in-memory and local database first so edits are never lost
-  try {
-    const db = await readLocalDb();
-    db.cms[key] = record;
-    await writeLocalDb(db);
-  } catch {
-    if (!memoryDb) {
-      memoryDb = buildSeedDb();
-    }
-    memoryDb.cms[key] = record;
-  }
-
-  const cfg = getSupabaseConfig();
-  if (cfg.isConfigured) {
-    try {
-      const saved = await supabaseFetch<CmsPageRecord[]>(
-        "cms_pages?on_conflict=page_key",
-        {
-          method: "POST",
-          headers: {
-            Prefer: "resolution=merge-duplicates,return=representation",
-          },
-          body: JSON.stringify(record),
-        }
-      );
-      if (saved?.[0]) return saved[0];
-    } catch (err) {
-      console.warn(`[CMS] Supabase upsert failed for ${key}, safely retained in local store:`, err);
-      return record;
-    }
-  }
-
-  return record;
-}
-
-export async function resetCmsPageToDefault(
-  key: CmsPageKey,
-  actorEmail: string
-): Promise<CmsPageRecord> {
-  return upsertCmsPage(key, getDefaultCmsContent(key), actorEmail);
-}
 

@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateAdminRequest } from "@/lib/admin-auth";
 import { getCloudinaryConfig } from "@/lib/cloudinary";
+import { testFirebaseConnection } from "@/lib/firebase-admin";
 import {
   ALL_CMS_KEYS,
   getAllCmsPages,
-  getSupabaseConfig,
   resetCmsPageToDefault,
-  testSupabaseConnection,
   upsertCmsPage,
   type CmsPageKey,
+} from "@/lib/firebase-cms";
+import {
+  getSupabaseConfig,
+  testSupabaseConnection,
 } from "@/lib/supabase-store";
 
 export async function GET(req: NextRequest) {
@@ -85,12 +88,17 @@ export async function POST(req: NextRequest) {
 
     if (action === "diagnostics") {
       const supabaseStatus = await testSupabaseConnection();
+      const firebaseStatus = await testFirebaseConnection();
       const supaCfg = getSupabaseConfig();
       const cloudCfg = getCloudinaryConfig();
 
       return NextResponse.json({
         ok: true,
         diagnostics: {
+          firebase: {
+            ...firebaseStatus,
+            projectId: process.env.FIREBASE_PROJECT_ID || "the-leadership-covenant",
+          },
           supabase: {
             ...supabaseStatus,
             hasUrl: Boolean(supaCfg.url),

@@ -63,20 +63,26 @@ interface DashboardData {
   }>;
   recentContacts: ContactSubmissionRecord[];
   recentRegistrations: ActivityRegistrationRecord[];
-  systemHealth: {
-    supabase: {
+  systemHealth?: {
+    firebase?: {
+      configured: boolean;
+      connected: boolean;
+      provider: string;
+      message: string;
+    };
+    supabase?: {
       configured: boolean;
       connected: boolean;
       provider: "supabase" | "local_json";
       message: string;
     };
-    cloudinary: {
+    cloudinary?: {
       configured: boolean;
       cloudName: string | null;
       folder: string;
       provider: string;
     };
-    jwt: {
+    jwt?: {
       email: string;
       expiresAt: string;
     };

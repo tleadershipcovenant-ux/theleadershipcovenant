@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { CmsPageKey } from "@/lib/supabase-store";
+import type { CmsPageKey } from "@/lib/firebase-cms";
 
 /**
  * React hook for consuming CMS page content on client components.
@@ -9,8 +9,8 @@ import type { CmsPageKey } from "@/lib/supabase-store";
  * - Guaranteed Zero Downtime: Always initialises immediately with defaultContent,
  *   so there is never a blank screen, spinner delay, or layout shift.
  * - Resilient Background Hydration: Asynchronously fetches live CMS edits from /api/cms.
- *   If Supabase is stopped, paused, or unreachable, it silently catches the failure
- *   and retains the trusted defaultContent.
+ *   If Firebase Firestore or network is temporarily unreachable, it catches the failure
+ *   and smoothly retains the trusted defaultContent.
  */
 export function useCmsContent<T extends Record<string, unknown>>(
   pageKey: CmsPageKey,
@@ -35,7 +35,7 @@ export function useCmsContent<T extends Record<string, unknown>>(
           setIsLive(!data.fallback);
         }
       } catch {
-        // Supabase or network unavailable; keep trusted default content safely
+        // Firebase or network unavailable; keep trusted default content safely
       }
     }
 

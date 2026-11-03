@@ -15,6 +15,8 @@ export type EventCategory =
 
 export type StatusTone = "open" | "limited" | "free";
 
+export type EventLifecycle = "previous" | "enrollment_open" | "upcoming";
+
 export interface LeadershipEvent {
   slug: string;
   title: string;
@@ -44,6 +46,26 @@ export interface LeadershipEvent {
   overview: string;
   highlights: string[];
   whoShouldAttend: string[];
+
+  // 3 distinct tags for visual explorer & CMS
+  tag1?: string;
+  tag2?: string;
+  tag3?: string;
+
+  // Optional Pricing for Summit
+  regularPrice?: number;
+  discountPercent?: number;
+  offerStartDate?: string;
+  offerEndDate?: string;
+  isOfferActive?: boolean;
+  offerLabel?: string;
+  seatLimit?: number;
+  currency?: string;
+
+  /** CMS-only: hide this activity from public pages without deleting it. */
+  hidden?: boolean;
+  /** CMS-managed activity type. When set, it overrides date-based lifecycle. */
+  lifecycleOverride?: EventLifecycle;
 }
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
@@ -175,8 +197,6 @@ export function isOpenEnrollmentEvent(event: LeadershipEvent): boolean {
   return event.statusTone === "open";
 }
 
-export type EventLifecycle = "previous" | "enrollment_open" | "upcoming";
-
 export const EVENT_LIFECYCLE_LABELS: Record<EventLifecycle, string> = {
   previous: "Previous Event",
   enrollment_open: "Enrollment Open",
@@ -187,6 +207,20 @@ export function getEventLifecycle(
   event: LeadershipEvent,
   todayIsoDate?: string
 ): EventLifecycle {
+  if (
+    event.lifecycleOverride === "previous" ||
+    event.lifecycleOverride === "enrollment_open" ||
+    event.lifecycleOverride === "upcoming"
+  ) {
+    if (event.lifecycleOverride === "enrollment_open") {
+      return "enrollment_open";
+    }
+    if (event.lifecycleOverride === "upcoming") {
+      return "upcoming";
+    }
+    return "previous";
+  }
+
   const comparisonDate =
     todayIsoDate ?? new Date().toISOString().slice(0, 10);
 
@@ -200,6 +234,9 @@ export function getEventLifecycle(
 export const EVENTS: LeadershipEvent[] = [
   {
     slug: "7-habits",
+    tag1: "Professional Development",
+    tag2: "Educators & Leaders",
+    tag3: "Interactive Masterclass",
     title: "7 Habits of Highly Effective People",
     category: "professional_development",
     description:
@@ -234,6 +271,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "4dx-for-educators",
+    tag1: "Execution Framework",
+    tag2: "School Administrators",
+    tag3: "Executive Cohort",
     title: "4 Disciplines of Execution for Educators",
     category: "professional_development",
     description:
@@ -268,6 +308,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "lim-community-2026",
+    tag1: "LiM Community Event",
+    tag2: "Educators & Counselors",
+    tag3: "Complimentary Entry",
     title: "LiM Community Coaching 2027",
     category: "lim_community",
     description:
@@ -302,6 +345,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "neuroscience-wellness",
+    tag1: "Educator Wellness",
+    tag2: "Teachers & Wellbeing Leads",
+    tag3: "Peshawar Cohort",
     title: "Neuro Science Backed Wellness",
     category: "wellness",
     description:
@@ -336,6 +382,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "7-habits-families",
+    tag1: "Family Session",
+    tag2: "Parents & Guardians",
+    tag3: "Weekend Forum",
     title: "7 Habits of Highly Effective Families",
     category: "family_session",
     description:
@@ -370,6 +419,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "teacher-believed-in-me",
+    tag1: "Principals Academy",
+    tag2: "Principals & School Heads",
+    tag3: "Strategic Growth",
     title: "Principal's Academy",
     category: "professional_development",
     description:
@@ -406,6 +458,17 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "school-impact-summit-2026",
+    tag1: "Summit 2026",
+    tag2: "Educational Leaders Nationwide",
+    tag3: "Enrollment Open",
+    regularPrice: 5000,
+    discountPercent: 20,
+    offerStartDate: "2026-09-01T00:00:00+05:00",
+    offerEndDate: "2026-11-07T23:59:59+05:00",
+    isOfferActive: true,
+    offerLabel: "Early Bird 20% OFF",
+    seatLimit: 200,
+    currency: "PKR",
     title: "The School Impact Summit 2026",
     category: "summit",
     description:
@@ -442,6 +505,9 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "leadership-camp-swat-2026",
+    tag1: "Student Camp",
+    tag2: "Students Grade 6-12",
+    tag3: "3-Day Residential",
     title: "Leadership Camp",
     category: "student_camp",
     description:
@@ -525,7 +591,7 @@ export interface PrecomputedLeadershipEvent extends LeadershipEvent {
 }
 
 function computeTimeSlot(evt: LeadershipEvent): EventTimeSlot {
-  const dur = evt.duration.toLowerCase();
+  const dur = (evt.duration || "").toLowerCase();
   if (dur.includes("3 day") || evt.startDate !== evt.endDate) {
     return "multi_day";
   }
@@ -535,13 +601,17 @@ function computeTimeSlot(evt: LeadershipEvent): EventTimeSlot {
   return "full_day";
 }
 
-export const PRECOMPUTED_EVENTS: PrecomputedLeadershipEvent[] = EVENTS.map(
-  (evt) => {
-    const [yStr, mStr, dStr] = evt.startDate.split("-");
-    const yearNum = Number(yStr);
-    const monthIndex = Number(mStr) - 1;
-    const dayNum = Number(dStr);
-    const weekdayIdx = new Date(Date.UTC(yearNum, monthIndex, dayNum)).getUTCDay();
+export function precomputeLeadershipEvents(
+  events: LeadershipEvent[]
+): PrecomputedLeadershipEvent[] {
+  return events.map((evt) => {
+    const [yStr, mStr, dStr] = (evt.startDate || "").split("-");
+    const yearNum = Number(yStr) || new Date().getFullYear();
+    const monthIndex = Number.isFinite(Number(mStr)) ? Number(mStr) - 1 : 0;
+    const dayNum = Number(dStr) || 1;
+    const weekdayIdx = new Date(
+      Date.UTC(yearNum, monthIndex, dayNum)
+    ).getUTCDay();
 
     return {
       ...evt,
@@ -554,22 +624,25 @@ export const PRECOMPUTED_EVENTS: PrecomputedLeadershipEvent[] = EVENTS.map(
       theme: getMonthTheme(monthIndex),
       isOpenEnrollment: isOpenEnrollmentEvent(evt),
       timeSlot: computeTimeSlot(evt),
-      searchHaystack: `${evt.title} ${evt.description} ${evt.city} ${evt.schedule} ${evt.duration} ${CATEGORY_LABELS[evt.category]}`.toLowerCase(),
+      searchHaystack:
+        `${evt.title} ${evt.description} ${evt.city} ${evt.schedule} ${evt.duration} ${CATEGORY_LABELS[evt.category] ?? ""}`.toLowerCase(),
     };
-  }
-);
+  });
+}
 
-export const AVAILABLE_EVENT_MONTHS: {
+export function getAvailableEventMonths(
+  events: PrecomputedLeadershipEvent[]
+): {
   monthIndex: number;
   label: string;
   shortLabel: string;
   count: number;
-}[] = (() => {
+}[] {
   const map = new Map<
     number,
     { monthIndex: number; label: string; shortLabel: string; count: number }
   >();
-  for (const evt of PRECOMPUTED_EVENTS) {
+  for (const evt of events) {
     const existing = map.get(evt.monthIndex);
     if (existing) {
       existing.count += 1;
@@ -583,12 +656,24 @@ export const AVAILABLE_EVENT_MONTHS: {
     }
   }
   return Array.from(map.values()).sort((a, b) => a.monthIndex - b.monthIndex);
-})();
+}
+
+export const PRECOMPUTED_EVENTS: PrecomputedLeadershipEvent[] =
+  precomputeLeadershipEvents(EVENTS);
+
+export const AVAILABLE_EVENT_MONTHS: {
+  monthIndex: number;
+  label: string;
+  shortLabel: string;
+  count: number;
+}[] = getAvailableEventMonths(PRECOMPUTED_EVENTS);
 
 export const AVAILABLE_EVENT_CITIES: string[] = Array.from(
   new Set(PRECOMPUTED_EVENTS.map((e) => e.city))
 );
 
-export const OPEN_ENROLLMENT_COUNT: number = PRECOMPUTED_EVENTS.filter(
-  (e) => e.isOpenEnrollment
-).length;
+export function getOpenEnrollmentCount(todayIsoDate?: string): number {
+  return PRECOMPUTED_EVENTS.filter(
+    (event) => getEventLifecycle(event, todayIsoDate) === "enrollment_open"
+  ).length;
+}

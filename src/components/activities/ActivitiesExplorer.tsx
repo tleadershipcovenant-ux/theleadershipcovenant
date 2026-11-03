@@ -4,10 +4,11 @@ import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCmsContent } from "@/lib/cms-client";
 import {
-  PRECOMPUTED_EVENTS,
-  AVAILABLE_EVENT_MONTHS,
-  OPEN_ENROLLMENT_COUNT,
+  EVENTS,
+  precomputeLeadershipEvents,
+  getAvailableEventMonths,
   CATEGORY_LABELS,
   getMonthTheme,
   getEventLifecycle,
@@ -45,7 +46,15 @@ const CATEGORY_FILTERS = [
 
 type EnrollmentFilter = "all" | "open_enrollment";
 
-export default function ActivitiesExplorer() {
+interface ActivitiesExplorerProps {
+  initialEvents?: LeadershipEvent[];
+  pageVisible?: boolean;
+}
+
+export default function ActivitiesExplorer({
+  initialEvents = EVENTS,
+  pageVisible = true,
+}: ActivitiesExplorerProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [enrollmentFilter, setEnrollmentFilter] =
     useState<EnrollmentFilter>("all");
@@ -56,11 +65,44 @@ export default function ActivitiesExplorer() {
   const [selectedModalEvent, setSelectedModalEvent] =
     useState<LeadershipEvent | null>(null);
 
+  // Dynamic live sync from Firebase Cloud Firestore CMS
+  const { content: cmsData } = useCmsContent<{
+    events?: LeadershipEvent[];
+    _visible?: boolean;
+  }>("events", { events: initialEvents, _visible: pageVisible });
+
+  const isPageVisible = cmsData?._visible !== false;
+
+  const rawEvents = useMemo(() => {
+    if (!isPageVisible) return [];
+    const list =
+      Array.isArray(cmsData?.events) && cmsData.events.length > 0
+        ? (cmsData.events as LeadershipEvent[])
+        : initialEvents && initialEvents.length > 0
+        ? initialEvents
+        : EVENTS;
+    return list.filter((ev) => !ev.hidden);
+  }, [cmsData, initialEvents, isPageVisible]);
+
+  const precomputedEvents = useMemo(() => {
+    return precomputeLeadershipEvents(rawEvents);
+  }, [rawEvents]);
+
+  const availableMonths = useMemo(() => {
+    return getAvailableEventMonths(precomputedEvents);
+  }, [precomputedEvents]);
+
+  const openEnrollmentCount = useMemo(() => {
+    return precomputedEvents.filter(
+      (evt) => getEventLifecycle(evt, todayIsoDate) === "enrollment_open"
+    ).length;
+  }, [precomputedEvents, todayIsoDate]);
+
   const filteredEvents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const monthNum = selectedMonth === "all" ? null : Number(selectedMonth);
 
-    return PRECOMPUTED_EVENTS.filter((evt) => {
+    return precomputedEvents.filter((evt) => {
       if (selectedCategory !== "all" && evt.category !== selectedCategory) {
         return false;
       }
@@ -84,6 +126,7 @@ export default function ActivitiesExplorer() {
       );
     });
   }, [
+    precomputedEvents,
     selectedCategory,
     enrollmentFilter,
     selectedMonth,
@@ -132,7 +175,7 @@ export default function ActivitiesExplorer() {
                       Smart Activity Explorer
                     </h2>
                     <span className="font-num text-[11px] sm:text-xs font-extrabold px-2 sm:px-2.5 py-0.5 rounded-full bg-[#EFFBF8] border border-[#C8EFE6] text-[#102E4D]">
-                      {filteredEvents.length} of {PRECOMPUTED_EVENTS.length}
+                      {filteredEvents.length} of {precomputedEvents.length}
                     </span>
                   </div>
                   <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug line-clamp-2 sm:line-clamp-none">
@@ -217,7 +260,7 @@ export default function ActivitiesExplorer() {
                           : "bg-white border border-[#A7F3D0] text-[#047857]"
                       }`}
                     >
-                      {OPEN_ENROLLMENT_COUNT}
+                      {openEnrollmentCount}
                     </span>
                   </button>
                 </div>
@@ -247,11 +290,11 @@ export default function ActivitiesExplorer() {
                     }`}
                   >
                     All Months (
-                    <span className="font-num">{PRECOMPUTED_EVENTS.length}</span>
+                    <span className="font-num">{precomputedEvents.length}</span>
                     )
                   </button>
 
-                  {AVAILABLE_EVENT_MONTHS.map((m) => {
+                  {availableMonths.map((m) => {
                     const mTheme = getMonthTheme(m.monthIndex);
                     const isActive = selectedMonth === String(m.monthIndex);
                     return (

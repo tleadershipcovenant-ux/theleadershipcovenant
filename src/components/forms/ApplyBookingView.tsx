@@ -3,10 +3,16 @@
 import React, { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ApplyForm } from "@/components/forms/ApplyForm";
+import type { LeadershipEvent } from "@/content/events";
 
-function ApplyBookingContent() {
+interface ApplyBookingViewProps {
+  initialEvents?: LeadershipEvent[];
+}
+
+function ApplyBookingContent({ initialEvents }: ApplyBookingViewProps) {
   const searchParams = useSearchParams();
-  const initialActivity = searchParams?.get("activity") || undefined;
+  const rawActivity = searchParams?.get("activity") || "";
+  const initialActivity = rawActivity ? decodeURIComponent(rawActivity).trim() : undefined;
 
   useEffect(() => {
     // If arriving with hash or a selected activity, auto-scroll directly to the Seat Booking & Registration Form
@@ -35,12 +41,15 @@ function ApplyBookingContent() {
 
   return (
     <div className="w-full">
-      <ApplyForm initialActivity={initialActivity} />
+      <ApplyForm
+        initialActivity={initialActivity}
+        initialEvents={initialEvents}
+      />
     </div>
   );
 }
 
-export default function ApplyBookingView() {
+export default function ApplyBookingView({ initialEvents }: ApplyBookingViewProps) {
   return (
     <Suspense
       fallback={
@@ -52,7 +61,7 @@ export default function ApplyBookingView() {
         </div>
       }
     >
-      <ApplyBookingContent />
+      <ApplyBookingContent initialEvents={initialEvents} />
     </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,7 +10,9 @@ import {
   getEventLifecycle,
   EVENT_LIFECYCLE_LABELS,
   isOpenEnrollmentEvent,
+  type LeadershipEvent,
 } from "@/content/events";
+import { useCmsContent } from "@/lib/cms-client";
 import { FORM_COPY } from "@/content/forms";
 import { PAYMENT_METHODS, type PaymentMethodId } from "@/content/payment";
 import { getActivityPricing } from "@/content/pricing";
@@ -69,12 +71,16 @@ import { FaWhatsapp } from "react-icons/fa";
 
 interface ApplyFormProps {
   initialActivity?: string;
+  initialEvents?: LeadershipEvent[];
 }
 
 type BookingMode = "reservation" | "secure_seat";
 type WizardStep = 1 | 2 | 3 | "complete";
 
-export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
+export function ApplyForm({
+  initialActivity = "",
+  initialEvents = EVENTS,
+}: ApplyFormProps) {
   const [step, setStep] = useState<WizardStep>(1);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [bookingMode, setBookingMode] = useState<BookingMode | null>(null);
@@ -95,6 +101,27 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     message: "",
     website: "", // honeypot
   });
+
+  // Dynamic Live CMS Subscription
+  const { content: cmsData } = useCmsContent<{ events?: LeadershipEvent[] }>(
+    "events",
+    { events: initialEvents }
+  );
+
+  const allEvents = useMemo(() => {
+    if (
+      cmsData?.events &&
+      Array.isArray(cmsData.events) &&
+      cmsData.events.length > 0
+    ) {
+      return cmsData.events;
+    }
+    return initialEvents && initialEvents.length > 0 ? initialEvents : EVENTS;
+  }, [cmsData, initialEvents]);
+
+  const activeEvents = useMemo(() => {
+    return allEvents.filter((ev) => !ev.hidden);
+  }, [allEvents]);
 
   // Payment screenshot state
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -165,27 +192,52 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     };
   }, [activityDropdownOpen]);
 
-  const selectableEvents = [...EVENTS]
-    .filter((event) => getEventLifecycle(event, todayIsoDate) !== "previous")
-    .sort((a, b) => {
-      const lifecycleOrder = {
-        enrollment_open: 0,
-        upcoming: 1,
-        previous: 2,
-      };
-      const lifecycleDifference =
-        lifecycleOrder[getEventLifecycle(a, todayIsoDate)] -
-        lifecycleOrder[getEventLifecycle(b, todayIsoDate)];
-      return (
-        lifecycleDifference ||
-        a.startDate.localeCompare(b.startDate) ||
-        a.title.localeCompare(b.title)
-      );
-    });
-  const selectedEvent = EVENTS.find((e) => e.slug === formData.activity_slug);
-  const activityPricing = getActivityPricing(
-    selectedEvent?.slug || formData.activity_slug
-  );
+  const selectableEvents = useMemo(() => {
+    return [...activeEvents]
+      .filter((event) => {
+        // Always include currently selected activity even if lifecycle is previous
+        if (
+          formData.activity_slug &&
+          event.slug.trim().toLowerCase() ===
+            formData.activity_slug.trim().toLowerCase()
+        ) {
+          return true;
+        }
+        return getEventLifecycle(event, todayIsoDate) !== "previous";
+      })
+      .sort((a, b) => {
+        const lifecycleOrder = {
+          enrollment_open: 0,
+          upcoming: 1,
+          previous: 2,
+        };
+        const lifecycleDifference =
+          lifecycleOrder[getEventLifecycle(a, todayIsoDate)] -
+          lifecycleOrder[getEventLifecycle(b, todayIsoDate)];
+        return (
+          lifecycleDifference ||
+          a.startDate.localeCompare(b.startDate) ||
+          a.title.localeCompare(b.title)
+        );
+      });
+  }, [activeEvents, formData.activity_slug, todayIsoDate]);
+
+  const selectedEvent = useMemo(() => {
+    if (!formData.activity_slug) return undefined;
+    const target = formData.activity_slug.trim().toLowerCase();
+    return (
+      activeEvents.find((e) => e.slug.trim().toLowerCase() === target) ||
+      allEvents.find((e) => e.slug.trim().toLowerCase() === target)
+    );
+  }, [formData.activity_slug, activeEvents, allEvents]);
+
+  const activityPricing = useMemo(() => {
+    return getActivityPricing(
+      selectedEvent?.slug || formData.activity_slug,
+      selectedEvent
+    );
+  }, [selectedEvent, formData.activity_slug]);
+
   const activePaymentAccount =
     PAYMENT_METHODS.find((m) => m.id === paymentMethod) ?? PAYMENT_METHODS[0];
 
@@ -600,19 +652,20 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     const firstName = formData.full_name.trim().split(" ")[0] || "Leader";
     const isSecured = bookingMode === "secure_seat";
 
-    const formattedEventDate = selectedEvent
-      ? new Date(selectedEvent.startDate + "T00:00:00").toLocaleDateString(
-          "en-US",
-          {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }
-        )
+    const formattedEventDate = selectedEvent?.startDate
+      ? new Date(
+          selectedEvent.startDate.includes("T")
+            ? selectedEvent.startDate
+            : selectedEvent.startDate + "T00:00:00"
+        ).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        })
       : "2026 Schedule";
 
     const displayRef = formatBookingReference(submissionId);
-    const completePricing = getActivityPricing(selectedEvent?.slug);
+    const completePricing = getActivityPricing(selectedEvent?.slug, selectedEvent);
     const feeLabel = completePricing.hasPricing
       ? completePricing.isEarlyBirdActive && completePricing.discountPercent
         ? `${completePricing.formattedPayablePrice} (Early Bird ${completePricing.discountPercent}% Off)`
@@ -634,7 +687,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
       role: formData.role.trim(),
       activityTitle: selectedEvent?.title || "Leadership Activity",
       activityCategory: selectedEvent
-        ? CATEGORY_LABELS[selectedEvent.category]
+        ? CATEGORY_LABELS[selectedEvent.category] || selectedEvent.category
         : "Leadership Program",
       activityDate: formattedEventDate,
       activitySchedule: selectedEvent?.schedule || "Full Day PKT",
@@ -1022,18 +1075,30 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
   const activeStepNum: 1 | 2 | 3 = typeof step === "number" ? step : 1;
 
   // Selected event helper details for Step 1 live landscape preview
-  const selectedDateObj = selectedEvent
-    ? new Date(selectedEvent.startDate + "T00:00:00")
-    : null;
-  const selectedMonthTheme = selectedDateObj
-    ? getMonthTheme(selectedDateObj.getMonth())
-    : null;
-  const selectedIsOpen = selectedEvent
-    ? isOpenEnrollmentEvent(selectedEvent)
-    : false;
-  const selectedLifecycle = selectedEvent
-    ? getEventLifecycle(selectedEvent, todayIsoDate)
-    : null;
+  const selectedDateObj = useMemo(() => {
+    if (!selectedEvent?.startDate) return null;
+    const d = new Date(
+      selectedEvent.startDate.includes("T")
+        ? selectedEvent.startDate
+        : selectedEvent.startDate + "T00:00:00"
+    );
+    return isNaN(d.getTime()) ? null : d;
+  }, [selectedEvent?.startDate]);
+
+  const selectedMonthTheme = useMemo(() => {
+    if (!selectedDateObj) return getMonthTheme(new Date().getMonth());
+    return getMonthTheme(selectedDateObj.getMonth());
+  }, [selectedDateObj]);
+
+  const selectedIsOpen = useMemo(() => {
+    return selectedEvent ? isOpenEnrollmentEvent(selectedEvent) : false;
+  }, [selectedEvent]);
+
+  const selectedLifecycle = useMemo(() => {
+    return selectedEvent
+      ? getEventLifecycle(selectedEvent, todayIsoDate)
+      : null;
+  }, [selectedEvent, todayIsoDate]);
 
   return (
     <div ref={wizardTopRef} className="space-y-6">
@@ -1344,35 +1409,46 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                         : "border-[#C8EFE6] bg-white hover:border-[#102E4D]/45"
                     }`}
                   >
-                    {selectedEvent && selectedDateObj && selectedMonthTheme ? (
+                    {selectedEvent ? (
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         {/* Mini Month Date Badge */}
                         <div className="w-[56px] sm:w-[60px] shrink-0 rounded-xl overflow-hidden bg-white border border-slate-200/90 shadow-2xs text-center flex flex-col justify-between">
                           <div
                             className={`bg-gradient-to-r ${selectedMonthTheme.gradient} text-white text-[9px] sm:text-[9.5px] font-black uppercase py-0.5 leading-none`}
                           >
-                            {selectedDateObj.toLocaleDateString("en-US", {
-                              month: "short",
-                            })}
+                            {selectedDateObj
+                              ? selectedDateObj.toLocaleDateString("en-US", {
+                                  month: "short",
+                                })
+                              : "2026"}
                           </div>
                           <div className="font-num font-extrabold text-[17px] sm:text-[19px] leading-tight text-[#102E4D] py-0.5">
                             {selectedDateObj
-                              .getDate()
-                              .toString()
-                              .padStart(2, "0")}
+                              ? selectedDateObj
+                                  .getDate()
+                                  .toString()
+                                  .padStart(2, "0")
+                              : "TLC"}
                           </div>
                           <div className="font-num text-[7.5px] sm:text-[8px] font-bold uppercase tracking-tight text-slate-500 pb-1 pt-0.5 whitespace-nowrap px-0.5 leading-none">
-                            {selectedDateObj.toLocaleDateString("en-US", {
-                              weekday: "short",
-                            })}{" "}
-                            · {selectedDateObj.getFullYear()}
+                            {selectedDateObj ? (
+                              <>
+                                {selectedDateObj.toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                })}{" "}
+                                · {selectedDateObj.getFullYear()}
+                              </>
+                            ) : (
+                              selectedEvent.city || "Islamabad"
+                            )}
                           </div>
                         </div>
 
                         {/* Title & Category Line */}
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] sm:text-[11.5px] font-extrabold uppercase tracking-wider text-[#FF7900] truncate leading-tight">
-                            {CATEGORY_LABELS[selectedEvent.category]}
+                            {CATEGORY_LABELS[selectedEvent.category] ||
+                              selectedEvent.category}
                           </p>
                           <div className="font-bold text-sm sm:text-[15.5px] text-[#102E4D] truncate mt-0.5">
                             {selectedEvent.title}
@@ -1425,32 +1501,53 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                         <div className="px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center justify-between border-b border-slate-100">
                           <span>Upcoming 2026 Leadership Activities</span>
                           <span className="font-num text-[10px] text-slate-500">
-                            {EVENTS.length} Available
+                            {selectableEvents.length} Available
                           </span>
                         </div>
 
                         <div className="space-y-1 pt-1 pb-1">
                           {selectableEvents.map((event) => {
-                            const d = new Date(event.startDate + "T00:00:00");
-                            const monthTheme = getMonthTheme(d.getMonth());
+                            const isDateValid =
+                              Boolean(event.startDate) &&
+                              !isNaN(
+                                new Date(
+                                  event.startDate.includes("T")
+                                    ? event.startDate
+                                    : event.startDate + "T00:00:00"
+                                ).getTime()
+                              );
+                            const d = isDateValid
+                              ? new Date(
+                                  event.startDate.includes("T")
+                                    ? event.startDate
+                                    : event.startDate + "T00:00:00"
+                                )
+                              : null;
+                            const monthTheme = d
+                              ? getMonthTheme(d.getMonth())
+                              : getMonthTheme(0);
                             const isSelected =
-                              formData.activity_slug === event.slug;
+                              formData.activity_slug.trim().toLowerCase() ===
+                              event.slug.trim().toLowerCase();
                             const lifecycle = getEventLifecycle(
                               event,
                               todayIsoDate
                             );
                             const isOpen = lifecycle === "enrollment_open";
-                            const weekdayShort = d.toLocaleDateString("en-US", {
-                              weekday: "short",
-                            });
-                            const monthShort = d.toLocaleDateString("en-US", {
-                              month: "short",
-                            });
+                            const weekdayShort = d
+                              ? d.toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                })
+                              : "TLC";
+                            const monthShort = d
+                              ? d.toLocaleDateString("en-US", {
+                                  month: "short",
+                                })
+                              : "2026";
                             const dayStr = d
-                              .getDate()
-                              .toString()
-                              .padStart(2, "0");
-                            const yearStr = d.getFullYear();
+                              ? d.getDate().toString().padStart(2, "0")
+                              : "01";
+                            const yearStr = d ? d.getFullYear() : 2026;
 
                             return (
                               <button
@@ -1489,7 +1586,8 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                   {/* Event Info: Clean Category & Title Only */}
                                   <div className="min-w-0 flex-1">
                                     <p className="text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#FF7900] truncate leading-tight">
-                                      {CATEGORY_LABELS[event.category]}
+                                      {CATEGORY_LABELS[event.category] ||
+                                        event.category}
                                     </p>
                                     <h5 className="font-bold text-[13.5px] sm:text-[15px] text-[#102E4D] group-hover:text-[#FF7900] transition-colors truncate mt-0.5">
                                       {event.title}
@@ -1572,7 +1670,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                     </span>
                   </div>
 
-                  {selectedEvent && selectedDateObj && selectedMonthTheme ? (
+                  {selectedEvent ? (
                     <div className="space-y-4">
                       {/* Compact Event Title & Date Badge */}
                       <div className="flex items-start gap-3.5">
@@ -1580,27 +1678,38 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                           <div
                             className={`bg-gradient-to-r ${selectedMonthTheme.gradient} text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest py-0.5 sm:py-1 leading-none`}
                           >
-                            {selectedDateObj.toLocaleDateString("en-US", {
-                              month: "short",
-                            })}
+                            {selectedDateObj
+                              ? selectedDateObj.toLocaleDateString("en-US", {
+                                  month: "short",
+                                })
+                              : "2026"}
                           </div>
                           <div className="font-num font-extrabold text-[20px] sm:text-[22px] leading-tight text-[#102E4D] tracking-tight pt-1 sm:pt-1.5">
                             {selectedDateObj
-                              .getDate()
-                              .toString()
-                              .padStart(2, "0")}
+                              ? selectedDateObj
+                                  .getDate()
+                                  .toString()
+                                  .padStart(2, "0")
+                              : "TLC"}
                           </div>
                           <div className="font-num text-[8.5px] sm:text-[9px] font-semibold uppercase tracking-tight text-slate-500 pb-1.5 pt-0.5 whitespace-nowrap px-0.5">
-                            {selectedDateObj.toLocaleDateString("en-US", {
-                              weekday: "short",
-                            })}{" "}
-                            · {selectedDateObj.getFullYear()}
+                            {selectedDateObj ? (
+                              <>
+                                {selectedDateObj.toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                })}{" "}
+                                · {selectedDateObj.getFullYear()}
+                              </>
+                            ) : (
+                              selectedEvent.city || "Islamabad"
+                            )}
                           </div>
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFC400]">
-                            {CATEGORY_LABELS[selectedEvent.category]}
+                            {CATEGORY_LABELS[selectedEvent.category] ||
+                              selectedEvent.category}
                           </p>
                           <h4 className="font-serif font-bold text-lg sm:text-xl text-white leading-snug mt-0.5">
                             {selectedEvent.title}
@@ -1657,7 +1766,8 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                 <Hourglass className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                {selectedEvent.duration}
+                                {selectedEvent.duration ||
+                                  "Scheduled Cohort Session"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
@@ -1665,7 +1775,9 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                 <MapPin className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                {selectedEvent.venue} ({selectedEvent.city})
+                                {selectedEvent.venue
+                                  ? `${selectedEvent.venue} (${selectedEvent.city || "Islamabad"})`
+                                  : selectedEvent.city || "Islamabad, Pakistan"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
@@ -1673,7 +1785,9 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                 <Award className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                {selectedEvent.certificate || selectedEvent.format}
+                                {selectedEvent.certificate ||
+                                  selectedEvent.format ||
+                                  "Official Certificate of Completion"}
                               </span>
                             </div>
                           </>

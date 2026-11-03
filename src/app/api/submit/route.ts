@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getActivityPricing } from "@/content/pricing";
+import { getCmsPage } from "@/lib/firebase-cms";
+import { EVENTS, type LeadershipEvent } from "@/content/events";
 import {
   createActivityRegistration,
   createContactSubmission,
@@ -148,7 +150,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const pricing = getActivityPricing(resolvedSlug);
+    let pricing = getActivityPricing(resolvedSlug);
+    try {
+      const eventsPage = await getCmsPage("events");
+      const cmsEvents = Array.isArray(eventsPage?.content?.events)
+        ? (eventsPage.content.events as LeadershipEvent[])
+        : EVENTS;
+      const foundEvent = cmsEvents.find(
+        (e) => e.slug.trim().toLowerCase() === resolvedSlug.trim().toLowerCase()
+      );
+      if (foundEvent) {
+        pricing = getActivityPricing(resolvedSlug, foundEvent);
+      }
+    } catch {
+      // Non-fatal, fallback to standard pricing
+    }
     const computedFeeLabel =
       fee_label ||
       (pricing.hasPricing

@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import ActivitiesExplorer from "@/components/activities/ActivitiesExplorer";
 import ActivitiesHero from "@/components/activities/ActivitiesHero";
+import { getCmsPage } from "@/lib/firebase-cms";
+import { EVENTS, type LeadershipEvent } from "@/content/events";
 
 export const metadata: Metadata = {
   title: "Upcoming Activities - The Leadership Covenant",
@@ -13,7 +15,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ActivitiesPage() {
+export default async function ActivitiesPage() {
+  let initialEvents: LeadershipEvent[] = EVENTS;
+  let pageVisible = true;
+  try {
+    const page = await getCmsPage("events");
+    if (
+      page?.content?.events &&
+      Array.isArray(page.content.events) &&
+      page.content.events.length > 0
+    ) {
+      initialEvents = page.content.events as LeadershipEvent[];
+    }
+    if (page?.content?._visible === false) {
+      pageVisible = false;
+    }
+  } catch {
+    // Graceful fallback to static EVENTS
+  }
+
   ReactDOM.preload("/Activities/A1.png", {
     as: "image",
     fetchPriority: "high",
@@ -44,7 +64,7 @@ export default function ActivitiesPage() {
       </section>
 
       {/* 2 & 3. Fast Interactive Activity Explorer + Calendar Grid + Apply Form */}
-      <ActivitiesExplorer />
+      <ActivitiesExplorer initialEvents={initialEvents} pageVisible={pageVisible} />
     </main>
   );
 }

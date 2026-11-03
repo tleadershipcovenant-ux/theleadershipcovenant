@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { EVENTS, type LeadershipEvent } from "@/content/events";
 import { authenticateAdminRequest } from "@/lib/admin-auth";
 import { getCloudinaryConfig } from "@/lib/cloudinary";
+import { testFirebaseConnection } from "@/lib/firebase-admin";
+import { getCmsPage } from "@/lib/firebase-cms";
 import {
-  getCmsPage,
   listActivityRegistrations,
   listContactSubmissions,
   testSupabaseConnection,
@@ -39,12 +40,14 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const [contacts, registrations, eventsCms, supabaseHealth] = await Promise.all([
-    listContactSubmissions(),
-    listActivityRegistrations(),
-    getCmsPage("events"),
-    testSupabaseConnection(),
-  ]);
+  const [contacts, registrations, eventsCms, supabaseHealth, firebaseHealth] =
+    await Promise.all([
+      listContactSubmissions(),
+      listActivityRegistrations(),
+      getCmsPage("events"),
+      testSupabaseConnection(),
+      testFirebaseConnection(),
+    ]);
 
   const cloudinaryCfg = getCloudinaryConfig();
 
@@ -146,6 +149,12 @@ export async function GET(req: NextRequest) {
     recentContacts: contacts.slice(0, 6),
     recentRegistrations: registrations.slice(0, 6),
     systemHealth: {
+      firebase: {
+        configured: firebaseHealth.configured,
+        connected: firebaseHealth.connected,
+        provider: "firebase_firestore",
+        message: firebaseHealth.message,
+      },
       supabase: supabaseHealth,
       cloudinary: {
         configured: cloudinaryCfg.isConfigured,

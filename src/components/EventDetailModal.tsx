@@ -44,12 +44,15 @@ interface EventDetailModalProps {
   onClose: () => void;
   /** Optional handler used on /activities to prefill & scroll to the inline Apply form */
   onApply?: (slug: string) => void;
+  /** Optional custom z-index (default z-[100], use z-[150] for overlay on top of CMS editor modal) */
+  zIndexClassName?: string;
 }
 
 export default function EventDetailModal({
   event,
   onClose,
   onApply,
+  zIndexClassName,
 }: EventDetailModalProps) {
   const [todayIsoDate] = useState(() => new Date().toISOString().slice(0, 10));
 
@@ -128,7 +131,7 @@ export default function EventDetailModal({
 
         return (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-2.5 sm:p-4 md:p-6 bg-[#001B33]/75 backdrop-blur-sm overscroll-contain"
+            className={`fixed inset-0 ${zIndexClassName || "z-[100]"} flex items-center justify-center p-2.5 sm:p-4 md:p-6 bg-[#001B33]/75 backdrop-blur-sm overscroll-contain`}
             onClick={onClose}
             role="dialog"
             aria-modal="true"

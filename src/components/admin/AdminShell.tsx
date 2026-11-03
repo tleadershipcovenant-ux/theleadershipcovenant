@@ -12,18 +12,14 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight,
   ExternalLink,
   RefreshCw,
   PanelLeftClose,
   Calendar,
-  Home,
   Briefcase,
-  BookOpen,
   DollarSign,
   CreditCard,
-  MessageSquare,
-  Settings,
+  Phone,
 } from "lucide-react";
 
 interface QuickBadges {
@@ -33,15 +29,13 @@ interface QuickBadges {
 
 /* ─── CMS Pages Sub-List ─── */
 const CMS_PAGES_SUBMENU = [
-  { label: "Home Page", pageKey: "home", icon: Home, iconColor: "text-[#38BDF8]" },
-  { label: "Summit 2026", pageKey: "summit", icon: Calendar, iconColor: "text-[#FF7900]" },
-  { label: "Services & Programs", pageKey: "services", icon: Briefcase, iconColor: "text-[#10B981]" },
-  { label: "Our Story & Vision", pageKey: "about", icon: BookOpen, iconColor: "text-[#FFC400]" },
-  { label: "Activities Catalog", pageKey: "events", icon: Calendar, iconColor: "text-[#818CF8]" },
-  { label: "Pricing & Discounts", pageKey: "pricing", icon: DollarSign, iconColor: "text-[#4ADE80]" },
-  { label: "Payment & Bank Accounts", pageKey: "payment", icon: CreditCard, iconColor: "text-[#2DD4BF]" },
-  { label: "Forms & Microcopy", pageKey: "forms", icon: MessageSquare, iconColor: "text-[#FBBF24]" },
-  { label: "Global Site Settings", pageKey: "site", icon: Settings, iconColor: "text-[#94A3B8]" },
+  { label: "Overview Hub", pageKey: "hub", path: "/AD_Admin/cms", icon: Layers, iconColor: "text-[#FB7185]" },
+  { label: "Activities Page", pageKey: "events", path: "/AD_Admin/cms/events", icon: Calendar, iconColor: "text-[#818CF8]" },
+  { label: "Pricing & Early Bird", pageKey: "pricing", path: "/AD_Admin/cms/pricing", icon: DollarSign, iconColor: "text-[#4ADE80]" },
+  { label: "Services & Programs", pageKey: "services", path: "/AD_Admin/cms/services", icon: Briefcase, iconColor: "text-[#10B981]" },
+  { label: "Summit 2026", pageKey: "summit", path: "/AD_Admin/cms/summit", icon: Calendar, iconColor: "text-[#FF7900]" },
+  { label: "Payment Accounts", pageKey: "payment", path: "/AD_Admin/cms/payment", icon: CreditCard, iconColor: "text-[#34D399]" },
+  { label: "Contact Us Page", pageKey: "contact", path: "/AD_Admin/cms/contact", icon: Phone, iconColor: "text-[#38BDF8]" },
 ];
 
 export default function AdminShell({
@@ -451,12 +445,17 @@ export default function AdminShell({
                 <div className="mt-1 ml-4 pl-3 border-l-2 border-[#FB7185]/30 space-y-0.5 py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                   {CMS_PAGES_SUBMENU.map((page) => {
                     const PageIcon = page.icon;
+                    const isSubActive = pathname?.startsWith(`/AD_Admin/cms/${page.pageKey}`) || pathname?.startsWith(`/cms/${page.pageKey}`);
                     return (
                       <Link
                         key={page.pageKey}
-                        href={resolveLink(`/AD_Admin/cms?page=${page.pageKey}`)}
+                        href={resolveLink(page.path)}
                         prefetch={true}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white hover:bg-white/8 transition-colors group/item truncate"
+                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors group/item truncate ${
+                          isSubActive
+                            ? "bg-white/12 text-white"
+                            : "text-slate-300 hover:text-white hover:bg-white/8"
+                        }`}
                       >
                         <PageIcon
                           className={`w-3.5 h-3.5 ${page.iconColor} group-hover/item:scale-115 transition-transform shrink-0`}

@@ -5,7 +5,7 @@ import {
   getCmsPage,
   getDefaultCmsContent,
   type CmsPageKey,
-} from "@/lib/supabase-store";
+} from "@/lib/firebase-cms";
 
 export async function GET(req: NextRequest) {
   const keyParam = req.nextUrl.searchParams.get("key") as CmsPageKey | null;
