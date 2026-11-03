@@ -52,7 +52,7 @@ const QUICK_TOPICS = [
   { value: "general", label: "General" },
   { value: "leader-in-me", label: "Leader in Me" },
   { value: "leaderu", label: "LeaderU" },
-  { value: "professional-development", label: "Educator PD" },
+  { value: "professional-development", label: "Professional Development" },
   { value: "leadership-camps", label: "Student Camps" },
   { value: "partnership", label: "School Partnership" },
 ] as const;
@@ -487,7 +487,7 @@ export default function ContactSection() {
                         The Leadership Covenant
                       </p>
                       <p className="font-num text-xs sm:text-[13px] text-slate-300 mt-0.5 leading-relaxed">
-                        171, St. 68, F-10/3, Islamabad, Pakistan
+                        F-10/3, Islamabad, Pakistan
                       </p>
                     </div>
                   </div>
@@ -524,15 +524,6 @@ export default function ContactSection() {
                       <p className="font-num text-sm sm:text-[15px] font-extrabold text-white mt-0.5 tracking-wide">
                         +92 319 2091249
                       </p>
-                      <a
-                        href="https://wa.me/923192091249"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[#FFC400] hover:text-white font-bold text-xs mt-1 inline-flex items-center gap-1 transition-colors"
-                      >
-                        <span>Message Ubaid on WhatsApp</span>
-                        <MdArrowForward className="text-sm" />
-                      </a>
                     </div>
                   </div>
 

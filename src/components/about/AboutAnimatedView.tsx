@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ABOUT_CONTENT } from "@/content/about";
-import GovernanceSection from "@/components/GovernanceSection";
 import {
   MdCheckCircle,
   MdVisibility,
@@ -63,7 +62,7 @@ export default function AboutAnimatedView() {
         >
           <h1 className="font-serif font-extrabold text-3xl sm:text-5xl lg:text-[54px] text-white leading-[1.14] tracking-tight max-w-4xl mx-auto">
             Everyone has the potential to lead. <br />
-            <span className="text-[#FFC400]">We help them find it.</span>
+            <span className="text-[#FFC400]">We help them discover and develop it.</span>
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-slate-200 mt-5 max-w-2xl mx-auto leading-relaxed font-normal">
@@ -167,7 +166,7 @@ export default function AboutAnimatedView() {
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
             <p className="text-sm sm:text-base text-slate-600 mt-3.5 max-w-2xl mx-auto leading-relaxed font-medium">
-              Our solemn pledge to students, educators, and communities: four enduring commitments anchoring everything we do.
+              Our solemn pledge to students, educators, and communities is reflected in four enduring commitments that guide everything we do.
             </p>
           </motion.div>
 
@@ -234,7 +233,7 @@ export default function AboutAnimatedView() {
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
             <p className="text-sm sm:text-base text-slate-600 mt-3.5 max-w-2xl mx-auto leading-relaxed font-medium">
-              Timeless principles grounded in FranklinCovey frameworks that shape character and institutional culture.
+              Timeless principles grounded in frameworks that shape character and institutional culture.
             </p>
           </motion.div>
 
@@ -270,10 +269,7 @@ export default function AboutAnimatedView() {
         </div>
       </section>
 
-      {/* 5. CEO Message & Leadership — Guidance & Governance */}
-      <GovernanceSection />
-
-      {/* 6. Closing Call to Action — Styled Floating Rounded Card */}
+      {/* 5. Closing Call to Action — Styled Floating Rounded Card */}
       <section className="w-full py-12 sm:py-16 lg:py-20 relative overflow-hidden" id="cta-journey">
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -324,4 +320,3 @@ export default function AboutAnimatedView() {
     </main>
   );
 }
-

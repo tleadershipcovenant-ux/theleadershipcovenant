@@ -1,4 +1,3 @@
-const ceoPhoto = "/images/ceo.jpg";
 const logoImg = "/images/logo.png";
 
 /**
@@ -9,11 +8,11 @@ const logoImg = "/images/logo.png";
 export const ABOUT_CONTENT = {
   meta: {
     title: "Our Story - The Leadership Covenant",
-    description: "The vision, mission, values and CEO message behind The Leadership Covenant.",
+    description: "The vision, mission, values and leadership principles behind The Leadership Covenant.",
   },
   hero: {
     eyebrow: "Our Story",
-    h1: "Everyone has the potential to lead. We help them find it.",
+    h1: "Everyone has the potential to lead. We help them discover and develop it.",
     logo: logoImg,
   },
   visionMission: {
@@ -72,24 +71,9 @@ export const ABOUT_CONTENT = {
       },
       {
         title: "Trust is the multiplier",
-        text: "High-trust environments unlock speed, creativity, and joy in schools. We build them, deliberately.",
+        text: "High-trust environments unlock speed, creativity, and potential. We help you build it deliberately.",
       },
     ],
-  },
-  ceoMessage: {
-    eyebrow: "CEO Message",
-    captionLabel: "Message from · The Chief Executive",
-    headlineQuote: "“The future will be shaped by those we lead today.”",
-    image: ceoPhoto,
-    imageAlt: "Portrait of Ubaid ur Rehman, CEO of The Leadership Covenant",
-    paragraphs: [
-      "When I look at the students walking into our partner schools each morning, I see the doctors, engineers, artists, activists, and parents this community will depend on tomorrow. Our responsibility is not simply to teach them what to think; it is to help them lead how they think, choose, and serve.",
-      "The Leadership Covenant stands for one idea: everyone has the potential to lead. We are privileged to partner with courageous principals, teachers, and families who refuse to settle for average, believing that every child deserves the language, habits, and confidence of a leader.",
-      "Change is never easy, but it is always possible. Whether you're a school leader considering Leader in Me, an educator seeking new tools, or a parent looking to bring the 7 Habits home, we're honored to walk this journey with you.",
-      "Together, we build leaders. Together, change starts here.",
-    ],
-    signatureName: "Ubaid ur Rehman",
-    signatureTitle: "CEO, The Leadership Covenant",
   },
   closingCtas: [
     { label: "Explore our services", href: "/services", variant: "primary" },

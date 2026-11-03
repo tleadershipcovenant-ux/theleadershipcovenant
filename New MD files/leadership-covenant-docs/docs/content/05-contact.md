@@ -21,7 +21,7 @@
 
 **Eyebrow:** Contact
 **H1:** Let's start a conversation.
-**Intro:** Whether you're exploring a program for your school, joining a camp, or just curious — we'd love to hear from you.
+**Intro:** Whether you are exploring a program for your school, joining a camp, or just curious — we would love to hear from you.
 
 ---
 
@@ -29,8 +29,8 @@
 
 | Icon | Title | Content | Link |
 |---|---|---|---|
-| 📍 | Visit us | The Leadership Covenant<br>171, St. 68, F-10/3<br>Islamabad, Pakistan | — |
-| ☎ | WhatsApp us | +92 319 2091249<br>"Message Ubaid on WhatsApp" | https://wa.me/923192091249 |
+| 📍 | Visit us | The Leadership Covenant<br>F-10/3<br>Islamabad, Pakistan | — |
+| ☎ | WhatsApp us | +92 319 2091249 | — |
 | ✉ | Email us | theleadershipcovenant@gmail.com | `mailto:theleadershipcovenant@gmail.com` |
 | in | Follow us | LinkedIn · Facebook · Instagram | See `00-global.md` for URLs |
 
@@ -67,7 +67,7 @@ Preselect via query: `?interest=leader-in-me` etc. (see mapping in `06-FORMS-SPE
 ## 3. LOCATION BLOCK
 
 **Heading:** Find us in Islamabad
-**Text:** 171, St. 68, F-10/3, Islamabad, Pakistan. Detailed directions provided upon booking or enquiry.
+**Text:** F-10/3, Islamabad, Pakistan. Detailed directions provided upon booking or enquiry.
 
 Implementation: a styled card with an embedded map or a "Open in Google Maps" link to the address. Prefer a click-to-load map (privacy + performance) rather than an always-loaded iframe.
 

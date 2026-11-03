@@ -27,9 +27,8 @@ export default function ContactHero() {
         transition={{ duration: 0.55, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="text-sm sm:text-base lg:text-lg text-white/95 mt-5 max-w-2xl mx-auto leading-relaxed font-normal drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]"
       >
-        Whether you&apos;re exploring a program for your school, joining a camp, or just curious, we&apos;d love to hear from you.
+        Whether you are exploring a program for your school, joining a camp, or just curious, we would love to hear from you.
       </motion.p>
     </motion.div>
   );
 }
-

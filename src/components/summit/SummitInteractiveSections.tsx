@@ -13,7 +13,7 @@ const SUMMIT_SPEAKERS = [
     role: "Lead Facilitator",
     title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
     bio: "Leads strategic growth across Pakistan, Azerbaijan, and Turkey, driving teacher training, project management, and customer service initiatives. Also serves as Director of ARQAM Public School System and Founder of The Learning Space Official, advancing educational excellence and sustainable institutional growth.",
-    image: "/images/fazal.jpg",
+    image: "/Submit/fazal.jpeg",
     badgeColor: "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30",
     topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
   },

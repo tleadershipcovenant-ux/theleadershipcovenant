@@ -27,14 +27,14 @@ export const SITE = {
   whatsappUrl: "https://wa.me/923192091249",
   telephone: "+923192091249",
   address: {
-    line1: "171, St. 68, F-10/3",
+    line1: "F-10/3",
     city: "Islamabad",
     country: "Pakistan",
     countryCode: "PK",
-    full: "171, St. 68, F-10/3, Islamabad, Pakistan",
+    full: "F-10/3, Islamabad, Pakistan",
   },
-  mapsUrl: "https://www.google.com/maps/search/?api=1&query=171%2C+Street+68%2C+F-10%2F3%2C+Islamabad%2C+Pakistan",
-  mapsEmbedUrl: "https://www.google.com/maps?q=Street+68,+F-10/3,+Islamabad,+Pakistan&output=embed",
+  mapsUrl: "https://www.google.com/maps/search/?api=1&query=F-10%2F3%2C+Islamabad%2C+Pakistan",
+  mapsEmbedUrl: "https://www.google.com/maps?q=F-10/3,+Islamabad,+Pakistan&output=embed",
   social: {
     linkedin: "https://www.linkedin.com/company/franklincovey-education-north-region/",
     facebook: "https://web.facebook.com/profile.php?id=61592161942804",

@@ -184,7 +184,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="font-num font-semibold text-white/95 hover:text-[#FFC400] transition-colors"
                 >
-                  +92 319 2091249 (WhatsApp)
+                  +92 319 2091249
                 </a>
               </div>
 

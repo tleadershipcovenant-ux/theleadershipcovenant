@@ -42,8 +42,8 @@ The Leadership Covenant is a commitment to build leadership in every student, ed
 
 **Contact**
 - ✉ theleadershipcovenant@gmail.com
-- ☎ +92 319 2091249 (WhatsApp)
-- 📍 171, St. 68, F-10/3, Islamabad, Pakistan
+- ☎ +92 319 2091249
+- 📍 F-10/3, Islamabad, Pakistan
 
 © 2026 The Leadership Covenant. All rights reserved.
 Change starts here.
@@ -294,7 +294,7 @@ Book a 20-minute discovery call and we'll design a leadership pathway around you
 
 ## Our Story
 
-### Everyone has the potential to lead. We help them find it.
+### Everyone has the potential to lead. We help them discover and develop it.
 
 *Image: The Leadership Covenant (logo)*
 
@@ -309,6 +309,8 @@ The Leadership Covenant exists to prepare individuals for life, organizations fo
 ## The Covenant
 
 ### Four promises. One covenant.
+
+Our solemn pledge to students, educators, and communities is reflected in four enduring commitments that guide everything we do.
 
 **Learn**
 We commit to lifelong learning as the foundation of leadership.
@@ -326,6 +328,8 @@ We build cultures where change is chosen, not feared.
 
 ### Principles we lead by.
 
+Timeless principles grounded in frameworks that shape character and institutional culture.
+
 #### ✦ Every voice matters
 Leadership is a habit, not a title. We design experiences where every student, teacher, and parent can lead.
 
@@ -333,30 +337,7 @@ Leadership is a habit, not a title. We design experiences where every student, t
 Sustainable transformation starts with people, not programs. Character shapes culture; culture shapes results.
 
 #### ✦ Trust is the multiplier
-High-trust environments unlock speed, creativity, and joy in schools. We build them, deliberately.
-
-## Message from The Chief Executive
-
-*Image: Portrait of Ubaid ur Rehman, CEO of The Leadership Covenant*
-
-**CEO Message**
-
-### "The future will be shaped by those we lead today."
-
-When I look at the students walking into our partner schools each morning, I see the doctors, engineers, artists, activists, and parents this community will depend on tomorrow. Our responsibility is not simply to teach them what to think — it is to help them *lead* how they think, choose, and serve.
-
-The Leadership Covenant stands for one idea: everyone has the potential to lead. We are privileged to partner with courageous principals, teachers, and families who refuse to settle for average — who believe that every child deserves the language, habits, and confidence of a leader.
-
-Change is never easy, but it is always possible. Whether you're a school leader considering Leader in Me, an educator seeking new tools, or a parent looking to bring the 7 Habits home — we're honored to walk this journey with you.
-
-Together, we build leaders. Together, change starts here.
-
-— Ubaid ur Rehman
-CEO, The Leadership Covenant
-
-**Buttons:** Explore our services | Get in touch
-
----
+High-trust environments unlock speed, creativity, and potential. We help you build it deliberately.
 
 # PAGE 4: ACTIVITIES
 
@@ -526,16 +507,15 @@ By submitting you agree to be contacted by our team about this application.
 
 ### Let's start a conversation.
 
-Whether you're exploring a program for your school, joining a camp, or just curious — we'd love to hear from you.
+Whether you are exploring a program for your school, joining a camp, or just curious — we would love to hear from you.
 
 #### 📍 Visit us
 The Leadership Covenant
-171, St. 68, F-10/3
+F-10/3
 Islamabad, Pakistan
 
 #### ☎ WhatsApp us
 +92 319 2091249
-Message Ubaid on WhatsApp (https://wa.me/923192091249)
 
 #### ✉ Email us
 theleadershipcovenant@gmail.com
@@ -566,7 +546,7 @@ We reply within one working day.
 
 ### Find us in Islamabad
 
-171, St. 68, F-10/3, Islamabad, Pakistan. Detailed directions provided upon booking or enquiry.
+F-10/3, Islamabad, Pakistan. Detailed directions provided upon booking or enquiry.
 
 ---
 

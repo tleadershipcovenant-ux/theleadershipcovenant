@@ -30,7 +30,7 @@ export default function ContactMapSection() {
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           <p className="text-xs sm:text-sm text-slate-600 mt-3.5 leading-relaxed">
             <span className="font-num font-bold text-[#102E4D]">
-              171, St. 68, F-10/3
+              F-10/3
             </span>
             , Islamabad, Pakistan. Detailed directions provided upon booking or enquiry.
           </p>
@@ -72,4 +72,3 @@ export default function ContactMapSection() {
     </section>
   );
 }
-
