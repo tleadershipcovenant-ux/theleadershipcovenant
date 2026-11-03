@@ -119,7 +119,10 @@ export async function getGoogleAccessToken(): Promise<string | null> {
       expiresAt: now + (json.expires_in || 3600),
     };
     return cachedAccessToken.token;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && (err as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE") {
+      throw err;
+    }
     console.error("[Google OAuth Token Exception]:", err);
     return null;
   }
@@ -213,7 +216,10 @@ export async function getFirestoreDocument<T = Record<string, unknown>>(
       plain[k] = firestoreToPlain(v);
     }
     return plain as T;
-  } catch (err) {
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && (err as { digest?: string }).digest === "DYNAMIC_SERVER_USAGE") {
+      throw err;
+    }
     console.error(`[Firestore REST Read Error ${collection}/${docId}]:`, err);
     return null;
   }
