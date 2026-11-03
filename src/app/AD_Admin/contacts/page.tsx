@@ -1688,7 +1688,7 @@ export default function AdminContactsCrmPage() {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
+                  <div className="space-y-3.5">
                     {/* Topic Dropdown */}
                     <div className="space-y-1.5">
                       <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
@@ -1712,12 +1712,17 @@ export default function AdminContactsCrmPage() {
                       </div>
                     </div>
 
-                    {/* Initial Status Selector - Exact h-10 matching dropdown height */}
+                    {/* Initial Status Selector */}
                     <div className="space-y-1.5">
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                        Initial Status
-                      </label>
-                      <div className="grid grid-cols-3 gap-1.5 h-10">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                          Initial Status
+                        </label>
+                        <span className="text-[10px] font-medium text-slate-400">
+                          Choose workflow stage
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                         {(["new", "in_progress", "responded"] as ContactCrmStatus[]).map((st) => {
                           const active = addForm.crm_status === st;
                           const info = statusStyles(st);
@@ -1728,14 +1733,14 @@ export default function AdminContactsCrmPage() {
                               onClick={() =>
                                 setAddForm({ ...addForm, crm_status: st })
                               }
-                              className={`h-10 px-1.5 rounded-xl border text-[11px] font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                              className={`min-h-11 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                                 active
                                   ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FF7900]/30"
                                   : "bg-slate-50/70 hover:bg-slate-100 text-slate-700 border-slate-200"
                               }`}
                             >
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${info.dot}`} />
-                              <span className="truncate">{info.label}</span>
+                              <span className="whitespace-nowrap text-center">{info.label}</span>
                             </button>
                           );
                         })}

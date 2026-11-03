@@ -58,6 +58,9 @@ export async function POST(req: NextRequest) {
     const phone = String(body?.phone || "").trim();
     const role = String(body?.role || "").trim();
     const activitySlug = String(body?.activity_slug || "").trim();
+    const bookingMode =
+      body?.booking_mode === "secure_seat" ? "secure_seat" : "reserve_later";
+    const screenshotUrl = String(body?.screenshot_url || "").trim();
 
     if (!fullName || !email || !phone || !role || !activitySlug) {
       return NextResponse.json(
@@ -65,6 +68,12 @@ export async function POST(req: NextRequest) {
           ok: false,
           error: "Name, email, phone, role, and activity are required.",
         },
+        { status: 400 }
+      );
+    }
+    if (bookingMode === "secure_seat" && !screenshotUrl) {
+      return NextResponse.json(
+        { ok: false, error: "Payment proof is required for a secured-seat registration." },
         { status: 400 }
       );
     }
@@ -85,12 +94,11 @@ export async function POST(req: NextRequest) {
       role,
       organization: String(body?.organization || ""),
       activity_slug: activitySlug,
-      booking_mode:
-        body?.booking_mode === "secure_seat" ? "secure_seat" : "reserve_later",
+      booking_mode: bookingMode,
       payment_method: "ubl",
       fee_label: String(body?.fee_label || defaultFee || ""),
       transaction_ref: String(body?.transaction_ref || ""),
-      screenshot_url: String(body?.screenshot_url || ""),
+      screenshot_url: screenshotUrl,
       screenshot_public_id: String(body?.screenshot_public_id || ""),
       screenshot_name: String(body?.screenshot_name || ""),
       verification_status: body?.verification_status as
@@ -122,6 +130,16 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         { ok: false, error: "Registration ID is required." },
         { status: 400 }
+      );
+    }
+
+    const existing = (await listActivityRegistrations()).find(
+      (registration) => registration.id === id
+    );
+    if (!existing) {
+      return NextResponse.json(
+        { ok: false, error: "Registration record not found." },
+        { status: 404 }
       );
     }
 
@@ -173,6 +191,29 @@ export async function PATCH(req: NextRequest) {
     }
     if (typeof body.screenshot_name === "string") {
       patch.screenshot_name = body.screenshot_name;
+    }
+
+    const hasScreenshot =
+      typeof patch.screenshot_url === "string"
+        ? Boolean(patch.screenshot_url.trim())
+        : Boolean(existing.screenshot_url);
+    const targetVerification =
+      patch.verification_status ?? existing.verification_status;
+    const targetBookingMode = patch.booking_mode ?? existing.booking_mode;
+    if (
+      (targetVerification === "awaiting_verification" ||
+        targetVerification === "verified_confirmed" ||
+        targetBookingMode === "secure_seat") &&
+      !hasScreenshot
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Payment proof screenshot is required before Admin Review, Confirmed status, or Secured Seat.",
+        },
+        { status: 400 }
+      );
     }
 
     const updated = await updateActivityRegistration(id, patch);
@@ -244,4 +285,3 @@ export async function DELETE(req: NextRequest) {
 
   return NextResponse.json({ ok: true, count: deletedCount, ids });
 }
-

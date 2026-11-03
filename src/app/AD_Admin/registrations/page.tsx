@@ -50,7 +50,11 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
-import type { LeadershipEvent } from "@/content/events";
+import {
+  CATEGORY_LABELS,
+  getMonthTheme,
+  type LeadershipEvent,
+} from "@/content/events";
 import {
   downloadOfficialReceipt,
   printOfficialReceipt,
@@ -174,6 +178,7 @@ const VERIFICATION_DROPDOWN_OPTIONS: Array<{
     badgeText: "text-sky-900",
     badgeBorder: "border-sky-200",
     activeBg: "bg-sky-600 text-white",
+    requiresProof: true,
   },
   {
     value: "verified_confirmed",
@@ -260,6 +265,10 @@ function RegistrationsCrmInner() {
   // Manual Add Modal
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [uploadingManualProof, setUploadingManualProof] = useState(false);
+  const [manualFormError, setManualFormError] = useState<string | null>(null);
+  const [manualActivityOpen, setManualActivityOpen] = useState(false);
+  const [manualVerificationOpen, setManualVerificationOpen] = useState(false);
   const [newReg, setNewReg] = useState({
     full_name: "",
     email: "",
@@ -272,6 +281,9 @@ function RegistrationsCrmInner() {
     verification_status: "pending_callback" as VerificationStatus,
     fee_label: "",
     message: "",
+    screenshot_url: "",
+    screenshot_public_id: "",
+    screenshot_name: "",
   });
 
   // Batch Selection & Deletion State
@@ -590,11 +602,13 @@ function RegistrationsCrmInner() {
 
     // Screenshot proof check before securing seat or confirming
     if (
-      (targetMode === "secure_seat" || targetVerification === "verified_confirmed") &&
+      (targetMode === "secure_seat" ||
+        targetVerification === "awaiting_verification" ||
+        targetVerification === "verified_confirmed") &&
       !selected.screenshot_url
     ) {
       setProofRequirementWarning(
-        "Payment proof screenshot required before saving as Secured Seat or Confirmed. Please upload screenshot proof first."
+        "Payment proof screenshot required before saving as Secured Seat, Admin Review, or Confirmed. Please upload screenshot proof first."
       );
       return;
     }
@@ -721,8 +735,21 @@ function RegistrationsCrmInner() {
 
   const handleCreateManual = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newReg.full_name.trim() || !newReg.email.trim() || !newReg.phone.trim()) {
-      alert("Full Name, Email, and Phone are required.");
+    setManualFormError(null);
+    if (
+      !newReg.full_name.trim() ||
+      !newReg.email.trim() ||
+      !newReg.phone.trim() ||
+      !newReg.role.trim() ||
+      !newReg.activity_slug
+    ) {
+      setManualFormError("Complete all required participant and activity fields.");
+      return;
+    }
+    if (newReg.booking_mode === "secure_seat" && !newReg.screenshot_url) {
+      setManualFormError(
+        "Upload payment proof before creating a secured-seat registration."
+      );
       return;
     }
     setCreating(true);
@@ -751,6 +778,9 @@ function RegistrationsCrmInner() {
           verification_status: "pending_callback",
           fee_label: "",
           message: "",
+          screenshot_url: "",
+          screenshot_public_id: "",
+          screenshot_name: "",
         });
         openInspector(json.registration);
       } else {
@@ -758,6 +788,42 @@ function RegistrationsCrmInner() {
       }
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleManualProofUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingManualProof(true);
+    setManualFormError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("purpose", "screenshot");
+      fd.append("activity_slug", newReg.activity_slug);
+      const response = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await response.json();
+      if (!response.ok || !data.url) {
+        setManualFormError(data.error || "Screenshot upload failed.");
+        return;
+      }
+      setNewReg((prev) => ({
+        ...prev,
+        screenshot_url: data.url,
+        screenshot_public_id: data.publicId || "",
+        screenshot_name: file.name,
+        booking_mode: "secure_seat",
+        verification_status: "awaiting_verification",
+      }));
+    } catch (error) {
+      setManualFormError(
+        error instanceof Error ? error.message : "Screenshot upload failed."
+      );
+    } finally {
+      setUploadingManualProof(false);
+      e.target.value = "";
     }
   };
 
@@ -923,7 +989,19 @@ function RegistrationsCrmInner() {
   };
 
   // Colorful & Distinct Booking Mode Styles (Compact & Streamlined)
-  const bookingModeStyles = (mode: BookingModeType) => {
+  const bookingModeStyles = (
+    mode: BookingModeType,
+    verificationStatus?: VerificationStatus
+  ) => {
+    if (mode === "secure_seat" && verificationStatus !== "verified_confirmed") {
+      return {
+        pill: "bg-sky-50 text-sky-800 border-sky-300 font-extrabold shadow-2xs",
+        dot: "bg-sky-500",
+        label: "Admin Review",
+        shortLabel: "Admin Review",
+        borderTop: "from-sky-400 via-sky-500 to-blue-500",
+      };
+    }
     if (mode === "secure_seat") {
       return {
         pill: "bg-emerald-50 text-emerald-800 border-emerald-300 font-extrabold shadow-2xs",
@@ -998,7 +1076,10 @@ function RegistrationsCrmInner() {
 
               <button
                 type="button"
-                onClick={() => setAddModalOpen(true)}
+                onClick={() => {
+                  setManualFormError(null);
+                  setAddModalOpen(true);
+                }}
                 className="h-9 px-3.5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -1414,7 +1495,7 @@ function RegistrationsCrmInner() {
           /* ── CARDS / GRID VIEW (Lively & Colorful) ── */
           <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {filteredRegistrations.map((r) => {
-              const bStyle = bookingModeStyles(r.booking_mode);
+              const bStyle = bookingModeStyles(r.booking_mode, r.verification_status);
               const vBadge = verificationBadge(r.verification_status);
               const avatarColor = getAvatarColor(r.full_name);
               const initials = getInitials(r.full_name);
@@ -1597,7 +1678,7 @@ function RegistrationsCrmInner() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredRegistrations.map((r) => {
-                  const bStyle = bookingModeStyles(r.booking_mode);
+                  const bStyle = bookingModeStyles(r.booking_mode, r.verification_status);
                   const vBadge = verificationBadge(r.verification_status);
                   const avatarColor = getAvatarColor(r.full_name);
                   const initials = getInitials(r.full_name);
@@ -1818,7 +1899,10 @@ function RegistrationsCrmInner() {
 
                     {/* Booking Mode Badge */}
                     {(() => {
-                      const bStyle = bookingModeStyles(selected.booking_mode);
+                      const bStyle = bookingModeStyles(
+                        selected.booking_mode,
+                        selected.verification_status
+                      );
                       return (
                         <span className={`px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold border inline-flex items-center gap-1.5 ${bStyle.pill}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${bStyle.dot}`} />
@@ -2038,7 +2122,7 @@ function RegistrationsCrmInner() {
               </div>
 
               {/* SECTION 4: Payment Screenshot Proof Inspector */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-4">
                 <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-100">
                   <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D] inline-flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-[#005696]" />
@@ -2247,7 +2331,7 @@ function RegistrationsCrmInner() {
                   return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       {/* Left: Booking Mode */}
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
                             Booking Mode
@@ -2396,7 +2480,7 @@ function RegistrationsCrmInner() {
                                     onClick={() => {
                                       if (opt.requiresProof && !hasProof) {
                                         setProofRequirementWarning(
-                                          "Payment proof screenshot required before confirming seat. Please upload a screenshot proof first."
+                                          "Payment proof screenshot required before Admin Review or confirming the seat. Please upload a screenshot proof first."
                                         );
                                         setStatusDropdownOpen(false);
                                         return;
@@ -2478,7 +2562,7 @@ function RegistrationsCrmInner() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                   {/* Transaction Ref */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
                       UBL Transaction ID / Ref
                     </label>
@@ -2492,7 +2576,7 @@ function RegistrationsCrmInner() {
                   </div>
 
                   {/* Fee Label */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-[#102E4D]">
                       Fee Label
                     </label>
@@ -2647,7 +2731,7 @@ function RegistrationsCrmInner() {
             onClick={() => setAddModalOpen(false)}
           />
 
-          <div className="relative z-10 w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
+          <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[92dvh] sm:max-h-[88vh] will-change-transform">
             {/* Top gradient accent line */}
             <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
@@ -2683,9 +2767,9 @@ function RegistrationsCrmInner() {
 
             {/* Form */}
             <form onSubmit={handleCreateManual} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
+              <div className="p-4 sm:p-6 space-y-5 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
                 {/* Participant Details */}
-                <div className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <section className="rounded-xl sm:rounded-2xl bg-slate-50/80 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
                   <div className="flex items-center gap-2 pb-2 border-b border-slate-200/70">
                     <div className="w-5 h-5 rounded-md bg-[#102E4D] text-white flex items-center justify-center shrink-0">
                       <User className="w-3 h-3" />
@@ -2765,7 +2849,7 @@ function RegistrationsCrmInner() {
                       className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20"
                     />
                   </div>
-                </div>
+                </section>
 
                 {/* Cohort & Booking Mode Selection */}
                 <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
@@ -2782,20 +2866,110 @@ function RegistrationsCrmInner() {
                     <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
                       Select Activity Cohort <span className="text-[#FF7900]">*</span>
                     </label>
-                    <select
-                      value={newReg.activity_slug}
-                      onChange={(e) => setNewReg({ ...newReg, activity_slug: e.target.value })}
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-bold text-[#102E4D] focus:outline-none focus:border-[#FF7900] cursor-pointer"
-                    >
-                      {activities.map((a) => (
-                        <option key={a.slug} value={a.slug}>
-                          {a.title} ({a.city})
-                        </option>
-                      ))}
-                    </select>
+                    {(() => {
+                      const selectedActivity = activities.find(
+                        (activity) => activity.slug === newReg.activity_slug
+                      );
+                      const selectedDate = selectedActivity
+                        ? new Date(selectedActivity.startDate + "T00:00:00")
+                        : null;
+                      return (
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setManualActivityOpen((open) => !open);
+                              setManualVerificationOpen(false);
+                            }}
+                            className="w-full min-h-[58px] rounded-2xl border border-slate-200 bg-white px-3 py-2 text-left shadow-2xs hover:border-[#FF7900] focus:outline-none focus:ring-2 focus:ring-[#FF7900]/20 transition-all flex items-center gap-3"
+                          >
+                            {selectedDate && (
+                              <span className="w-12 shrink-0 overflow-hidden rounded-lg border border-slate-200 text-center">
+                                <span className="block bg-[#102E4D] px-1 py-0.5 text-[9px] font-black uppercase text-white">
+                                  {selectedDate.toLocaleDateString("en-US", { month: "short" })}
+                                </span>
+                                <span className="block py-0.5 text-base font-black leading-none text-[#102E4D]">
+                                  {selectedDate.getDate()}
+                                </span>
+                              </span>
+                            )}
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-xs sm:text-sm font-extrabold text-[#102E4D]">
+                                {selectedActivity?.title || "Choose an activity"}
+                              </span>
+                              <span className="mt-0.5 block truncate text-[10px] font-semibold text-slate-500">
+                                {selectedActivity
+                                  ? `${selectedActivity.city} • ${selectedActivity.schedule || selectedActivity.duration}`
+                                  : "Select a cohort for this registration"}
+                              </span>
+                            </span>
+                            <ChevronDown
+                              className={`w-4 h-4 shrink-0 text-slate-400 transition-transform ${
+                                manualActivityOpen ? "rotate-180 text-[#FF7900]" : ""
+                              }`}
+                            />
+                          </button>
+                          {manualActivityOpen && (
+                            <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-72 overflow-y-auto rounded-2xl border-2 border-[#102E4D]/20 bg-white p-2 shadow-2xl">
+                              <div className="border-b border-slate-100 px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                Available activity cohorts · {activities.length}
+                              </div>
+                              <div className="space-y-1 pt-1">
+                                {[...activities]
+                                  .sort((a, b) => a.startDate.localeCompare(b.startDate))
+                                  .map((activity) => {
+                                    const date = new Date(activity.startDate + "T00:00:00");
+                                    const monthTheme = getMonthTheme(date.getMonth());
+                                    const isSelected = activity.slug === newReg.activity_slug;
+                                    return (
+                                      <button
+                                        key={activity.slug}
+                                        type="button"
+                                        onClick={() => {
+                                          setNewReg({
+                                            ...newReg,
+                                            activity_slug: activity.slug,
+                                            screenshot_url: "",
+                                            screenshot_public_id: "",
+                                            screenshot_name: "",
+                                          });
+                                          setManualActivityOpen(false);
+                                        }}
+                                        className={`flex w-full items-center gap-2.5 rounded-xl border p-2 text-left transition-all ${
+                                          isSelected
+                                            ? "border-[#102E4D] bg-[#EFFBF8] ring-2 ring-[#102E4D]/10"
+                                            : "border-slate-100 hover:border-[#C8EFE6] hover:bg-[#EFFBF8]/60"
+                                        }`}
+                                      >
+                                        <span className="w-11 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white text-center">
+                                          <span className={`block bg-gradient-to-r ${monthTheme.gradient} px-1 py-0.5 text-[8px] font-black uppercase text-white`}>
+                                            {date.toLocaleDateString("en-US", { month: "short" })}
+                                          </span>
+                                          <span className="block py-1 text-sm font-black leading-none text-[#102E4D]">
+                                            {date.getDate()}
+                                          </span>
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                          <span className="block truncate text-[12px] font-extrabold text-[#102E4D]">
+                                            {activity.title}
+                                          </span>
+                                          <span className="block truncate text-[10px] font-semibold text-slate-500">
+                                            {CATEGORY_LABELS[activity.category]} • {activity.city}
+                                          </span>
+                                        </span>
+                                        {isSelected && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
+                                      </button>
+                                    );
+                                  })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-end">
+                  <div className="space-y-4">
                     {/* Booking Mode Selector */}
                     <div className="space-y-1.5">
                       <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
@@ -2804,7 +2978,17 @@ function RegistrationsCrmInner() {
                       <div className="grid grid-cols-2 gap-1.5 h-10">
                         <button
                           type="button"
-                          onClick={() => setNewReg({ ...newReg, booking_mode: "secure_seat" })}
+                          onClick={() =>
+                            newReg.screenshot_url
+                              ? setNewReg({
+                                  ...newReg,
+                                  booking_mode: "secure_seat",
+                                  verification_status: "awaiting_verification",
+                                })
+                              : setManualFormError(
+                                  "Upload payment proof before selecting Secured Seat."
+                                )
+                          }
                           className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                             newReg.booking_mode === "secure_seat"
                               ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-500/30"
@@ -2816,7 +3000,13 @@ function RegistrationsCrmInner() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setNewReg({ ...newReg, booking_mode: "reserve_later" })}
+                          onClick={() =>
+                            setNewReg({
+                              ...newReg,
+                              booking_mode: "reserve_later",
+                              verification_status: "pending_callback",
+                            })
+                          }
                           className={`h-10 px-2 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                             newReg.booking_mode === "reserve_later"
                               ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-500/30"
@@ -2829,24 +3019,190 @@ function RegistrationsCrmInner() {
                       </div>
                     </div>
 
+                    <div
+                        className={`rounded-2xl border p-3.5 sm:p-4 grid grid-cols-1 sm:grid-cols-[1fr_auto] items-center gap-3 ${
+                          newReg.screenshot_url
+                            ? "border-emerald-200 bg-emerald-50/70"
+                            : "border-sky-200 bg-sky-50/70"
+                        }`}
+                      >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                          newReg.screenshot_url
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-sky-100 text-sky-700"
+                        }`}
+                      >
+                        <UploadCloud className="w-4 h-4" />
+                    </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`text-xs font-extrabold uppercase tracking-wider ${
+                            newReg.screenshot_url
+                              ? "text-emerald-900"
+                              : "text-sky-900"
+                          }`}
+                        >
+                          Payment screenshot
+                        </p>
+                        <p
+                          className={`text-[11px] leading-relaxed mt-1 ${
+                            newReg.screenshot_url
+                              ? "text-emerald-800/80"
+                              : "text-sky-800/80"
+                          }`}
+                        >
+                          Upload proof to enable Admin Review, Confirmed, and Secured Seat.
+                        </p>
+                      </div>
+                    </div>
+
+                    <label
+                      className={`flex min-h-12 min-w-[220px] items-center justify-center gap-2 rounded-xl border border-dashed bg-white px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors ${
+                        newReg.screenshot_url
+                          ? "border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                          : "border-sky-300 text-sky-800 hover:bg-sky-100"
+                      }`}
+                    >
+                      {uploadingManualProof ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Uploading screenshot…
+                        </>
+                      ) : (
+                        <>
+                          <UploadCloud className="w-4 h-4" />
+                          {newReg.screenshot_url
+                            ? "Replace payment screenshot"
+                            : "Upload payment screenshot"}
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/heic"
+                        onChange={handleManualProofUpload}
+                        disabled={uploadingManualProof}
+                        className="sr-only"
+                      />
+                    </label>
+
+                    {newReg.screenshot_url && (
+                      <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-[11px] text-emerald-900">
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                        <span className="truncate font-semibold">
+                          {newReg.screenshot_name || "Payment screenshot uploaded"}
+                        </span>
+                      </div>
+                    )}
+                      </div>
+
                     {/* Verification Status */}
                     <div className="space-y-1.5">
                       <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
                         Initial Verification Status
                       </label>
-                      <select
-                        value={newReg.verification_status}
-                        onChange={(e) =>
-                          setNewReg({ ...newReg, verification_status: e.target.value as VerificationStatus })
-                        }
-                        className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white font-bold text-xs text-[#102E4D]"
-                      >
-                        <option value="pending_callback">Pending Callback (Reservation)</option>
-                        <option value="awaiting_verification">Admin Review (Proof Uploaded)</option>
-                        <option value="verified_confirmed">Confirmed (Seat Locked)</option>
-                        <option value="cancelled">Cancelled (Booking Locked)</option>
-                      </select>
-                    </div>
+                        {(() => {
+                          const selectedOption =
+                            VERIFICATION_DROPDOWN_OPTIONS.find(
+                              (option) => option.value === newReg.verification_status
+                            ) || VERIFICATION_DROPDOWN_OPTIONS[0];
+                          const SelectedIcon = selectedOption.icon;
+                          return (
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setManualVerificationOpen((open) => !open);
+                                  setManualActivityOpen(false);
+                                }}
+                                className={`w-full min-h-[58px] rounded-2xl border ${selectedOption.badgeBorder} ${selectedOption.badgeBg} px-3 py-2 text-left shadow-2xs hover:shadow-sm transition-all flex items-center gap-3`}
+                              >
+                                <span className={`w-9 h-9 rounded-xl ${selectedOption.dotColor} text-white flex items-center justify-center shrink-0`}>
+                                  <SelectedIcon className="w-4 h-4" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className={`block text-xs font-extrabold ${selectedOption.badgeText}`}>
+                                    {selectedOption.label}
+                                  </span>
+                                  <span className="block mt-0.5 truncate text-[10px] font-semibold text-slate-600">
+                                    {selectedOption.shortDesc}
+                                  </span>
+                                </span>
+                                <ChevronDown
+                                  className={`w-4 h-4 shrink-0 text-slate-500 transition-transform ${
+                                    manualVerificationOpen ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+                              {manualVerificationOpen && (
+                                <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border-2 border-[#102E4D]/20 bg-white p-2 shadow-2xl">
+                                  <div className="px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                    Select verification stage
+                                  </div>
+                                  <div className="space-y-1">
+                                    {VERIFICATION_DROPDOWN_OPTIONS.map((option) => {
+                                      const Icon = option.icon;
+                                      const disabled =
+                                        Boolean(option.requiresProof) &&
+                                        !newReg.screenshot_url;
+                                      const selectedStatus =
+                                        newReg.verification_status === option.value;
+                                      return (
+                                        <button
+                                          key={option.value}
+                                          type="button"
+                                          disabled={disabled}
+                                          onClick={() => {
+                                            if (disabled) {
+                                              setManualFormError(
+                                                "Upload payment proof before selecting Admin Review or Confirmed."
+                                              );
+                                              return;
+                                            }
+                                            setManualFormError(null);
+                                            setNewReg({
+                                              ...newReg,
+                                              verification_status: option.value,
+                                              booking_mode:
+                                                option.value === "pending_callback"
+                                                  ? "reserve_later"
+                                                  : option.value === "cancelled"
+                                                  ? newReg.booking_mode
+                                                  : "secure_seat",
+                                            });
+                                            setManualVerificationOpen(false);
+                                          }}
+                                          className={`flex w-full items-center gap-2.5 rounded-xl border p-2.5 text-left transition-all ${
+                                            selectedStatus
+                                              ? `${option.badgeBg} ${option.badgeBorder} ring-2 ring-[#102E4D]/10`
+                                              : disabled
+                                              ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
+                                              : "cursor-pointer border-transparent hover:border-slate-200 hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <span className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${selectedStatus ? `${option.dotColor} text-white` : "bg-slate-100 text-slate-600"}`}>
+                                            <Icon className="w-4 h-4" />
+                                          </span>
+                                          <span className="min-w-0 flex-1">
+                                            <span className="block text-[11px] font-extrabold text-[#102E4D]">
+                                              {option.stepNum}. {option.label}
+                                            </span>
+                                            <span className="block text-[9.5px] leading-snug text-slate-500">
+                                              {disabled ? "Upload proof first" : option.shortDesc}
+                                            </span>
+                                          </span>
+                                          {selectedStatus && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -2866,6 +3222,11 @@ function RegistrationsCrmInner() {
 
               {/* Pinned Footer */}
               <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 shrink-0">
+                {manualFormError && (
+                  <p className="max-w-[52%] text-[11px] font-semibold leading-relaxed text-rose-700">
+                    {manualFormError}
+                  </p>
+                )}
                 <span className="text-[11px] text-slate-500 hidden sm:inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Auto-generates a unique #TLC-26-XXXX reference ID
@@ -2881,7 +3242,12 @@ function RegistrationsCrmInner() {
                   </button>
                   <button
                     type="submit"
-                    disabled={creating}
+                    disabled={
+                      creating ||
+                      uploadingManualProof ||
+                      (newReg.booking_mode === "secure_seat" &&
+                        !newReg.screenshot_url)
+                    }
                     className="h-9 px-5 rounded-xl bg-[#FF7900] hover:bg-[#E56D00] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-60 transition-all"
                   >
                     {creating ? (
