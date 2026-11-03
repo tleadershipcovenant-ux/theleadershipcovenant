@@ -1690,9 +1690,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                   <strong className="text-[#FFC400]">
                                     {activityPricing.deadlineText}
                                   </strong>
-                                  . Automatically reverts to{" "}
-                                  {activityPricing.formattedRegularPrice} after
-                                  Nov 7.
+                                  .
                                 </p>
                               </div>
                             </div>

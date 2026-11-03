@@ -35,7 +35,7 @@ export const PAYMENT_METHODS: PaymentAccountMethod[] = [
     qrCodeSrc: "/Social%20Icons/UBL%20QR%27.jpeg",
     bankName: "United Bank Limited",
     accountTitle: "The Leadership Covenant Pvt. Ltd",
-    iban: "PK46UNIL010900038579030110047E36",
+    iban: "PK46UNIL0109000385790301",
     branchNote:
       "Inter-Bank Funds Transfer (IBFT), Raast ID, and mobile banking transfers are supported 24/7 across all Pakistani banks and digital wallets.",
     accentHex: "#005696",
