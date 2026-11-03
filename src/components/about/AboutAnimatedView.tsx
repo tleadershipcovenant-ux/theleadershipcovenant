@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ABOUT_CONTENT } from "@/content/about";
+import GovernanceSection from "@/components/GovernanceSection";
 import {
   MdCheckCircle,
   MdVisibility,
@@ -269,7 +270,10 @@ export default function AboutAnimatedView() {
         </div>
       </section>
 
-      {/* 5. Closing Call to Action — Styled Floating Rounded Card */}
+      {/* 5. CEO Message & Leadership — Guidance & Governance */}
+      <GovernanceSection />
+
+      {/* 6. Closing Call to Action — Styled Floating Rounded Card */}
       <section className="w-full py-12 sm:py-16 lg:py-20 relative overflow-hidden" id="cta-journey">
         <div className="max-w-[1180px] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
