@@ -333,6 +333,10 @@ export default function EventDetailModal({
                       <p className="font-num text-xs sm:text-[13.5px] text-slate-700 leading-relaxed text-justify">
                         Themed <strong className="font-bold text-[#102E4D]">Discover | Voice | Impact</strong>, the <strong className="font-bold text-[#102E4D]">School Impact Summit 2026</strong> brings together school owners, principals, academic leaders, educators, and changemakers to explore the ideas, practices, and possibilities shaping the future of education. It is a platform for discovering fresh perspectives, sharing voices and experiences from across the education landscape, and engaging in meaningful conversations around effective school leadership, student development, and educational transformation. More than a gathering, the Summit aims to inspire collaboration, strengthen connections, and turn shared insights into purposeful action for stronger schools and a greater impact on education.
                       </p>
+                    ) : event.modalDescription ? (
+                      <p className="font-num text-xs sm:text-[13.5px] text-slate-700 leading-relaxed text-justify">
+                        {event.modalDescription}
+                      </p>
                     ) : (
                       <>
                         <p className="text-xs sm:text-sm text-[#102E4D] font-semibold leading-relaxed">

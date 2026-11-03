@@ -79,11 +79,10 @@ Trusted by school leaders across the region.
 |---|---|---|---|---|
 | Jul 19 | Professional Development | 7 Habits of Highly Effective People | Islamabad | Apply now → |
 | Aug 29 | Professional Development | 4 Disciplines of Execution for Educators | Islamabad | Apply now → |
-| Oct 03 | LiM Community Event | LiM Community Event 2026 | Islamabad | Apply now → |
-| Oct 08 | Wellness | Neuro Science Backed Wellness | Peshawar | Apply now → |
-| Oct 22 | LeaderU | Find Your Voice — LeaderU Session | Islamabad | Apply now → |
-| Nov 07 | Family Session | 7 Habits of Highly Effective Families | Islamabad | Apply now → |
-| Nov 14 | Professional Development | Teacher Believed in Me | Islamabad | Apply now → |
+| Jan 16, 2027 | LiM Community Event | LiM Community Coaching 2027 | Islamabad | Apply now → |
+| Jan 09, 2027 | Wellness | Neuro Science Backed Wellness | Peshawar | Apply now → |
+| Dec 26, 2026 | Family Session | 7 Habits of Highly Effective Families | Islamabad | Apply now → |
+| Jan 30, 2026 | Professional Development | Principal's Academy | Islamabad | Apply now → |
 | Nov 28 | Summit | The School Impact Summit | Islamabad | Apply now → |
 | Dec 18 | Student Camp | Leadership Camp | Swat, KPK (Dec 18–20) | Apply now → |
 
@@ -373,12 +372,12 @@ A transformational one-day experience of the world's most trusted personal effec
 
 Learn the proven 4DX operating system to execute your school's most important goals in the whirlwind of daily demands.
 
-**Status:** ● Early-bird open
+**Status:** ● Enrollment not open
 **Button:** Apply →
 
 ---
 
-#### Oct 03 — LiM Community Event 2026
+#### Jan 16, 2027 — LiM Community Coaching 2027
 
 **Category:** LiM Community Event
 **Location:** Islamabad
@@ -390,10 +389,12 @@ A full day of open coaching, peer learning and inspiration with our Leader in Me
 
 ---
 
-#### Oct 08 — Neuro Science Backed Wellness
+#### Jan 09, 2027 — Neuro Science Backed Wellness
 
 **Category:** Wellness
 **Location:** Peshawar
+
+**Event time:** 10:00 AM – 3:00 PM PKT
 
 Practical, neuroscience-backed practices for educator wellbeing, focus and resilience — designed for classroom life.
 
@@ -402,22 +403,12 @@ Practical, neuroscience-backed practices for educator wellbeing, focus and resil
 
 ---
 
-#### Oct 22 — Find Your Voice — LeaderU Session
-
-**Category:** LeaderU
-**Location:** Islamabad
-
-A signature LeaderU experience for college and university students to discover purpose, voice and future-ready leadership skills.
-
-**Status:** ● Open enrollment
-**Button:** Apply →
-
----
-
-#### Nov 07 — 7 Habits of Highly Effective Families
+#### Dec 26, 2026 — 7 Habits of Highly Effective Families
 
 **Category:** Family Session
 **Location:** Islamabad
+
+**Event time:** 10:30 AM – 3:00 PM PKT
 
 A powerful session for parents and caregivers to build trust, communication and a strong family culture rooted in timeless principles.
 
@@ -426,12 +417,12 @@ A powerful session for parents and caregivers to build trust, communication and 
 
 ---
 
-#### Nov 14 — Teacher Believed in Me
+#### Jan 30, 2026 — Principal's Academy
 
 **Category:** Professional Development
 **Location:** Islamabad
 
-A heart-centred course that reconnects teachers with their why — and equips them to see, believe in and unleash every student's potential.
+Grounded in the Whole-Person Paradigm and the 4 Roles of Great Leaders™, this training builds trust, shared vision, strategic alignment, and staff potential.
 
 **Status:** ● Open enrollment
 **Button:** Apply →
@@ -481,11 +472,10 @@ Complete the form and our activities team will confirm availability, share the j
 - Activity (dropdown: "Select an activity…")
   - 7 Habits of Highly Effective People
   - 4 Disciplines of Execution for Educators
-  - LiM Community Event 2026
+  - LiM Community Coaching 2027
   - Neuro Science Backed Wellness
-  - Find Your Voice — LeaderU Session
   - 7 Habits of Highly Effective Families
-  - Teacher Believed in Me
+  - Principal's Academy
   - The School Impact Summit
   - Leadership Camp
 - Anything we should know?

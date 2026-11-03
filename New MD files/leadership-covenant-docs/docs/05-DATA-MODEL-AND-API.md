@@ -128,9 +128,8 @@ create policy "audit_admin_read" on public.audit_log
 | `4dx-for-educators` | 4 Disciplines of Execution for Educators | professional_development | Islamabad | 2026-08-29 | 2026-08-29 | Early-bird open | — |
 | `lim-community-2026` | LiM Community Event 2026 | lim_community | Islamabad | 2026-10-03 | 2026-10-03 | Free • RSVP required | — |
 | `neuroscience-wellness` | Neuro Science Backed Wellness | wellness | Peshawar | 2026-10-08 | 2026-10-08 | Seats limited | — |
-| `leaderu-find-your-voice` | Find Your Voice — LeaderU Session | leaderu | Islamabad | 2026-10-22 | 2026-10-22 | Open enrollment | — |
 | `7-habits-families` | 7 Habits of Highly Effective Families | family_session | Islamabad | 2026-11-07 | 2026-11-07 | Family passes available | — |
-| `teacher-believed-in-me` | Teacher Believed in Me | professional_development | Islamabad | 2026-11-14 | 2026-11-14 | Open enrollment | — |
+| `teacher-believed-in-me` | Principal's Academy | professional_development | Islamabad | 2026-01-30 | 2026-01-30 | Open enrollment | — |
 | `school-impact-summit-2026` | The School Impact Summit | summit | Islamabad | 2026-11-28 | 2026-11-28 | Open enrollment | `/summit` |
 | `leadership-camp-swat-2026` | Leadership Camp | student_camp | Swat | 2026-12-18 | 2026-12-20 | Applications open | — |
 

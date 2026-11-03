@@ -55,11 +55,10 @@ Horizontal infinite marquee/carousel (the live site duplicates the list to loop)
 |---|---|---|---|---|
 | Jul 19 | Professional Development | 7 Habits of Highly Effective People | Islamabad | `/activities` |
 | Aug 29 | Professional Development | 4 Disciplines of Execution for Educators | Islamabad | `/activities` |
-| Oct 03 | LiM Community Event | LiM Community Event 2026 | Islamabad | `/activities` |
-| Oct 08 | Wellness | Neuro Science Backed Wellness | Peshawar | `/activities` |
-| Oct 22 | LeaderU | Find Your Voice — LeaderU Session | Islamabad | `/activities` |
-| Nov 07 | Family Session | 7 Habits of Highly Effective Families | Islamabad | `/activities` |
-| Nov 14 | Professional Development | Teacher Believed in Me | Islamabad | `/activities` |
+| Jan 16, 2027 | LiM Community Event | LiM Community Coaching 2027 | Islamabad | `/activities` |
+| Jan 09, 2027 | Wellness | Neuro Science Backed Wellness | Peshawar | `/activities` |
+| Dec 26, 2026 | Family Session | 7 Habits of Highly Effective Families | Islamabad | `/activities` |
+| Jan 30, 2026 | Professional Development | Principal's Academy | Islamabad | `/activities` |
 | Nov 28 | Summit | The School Impact Summit | Islamabad | **`/summit`** |
 | Dec 18 | Student Camp | Leadership Camp | Swat, KPK (Dec 18–20) | `/activities` |
 

@@ -20,6 +20,8 @@ export interface LeadershipEvent {
   title: string;
   category: EventCategory;
   description: string;
+  /** Optional single-paragraph modal copy when the card summary is too brief. */
+  modalDescription?: string;
   city: string;
   /** Optional richer location line, e.g. "Swat, KPK • Dec 18–20, 2026" */
   locationNote?: string;
@@ -217,7 +219,7 @@ export const EVENTS: LeadershipEvent[] = [
     city: "Islamabad",
     startDate: "2026-08-29",
     endDate: "2026-08-29",
-    statusLabel: "Early-bird open",
+    statusLabel: "Enrollment not open",
     statusTone: "limited",
     image: "/images/pd-educators.jpg",
     duration: "1 Full Day",
@@ -244,13 +246,13 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "lim-community-2026",
-    title: "LiM Community Event 2026",
+    title: "LiM Community Coaching 2027",
     category: "lim_community",
     description:
       "A full day of open coaching, peer learning and inspiration with our Leader in Me community of educators, coaches and school leaders.",
     city: "Islamabad",
-    startDate: "2026-10-03",
-    endDate: "2026-10-03",
+    startDate: "2027-01-16",
+    endDate: "2027-01-16",
     statusLabel: "Free • RSVP required",
     statusTone: "free",
     image: "/images/leader-in-me.jpg",
@@ -283,13 +285,13 @@ export const EVENTS: LeadershipEvent[] = [
     description:
       "Practical, neuroscience-backed practices for educator wellbeing, focus and resilience, designed for classroom life.",
     city: "Peshawar",
-    startDate: "2026-10-08",
-    endDate: "2026-10-08",
+    startDate: "2027-01-09",
+    endDate: "2027-01-09",
     statusLabel: "Seats limited",
     statusTone: "limited",
     image: "/images/hero-students.jpg",
     duration: "1 Day Workshop",
-    schedule: "9:30 AM – 3:30 PM PKT",
+    schedule: "10:00 AM – 3:00 PM PKT",
     venue: "Peshawar, KPK (Venue shared upon confirmation)",
     format: "Experiential Wellbeing Lab",
     certificate: "Workshop Certificate Included",
@@ -311,53 +313,19 @@ export const EVENTS: LeadershipEvent[] = [
     ],
   },
   {
-    slug: "leaderu-find-your-voice",
-    title: "Find Your Voice: LeaderU Session",
-    category: "leaderu",
-    description:
-      "A signature LeaderU experience for college and university students to discover purpose, voice and future-ready leadership skills.",
-    city: "Islamabad",
-    startDate: "2026-10-22",
-    endDate: "2026-10-22",
-    statusLabel: "Enrollment not open",
-    statusTone: "limited",
-    image: "/images/leader-u.jpg",
-    duration: "1 Full Day",
-    schedule: "10:00 AM – 4:30 PM PKT",
-    venue: "Islamabad (Venue shared upon confirmation)",
-    format: "Interactive Collegiate Leadership Lab",
-    certificate: "LeaderU Certificate of Leadership",
-    facilitator: "LeaderU Higher Education Facilitators",
-    overview:
-      "Powered by FranklinCovey's globally trusted LeaderU higher-education process, 'Find Your Voice' helps college and university students align their natural talents, passions, and conscience with real-world opportunities. Through collaborative challenges and personal discovery exercises, young adults build self-leadership, executive communication, and career readiness.",
-    highlights: [
-      "Discover your personal leadership voice at the intersection of talent, passion, need, and values",
-      "Strengthen communication, collaboration, and ethical decision-making for university and career life",
-      "Hands-on project-based leadership simulations and peer feedback labs",
-      "Craft a personal mission statement and 1-year growth roadmap",
-      "Connect with ambitious student peers and mentors across Islamabad campuses",
-    ],
-    whoShouldAttend: [
-      "University Undergraduates",
-      "College & A-Level / FSc Students",
-      "Student Society Leaders",
-      "Recent Graduates & Emerging Leaders",
-    ],
-  },
-  {
     slug: "7-habits-families",
     title: "7 Habits of Highly Effective Families",
     category: "family_session",
     description:
       "A powerful session for parents and caregivers to build trust, communication and a strong family culture rooted in timeless principles.",
     city: "Islamabad",
-    startDate: "2026-11-07",
-    endDate: "2026-11-07",
+    startDate: "2026-12-26",
+    endDate: "2026-12-26",
     statusLabel: "Family passes available",
     statusTone: "open",
     image: "/images/family-session.jpg",
     duration: "Half-Day Weekend Session",
-    schedule: "10:00 AM – 2:30 PM PKT",
+    schedule: "10:30 AM – 3:00 PM PKT",
     venue: "Islamabad (Venue shared upon confirmation)",
     format: "Interactive Parenting & Family Forum",
     certificate: "Family Leadership Resource Kit",
@@ -380,13 +348,15 @@ export const EVENTS: LeadershipEvent[] = [
   },
   {
     slug: "teacher-believed-in-me",
-    title: "Teacher Believed in Me",
+    title: "Principal's Academy",
     category: "professional_development",
     description:
-      "A heart-centred course that reconnects teachers with their purpose and equips them to see, believe in, and unleash every student's potential.",
+      "Grounded in the Whole-Person Paradigm and the 4 Roles of Great Leaders™, this training builds trust, shared vision, strategic alignment, and staff potential.",
+    modalDescription:
+      "Grounded in the Whole-Person Paradigm and the 4 Roles of Great Leaders™, this training empowers educational leaders to build trust, establish a shared vision, align school systems with strategic priorities, and unlock the full potential of their staff. It promotes effective leadership, stronger collaboration, and a culture of continuous growth and improvement within school communities.",
     city: "Islamabad",
-    startDate: "2026-11-14",
-    endDate: "2026-11-14",
+    startDate: "2026-01-30",
+    endDate: "2026-01-30",
     statusLabel: "Open enrollment",
     statusTone: "open",
     image: "/images/pd-educators.jpg",
@@ -397,7 +367,7 @@ export const EVENTS: LeadershipEvent[] = [
     certificate: "Official Course Certificate",
     facilitator: "The Leadership Covenant Faculty",
     overview:
-      "Behind almost every confident adult is a teacher who saw worth and potential in them before they saw it in themselves. 'Teacher Believed in Me' is a deeply inspiring professional learning experience that reconnects educators with their calling and provides daily classroom practices for affirming student identity, agency, and voice.",
+      "Grounded in the Whole-Person Paradigm and the 4 Roles of Great Leaders™, this training empowers educational leaders to build trust, establish a shared vision, align school systems with strategic priorities, and unlock the full potential of their staff. It promotes effective leadership, stronger collaboration, and a culture of continuous growth and improvement within school communities.",
     highlights: [
       "Shift from deficit-based labels to a leadership-potential paradigm for every learner",
       "Practical language and classroom rituals that communicate belief and high expectations",

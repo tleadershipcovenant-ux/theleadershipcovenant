@@ -73,9 +73,8 @@ Summit ─┬─ Register now ──────────────► #reg
 | 4 Disciplines of Execution for Educators | `4dx-for-educators` |
 | LiM Community Event 2026 | `lim-community-2026` |
 | Neuro Science Backed Wellness | `neuroscience-wellness` |
-| Find Your Voice — LeaderU Session | `leaderu-find-your-voice` |
 | 7 Habits of Highly Effective Families | `7-habits-families` |
-| Teacher Believed in Me | `teacher-believed-in-me` |
+| Principal's Academy | `teacher-believed-in-me` |
 | The School Impact Summit | `school-impact-summit-2026` |
 | Leadership Camp | `leadership-camp-swat-2026` |
 

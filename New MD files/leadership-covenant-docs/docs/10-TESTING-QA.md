@@ -34,7 +34,7 @@ Manual spot check list:
 | E3 | Home strip → click any non-summit card | Lands on `/activities` |
 | E4 | Header "Apply Now" | Goes to `/activities` |
 | E5 | Services → "Enquire about LeaderU" | `/contact?interest=leaderu`, dropdown shows LeaderU |
-| E6 | Activities → "Apply →" on Teacher Believed in Me | Scrolls to form; activity preselected |
+| E6 | Activities → "Apply →" on Principal's Academy | Scrolls to form; activity preselected |
 | E7 | Submit Application with valid data | Success state; DB row created; email sent |
 | E8 | Submit Application with empty required fields | Inline errors; no request sent |
 | E9 | Submit Summit registration | Row `type=summit`, `activity_slug=school-impact-summit-2026` |

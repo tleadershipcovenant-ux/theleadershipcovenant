@@ -39,36 +39,32 @@ Card anatomy: **date block** (month + day) · **category chip** · **city** · *
 ### Card 2 — 4 Disciplines of Execution for Educators
 - **Date:** Aug 29 · **Category:** Professional Development · **City:** Islamabad
 - **Description:** Learn the proven 4DX operating system to execute your school's most important goals in the whirlwind of daily demands.
-- **Status:** ● Early-bird open
+- **Status:** ● Enrollment not open
 - **CTA:** Apply → → `#apply`
 
-### Card 3 — LiM Community Event 2026
-- **Date:** Oct 03 · **Category:** LiM Community Event · **City:** Islamabad
+### Card 3 — LiM Community Coaching 2027
+- **Date:** Jan 16, 2027 · **Category:** LiM Community Event · **City:** Islamabad
 - **Description:** A full day of open coaching, peer learning and inspiration with our Leader in Me community of educators, coaches and school leaders.
 - **Status:** ● Free • RSVP required
 - **CTA:** Apply → → `#apply`
 
 ### Card 4 — Neuro Science Backed Wellness
-- **Date:** Oct 08 · **Category:** Wellness · **City:** Peshawar
+- **Date:** Jan 09, 2027 · **Category:** Wellness · **City:** Peshawar
+- **Event time:** 10:00 AM – 3:00 PM PKT
 - **Description:** Practical, neuroscience-backed practices for educator wellbeing, focus and resilience — designed for classroom life.
 - **Status:** ● Seats limited
 - **CTA:** Apply → → `#apply`
 
-### Card 5 — Find Your Voice — LeaderU Session
-- **Date:** Oct 22 · **Category:** LeaderU · **City:** Islamabad
-- **Description:** A signature LeaderU experience for college and university students to discover purpose, voice and future-ready leadership skills.
-- **Status:** ● Open enrollment
-- **CTA:** Apply → → `#apply`
-
-### Card 6 — 7 Habits of Highly Effective Families
-- **Date:** Nov 07 · **Category:** Family Session · **City:** Islamabad
+### Card 5 — 7 Habits of Highly Effective Families
+- **Date:** Dec 26, 2026 · **Category:** Family Session · **City:** Islamabad
+- **Event time:** 10:30 AM – 3:00 PM PKT
 - **Description:** A powerful session for parents and caregivers to build trust, communication and a strong family culture rooted in timeless principles.
 - **Status:** ● Family passes available
 - **CTA:** Apply → → `#apply`
 
-### Card 7 — Teacher Believed in Me
-- **Date:** Nov 14 · **Category:** Professional Development · **City:** Islamabad
-- **Description:** A heart-centred course that reconnects teachers with their why — and equips them to see, believe in and unleash every student's potential.
+### Card 7 — Principal's Academy
+- **Date:** Jan 30, 2026 · **Category:** Professional Development · **City:** Islamabad
+- **Description:** Grounded in the Whole-Person Paradigm and the 4 Roles of Great Leaders™, this training builds trust, shared vision, strategic alignment, and staff potential.
 - **Status:** ● Open enrollment
 - **CTA:** Apply → → `#apply`
 
@@ -114,13 +110,12 @@ Card anatomy: **date block** (month + day) · **category chip** · **city** · *
 1. Select an activity… *(placeholder)*
 2. 7 Habits of Highly Effective People
 3. 4 Disciplines of Execution for Educators
-4. LiM Community Event 2026
+4. LiM Community Coaching 2027
 5. Neuro Science Backed Wellness
-6. Find Your Voice — LeaderU Session
-7. 7 Habits of Highly Effective Families
-8. Teacher Believed in Me
-9. The School Impact Summit
-10. Leadership Camp
+6. 7 Habits of Highly Effective Families
+7. Principal's Academy
+8. The School Impact Summit
+9. Leadership Camp
 
 **Consent text:** By submitting you agree to be contacted by our team about this application.
 
