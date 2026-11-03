@@ -32,11 +32,19 @@ export const SUMMIT_VIDEOS: SummitVideoItem[] = [
   },
   {
     id: "v3",
-    youtubeId: "e-zgk1VWN1s",
-    title: "Empowering Educators & Strategic Culture",
+    youtubeId: "2_9XG_vf5dw",
+    title: "School Impact Summit — Event Highlight",
     description:
-      "Collaborative roundtables where educational leaders formulate measurable 90-day action targets for their school communities.",
-    thumbnail: "https://img.youtube.com/vi/e-zgk1VWN1s/hqdefault.jpg",
+      "Relive a highlight from the School Impact Summit and the leadership conversations that brought participants together.",
+    thumbnail: "https://img.youtube.com/vi/2_9XG_vf5dw/maxresdefault.jpg",
+  },
+  {
+    id: "v4",
+    youtubeId: "CZ1HZ5zwUcM",
+    title: "School Impact Summit — Participant Highlight",
+    description:
+      "A look back at the shared learning, practical leadership and community built during the event.",
+    thumbnail: "https://img.youtube.com/vi/CZ1HZ5zwUcM/maxresdefault.jpg",
   },
 ];
 

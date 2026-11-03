@@ -172,7 +172,29 @@ export function getMonthTheme(monthIndex: number): MonthTheme {
 }
 
 export function isOpenEnrollmentEvent(event: LeadershipEvent): boolean {
-  return event.statusLabel.trim().toLowerCase() === "open enrollment";
+  return event.statusTone === "open";
+}
+
+export type EventLifecycle = "previous" | "enrollment_open" | "upcoming";
+
+export const EVENT_LIFECYCLE_LABELS: Record<EventLifecycle, string> = {
+  previous: "Previous Event",
+  enrollment_open: "Enrollment Open",
+  upcoming: "Upcoming Event",
+};
+
+export function getEventLifecycle(
+  event: LeadershipEvent,
+  todayIsoDate?: string
+): EventLifecycle {
+  const comparisonDate =
+    todayIsoDate ?? new Date().toISOString().slice(0, 10);
+
+  if (event.endDate < comparisonDate) {
+    return "previous";
+  }
+
+  return isOpenEnrollmentEvent(event) ? "enrollment_open" : "upcoming";
 }
 
 export const EVENTS: LeadershipEvent[] = [

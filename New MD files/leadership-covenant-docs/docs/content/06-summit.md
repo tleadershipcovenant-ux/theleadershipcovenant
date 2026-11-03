@@ -19,7 +19,7 @@
 3. Who Should Attend (6 cards)
 4. Speakers & Facilitators (2)
 5. Highlights from past events (3 stats)
-6. Videos (2 LinkedIn links)
+6. Highlights (4 videos)
 7. Participant Voices (4 testimonials)
 8. Registration form — `id="register"`
 9. Back-link to activities
@@ -110,13 +110,15 @@
 ## 6. VIDEOS  `id="videos"`
 
 **Eyebrow:** Watch & Relive
-**H2:** Videos from our last event
-**Intro:** Click any video to watch it on our LinkedIn page — and follow us there for new clips as we count down to the summit.
+**H2:** Highlights from our last event
+**Intro:** Watch highlights from previous events and follow us for new clips as we count down to the summit.
 
 | Thumbnail alt | Title | Description | URL (external, new tab) |
 |---|---|---|---|
 | Wide shot of a packed education summit hall with a speaker on stage | LinkedIn Highlights — School Impact Summit, Lahore | A look back at the energy in the room: the sessions, the coaching corners and the plans teams walked away with. | https://www.linkedin.com/posts/franklincoveyeducationpakistan_schoolimpactsummit2026-franklincoveyeducation-activity-7518212599885418498-2uMA |
 | A school leader speaking on a conference panel | LinkedIn Participant voices — what leaders said | A participant of the summit shares, in their own words, what changed for them and their school after the day. | https://www.linkedin.com/posts/franklincoveyeducationpakistan_schoolimpactsummit2026-franklincoveyeducation-activity-7515647405401284609-35m0 |
+| School Impact Summit event highlight | School Impact Summit — Event Highlight | Relive a highlight from the School Impact Summit and the leadership conversations that brought participants together. | https://www.youtube.com/watch?v=2_9XG_vf5dw |
+| School Impact Summit participant highlight | School Impact Summit — Participant Highlight | A look back at the shared learning, practical leadership and community built during the event. | https://www.youtube.com/watch?v=CZ1HZ5zwUcM |
 
 > The first title says **"Lahore"** while this year's summit is in Islamabad. Reproduced verbatim (refers to a past event); flagged in `13-OPEN-QUESTIONS.md`.
 

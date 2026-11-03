@@ -7,6 +7,8 @@ import {
   EVENTS,
   CATEGORY_LABELS,
   getMonthTheme,
+  getEventLifecycle,
+  EVENT_LIFECYCLE_LABELS,
   isOpenEnrollmentEvent,
 } from "@/content/events";
 import { FORM_COPY } from "@/content/forms";
@@ -121,6 +123,7 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
   >(null);
   const [error, setError] = useState<string | null>(null);
   const [isServerBusy, setIsServerBusy] = useState(false);
+  const [todayIsoDate] = useState(() => new Date().toISOString().slice(0, 10));
 
   useEffect(() => {
     if (initialActivity) {
@@ -162,6 +165,23 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
     };
   }, [activityDropdownOpen]);
 
+  const selectableEvents = [...EVENTS]
+    .filter((event) => getEventLifecycle(event, todayIsoDate) !== "previous")
+    .sort((a, b) => {
+      const lifecycleOrder = {
+        enrollment_open: 0,
+        upcoming: 1,
+        previous: 2,
+      };
+      const lifecycleDifference =
+        lifecycleOrder[getEventLifecycle(a, todayIsoDate)] -
+        lifecycleOrder[getEventLifecycle(b, todayIsoDate)];
+      return (
+        lifecycleDifference ||
+        a.startDate.localeCompare(b.startDate) ||
+        a.title.localeCompare(b.title)
+      );
+    });
   const selectedEvent = EVENTS.find((e) => e.slug === formData.activity_slug);
   const activityPricing = getActivityPricing(
     selectedEvent?.slug || formData.activity_slug
@@ -1011,6 +1031,9 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
   const selectedIsOpen = selectedEvent
     ? isOpenEnrollmentEvent(selectedEvent)
     : false;
+  const selectedLifecycle = selectedEvent
+    ? getEventLifecycle(selectedEvent, todayIsoDate)
+    : null;
 
   return (
     <div ref={wizardTopRef} className="space-y-6">
@@ -1369,14 +1392,16 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                       {selectedEvent && (
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide border whitespace-nowrap hidden sm:inline-flex ${
-                            selectedIsOpen
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : selectedEvent.statusTone === "limited"
-                              ? "bg-amber-50 text-amber-700 border-amber-200"
-                              : "bg-sky-50 text-sky-700 border-sky-200"
+                            selectedLifecycle === "previous"
+                              ? "bg-[#FFEDD5] text-[#C2410C] border-[#FB923C]"
+                              : selectedLifecycle === "enrollment_open"
+                              ? "bg-[#DCFCE7] text-[#166534] border-[#4ADE80]"
+                              : "bg-[#E0F2FE] text-[#075985] border-[#7DD3FC]"
                           }`}
                         >
-                          {selectedEvent.statusLabel}
+                          {EVENT_LIFECYCLE_LABELS[
+                            getEventLifecycle(selectedEvent, todayIsoDate)
+                          ]}
                         </span>
                       )}
                       <ChevronDown
@@ -1405,12 +1430,16 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                         </div>
 
                         <div className="space-y-1 pt-1 pb-1">
-                          {EVENTS.map((event) => {
+                          {selectableEvents.map((event) => {
                             const d = new Date(event.startDate + "T00:00:00");
                             const monthTheme = getMonthTheme(d.getMonth());
                             const isSelected =
                               formData.activity_slug === event.slug;
-                            const isOpen = isOpenEnrollmentEvent(event);
+                            const lifecycle = getEventLifecycle(
+                              event,
+                              todayIsoDate
+                            );
+                            const isOpen = lifecycle === "enrollment_open";
                             const weekdayShort = d.toLocaleDateString("en-US", {
                               weekday: "short",
                             });
@@ -1472,14 +1501,14 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                 <div className="flex items-center gap-2 shrink-0">
                                   <span
                                     className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold tracking-wide border whitespace-nowrap hidden sm:inline-flex ${
-                                      isOpen
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : event.statusTone === "limited"
-                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                        : "bg-sky-50 text-sky-700 border-sky-200"
+                                      lifecycle === "previous"
+                                        ? "bg-[#FFEDD5] text-[#C2410C] border-[#FB923C]"
+                                        : isOpen
+                                        ? "bg-[#DCFCE7] text-[#166534] border-[#4ADE80]"
+                                        : "bg-[#E0F2FE] text-[#075985] border-[#7DD3FC]"
                                     }`}
                                   >
-                                    {event.statusLabel}
+                                    {EVENT_LIFECYCLE_LABELS[lifecycle]}
                                   </span>
 
                                   <div
@@ -1585,9 +1614,9 @@ export function ApplyForm({ initialActivity = "" }: ApplyFormProps) {
                                 : "text-[#38BDF8]"
                             }`}
                           >
-                            {selectedIsOpen
-                              ? "OPEN ENROLLMENT"
-                              : selectedEvent.statusLabel.toUpperCase()}
+                            {EVENT_LIFECYCLE_LABELS[
+                              getEventLifecycle(selectedEvent, todayIsoDate)
+                            ].toUpperCase()}
                           </p>
                         </div>
                       </div>

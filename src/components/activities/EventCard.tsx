@@ -1,7 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { LeadershipEvent, CATEGORY_LABELS } from "@/content/events";
-import { ArrowRight, MapPin, Calendar } from "lucide-react";
+import {
+  LeadershipEvent,
+  CATEGORY_LABELS,
+  EVENT_LIFECYCLE_LABELS,
+  getEventLifecycle,
+} from "@/content/events";
+import { ArrowRight, MapPin } from "lucide-react";
 
 interface EventCardProps {
   event: LeadershipEvent;
@@ -17,17 +22,19 @@ export function EventCard({ event, onSelect, className = "" }: EventCardProps) {
   const weekdayStr = start.toLocaleDateString("en-US", { weekday: "short" });
   const yearStr = start.getFullYear();
 
-  const statusDotClass = {
-    open: "bg-teal animate-pulse",
-    limited: "bg-brand-orange animate-pulse",
-    free: "bg-brand-blue",
-  }[event.statusTone];
-
   const categoryLabel = CATEGORY_LABELS[event.category] || event.category;
 
   const isSummit = event.detailPath === "/summit";
+  const lifecycle = getEventLifecycle(event);
+  const isPreviousEvent = lifecycle === "previous";
+  const statusDotClass =
+    lifecycle === "previous"
+      ? "bg-[#F97316]"
+      : lifecycle === "enrollment_open"
+      ? "bg-[#16A34A]"
+      : "bg-[#2563EB]";
   const ctaHref = isSummit ? "/summit" : `/apply?activity=${event.slug}#apply-form`;
-  const ctaLabel = isSummit ? "Event details" : "Apply now";
+  const ctaLabel = isSummit || isPreviousEvent ? "More details" : "Apply now";
 
   return (
     <article
@@ -75,9 +82,17 @@ export function EventCard({ event, onSelect, className = "" }: EventCardProps) {
       {/* Footer: Status Badge & CTA Link */}
       <div className="pt-4 border-t border-line flex items-center justify-between gap-3 text-xs">
         {/* Status Dot */}
-        <div className="inline-flex items-center gap-2 font-semibold text-ink">
+        <div
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-extrabold tracking-wide whitespace-nowrap ${
+            isPreviousEvent
+              ? "bg-[#FFEDD5] border-[#FB923C] text-[#C2410C]"
+              : lifecycle === "enrollment_open"
+              ? "bg-[#DCFCE7] border-[#4ADE80] text-[#166534]"
+              : "bg-[#E0F2FE] border-[#7DD3FC] text-[#075985]"
+          }`}
+        >
           <span className={`w-2 h-2 rounded-full ${statusDotClass}`} aria-hidden="true" />
-          <span>{event.statusLabel}</span>
+          <span>{EVENT_LIFECYCLE_LABELS[lifecycle]}</span>
         </div>
 
         {/* Action Link */}
@@ -90,7 +105,7 @@ export function EventCard({ event, onSelect, className = "" }: EventCardProps) {
             <span>{ctaLabel}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
-        ) : (
+        ) : isPreviousEvent ? null : (
           <Link
             href={ctaHref}
             className={`link-arrow font-bold text-sm ${

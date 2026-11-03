@@ -100,9 +100,9 @@ export const SUMMIT_CONTENT = {
   },
   videos: {
     eyebrow: "Watch & Relive",
-    heading: "Videos from our last event",
+    heading: "Highlights from our last event",
     intro:
-      "Click any video to watch it on our LinkedIn page and follow us there for new clips as we count down to the summit.",
+      "Watch highlights from our previous events and follow us for new clips as we count down to the summit.",
     items: [
       {
         title: "LinkedIn Highlights: School Impact Summit, Lahore",

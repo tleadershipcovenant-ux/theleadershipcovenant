@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,7 +19,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import {
   CATEGORY_LABELS,
   getMonthTheme,
-  isOpenEnrollmentEvent,
+  getEventLifecycle,
   type LeadershipEvent,
 } from "@/content/events";
 
@@ -51,6 +51,8 @@ export default function EventDetailModal({
   onClose,
   onApply,
 }: EventDetailModalProps) {
+  const [todayIsoDate] = useState(() => new Date().toISOString().slice(0, 10));
+
   useEffect(() => {
     if (!event) return;
 
@@ -111,7 +113,9 @@ export default function EventDetailModal({
         const weekdayStr = startObj.toLocaleDateString("en-US", { weekday: "short" });
         const yearStr = startObj.getFullYear();
         const theme = getMonthTheme(startObj.getMonth());
-        const isOpenEnrollment = isOpenEnrollmentEvent(event);
+        const lifecycle = getEventLifecycle(event, todayIsoDate);
+        const isOpenEnrollment = lifecycle === "enrollment_open";
+        const isPreviousEvent = lifecycle === "previous";
         const scrollbarColors = MONTH_SCROLLBAR_COLORS[startObj.getMonth()] || {
           thumb: "rgba(16, 46, 77, 0.45)",
           hover: "rgba(16, 46, 77, 0.85)",
@@ -329,7 +333,7 @@ export default function EventDetailModal({
                     <h3 className="font-serif font-bold text-base sm:text-lg text-[#102E4D] tracking-tight">
                       About This Event
                     </h3>
-                    {isSummit ? (
+                    {isPreviousEvent ? null : isSummit ? (
                       <p className="font-num text-xs sm:text-[13.5px] text-slate-700 leading-relaxed text-justify">
                         Themed <strong className="font-bold text-[#102E4D]">Discover | Voice | Impact</strong>, the <strong className="font-bold text-[#102E4D]">School Impact Summit 2026</strong> brings together school owners, principals, academic leaders, educators, and changemakers to explore the ideas, practices, and possibilities shaping the future of education. It is a platform for discovering fresh perspectives, sharing voices and experiences from across the education landscape, and engaging in meaningful conversations around effective school leadership, student development, and educational transformation. More than a gathering, the Summit aims to inspire collaboration, strengthen connections, and turn shared insights into purposeful action for stronger schools and a greater impact on education.
                       </p>

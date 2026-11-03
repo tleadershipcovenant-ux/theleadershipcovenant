@@ -12,6 +12,8 @@ import {
 import {
   PRECOMPUTED_EVENTS,
   CATEGORY_LABELS,
+  EVENT_LIFECYCLE_LABELS,
+  getEventLifecycle,
   type LeadershipEvent,
 } from "@/content/events";
 
@@ -207,7 +209,9 @@ export default function HomeUpcomingSection() {
                         className="inline-flex items-center gap-1.5 font-semibold text-slate-600"
                       >
                         <span className={`w-2 h-2 rounded-full ${statusDot} shrink-0`} />
-                        <span>{event.statusLabel}</span>
+                        <span>
+                          {EVENT_LIFECYCLE_LABELS[getEventLifecycle(event)]}
+                        </span>
                       </div>
                     </div>
 

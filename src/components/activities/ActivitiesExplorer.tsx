@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,8 @@ import {
   OPEN_ENROLLMENT_COUNT,
   CATEGORY_LABELS,
   getMonthTheme,
+  getEventLifecycle,
+  EVENT_LIFECYCLE_LABELS,
   type LeadershipEvent,
 } from "@/content/events";
 import {
@@ -43,18 +45,13 @@ const CATEGORY_FILTERS = [
 
 type EnrollmentFilter = "all" | "open_enrollment";
 
-const STATUS_DOT: Record<LeadershipEvent["statusTone"], string> = {
-  open: "bg-[#16A34A]",
-  limited: "bg-[#FF7900]",
-  free: "bg-[#2563EB]",
-};
-
 export default function ActivitiesExplorer() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [enrollmentFilter, setEnrollmentFilter] =
     useState<EnrollmentFilter>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [todayIsoDate] = useState(() => new Date().toISOString().slice(0, 10));
 
   const [selectedModalEvent, setSelectedModalEvent] =
     useState<LeadershipEvent | null>(null);
@@ -67,7 +64,10 @@ export default function ActivitiesExplorer() {
       if (selectedCategory !== "all" && evt.category !== selectedCategory) {
         return false;
       }
-      if (enrollmentFilter === "open_enrollment" && !evt.isOpenEnrollment) {
+      if (
+        enrollmentFilter === "open_enrollment" &&
+        getEventLifecycle(evt, todayIsoDate) !== "enrollment_open"
+      ) {
         return false;
       }
       if (monthNum !== null && evt.monthIndex !== monthNum) {
@@ -77,8 +77,19 @@ export default function ActivitiesExplorer() {
         return false;
       }
       return true;
+    }).sort((a, b) => {
+      return (
+        a.startDate.localeCompare(b.startDate) ||
+        a.title.localeCompare(b.title)
+      );
     });
-  }, [selectedCategory, enrollmentFilter, selectedMonth, searchQuery]);
+  }, [
+    selectedCategory,
+    enrollmentFilter,
+    selectedMonth,
+    searchQuery,
+    todayIsoDate,
+  ]);
 
   const resetAllFilters = useCallback(() => {
     setSelectedCategory("all");
@@ -346,13 +357,20 @@ export default function ActivitiesExplorer() {
                   const isSummit = evt.slug === "school-impact-summit-2026";
                   const {
                     theme,
-                    isOpenEnrollment,
                     monthStr,
                     dayStr,
                     weekdayStr,
                     yearStr,
                   } = evt;
-                  const statusDot = STATUS_DOT[evt.statusTone];
+                  const lifecycle = getEventLifecycle(evt, todayIsoDate);
+                  const isPreviousEvent = lifecycle === "previous";
+                  const isOpenEnrollment = lifecycle === "enrollment_open";
+                  const statusDot =
+                    lifecycle === "previous"
+                      ? "bg-[#F97316]"
+                      : lifecycle === "enrollment_open"
+                      ? "bg-[#16A34A]"
+                      : "bg-[#2563EB]";
 
                   return (
                     <motion.article
@@ -474,16 +492,18 @@ export default function ActivitiesExplorer() {
                               </span>
                             </span>
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] ${
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-extrabold tracking-wide whitespace-nowrap ${
                                 isOpenEnrollment
-                                  ? "font-extrabold text-[#15803D] bg-[#DCFCE7] border border-[#86EFAC]"
-                                  : "font-semibold text-slate-600 bg-slate-50 border border-slate-200"
+                                  ? "text-[#166534] bg-[#DCFCE7] border border-[#4ADE80]"
+                                  : isPreviousEvent
+                                  ? "text-[#C2410C] bg-[#FFEDD5] border border-[#FB923C]"
+                                  : "text-[#075985] bg-[#E0F2FE] border border-[#7DD3FC]"
                               }`}
                             >
                               <span
                                 className={`w-1.5 h-1.5 rounded-full ${statusDot} shrink-0`}
                               />
-                              <span>{evt.statusLabel}</span>
+                              <span>{EVENT_LIFECYCLE_LABELS[lifecycle]}</span>
                             </span>
                           </div>
 
@@ -497,10 +517,10 @@ export default function ActivitiesExplorer() {
                               className="flex-1 py-2.5 px-2.5 sm:px-3 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF]/70 text-[#102E4D] text-[11px] sm:text-[11.5px] font-bold tracking-wide transition-all duration-150 inline-flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-98"
                             >
                               <MdInfoOutline className="text-sm text-[#FF7900]" />
-                              <span>Full details</span>
+                              <span>More details</span>
                             </button>
 
-                            {isSummit ? (
+                            {isPreviousEvent ? null : isSummit ? (
                               <Link
                                 href="/summit"
                                 onClick={(e) => e.stopPropagation()}
@@ -519,7 +539,9 @@ export default function ActivitiesExplorer() {
                                     : `bg-gradient-to-r ${theme.gradient} shadow-xs hover:shadow-md`
                                 } text-white text-[11px] sm:text-[11.5px] font-bold uppercase tracking-wider transition-all duration-150 inline-flex items-center justify-center gap-1 cursor-pointer group/btn active:scale-98`}
                               >
-                                <span>{isOpenEnrollment ? "Enroll now" : "Apply now"}</span>
+                                <span>
+                                  {isOpenEnrollment ? "Enroll now" : "Apply now"}
+                                </span>
                                 <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform duration-150" />
                               </Link>
                             )}
@@ -753,4 +775,3 @@ export default function ActivitiesExplorer() {
     </>
   );
 }
-

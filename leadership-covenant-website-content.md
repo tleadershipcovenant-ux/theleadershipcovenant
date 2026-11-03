@@ -610,7 +610,7 @@ Partners with schools across the North Region to build leadership cultures that 
 
 ## Watch & Relive
 
-### Videos from our last event
+### Highlights from our last event
 
 Click any video to watch it on our LinkedIn page — and follow us there for new clips as we count down to the summit.
 
