@@ -18,6 +18,7 @@
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
     "NEXT_PUBLIC_SUPABASE_URL": "https://qyyipcbzualacxwfvsih.supabase.co",
-    "CLOUDINARY_FOLDER": "tlc_payment_screenshots"
+    "CLOUDINARY_FOLDER": "tlc_payment_screenshots",
+    "FIREBASE_PROJECT_ID": "the-leadership-covenant"
   }
 }

@@ -111,12 +111,10 @@ export async function proxy(request: NextRequest) {
     .getAll()
     .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
 
-  const needsSessionRefresh =
-    !isLoginPage &&
-    (onAdminDomain ||
-      pathname.startsWith("/AD_Admin") ||
-      pathname.startsWith("/api/admin") ||
-      hasSupabaseCookie);
+  // CRITICAL PERFORMANCE FIX: Only invoke Supabase updateSession if an active Supabase session
+  // cookie is present. Admin Portal authentication uses independent signed Admin JWTs, so omitting
+  // Supabase auth.getUser() from admin routes eliminates blocking latency and 500 errors on Edge.
+  const needsSessionRefresh = !isLoginPage && hasSupabaseCookie;
 
   // 1. Refresh Supabase session cookies only when relevant
   const response = needsSessionRefresh

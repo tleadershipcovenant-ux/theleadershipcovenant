@@ -8,7 +8,12 @@ import { SERVICES } from "@/content/services";
 import { ABOUT_CONTENT } from "@/content/about";
 import { PAYMENT_METHODS } from "@/content/payment";
 import { FORM_COPY } from "@/content/forms";
-import { getFirestoreDb, testFirebaseConnection } from "@/lib/firebase-admin";
+import {
+  getFirestoreDocument,
+  setFirestoreDocument,
+  listFirestoreDocuments,
+  testFirebaseConnection,
+} from "@/lib/firebase-admin";
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
@@ -195,20 +200,16 @@ async function writeLocalCmsCache(data: Record<string, CmsPageRecord>): Promise<
  * Tier 4: Built-in code defaults
  */
 export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
-  // 1. Primary: Google Cloud Firestore
-  const firestore = getFirestoreDb();
-  if (firestore) {
-    try {
-      const snap = await firestore.collection("cms_pages").doc(key).get();
-      if (snap.exists) {
-        const data = snap.data() as CmsPageRecord;
-        if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
-        memoryCmsCache[key] = data;
-        return data;
-      }
-    } catch (err) {
-      console.warn(`[Firestore CMS] Fetch failed for ${key}, falling back:`, err);
+  // 1. Primary: Google Cloud Firestore Edge REST
+  try {
+    const doc = await getFirestoreDocument<CmsPageRecord>("cms_pages", key);
+    if (doc?.content) {
+      if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
+      memoryCmsCache[key] = doc;
+      return doc;
     }
+  } catch (err) {
+    console.warn(`[Firestore CMS] Fetch failed for ${key}, falling back:`, err);
   }
 
   // 2. In-memory cache fallback
@@ -249,23 +250,21 @@ export async function getAllCmsPages(): Promise<Record<CmsPageKey, CmsPageRecord
     };
   }
 
-  // 1. Primary: Google Cloud Firestore batch load
-  const firestore = getFirestoreDb();
-  if (firestore) {
-    try {
-      const snapshot = await firestore.collection("cms_pages").get();
-      for (const doc of snapshot.docs) {
-        const row = doc.data() as CmsPageRecord;
-        if (ALL_CMS_KEYS.includes(row.page_key as CmsPageKey)) {
+  // 1. Primary: Google Cloud Firestore batch load via REST
+  try {
+    const docs = await listFirestoreDocuments<CmsPageRecord>("cms_pages");
+    if (docs && docs.length > 0) {
+      for (const row of docs) {
+        if (row.page_key && ALL_CMS_KEYS.includes(row.page_key as CmsPageKey)) {
           result[row.page_key as CmsPageKey] = row;
           if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
           memoryCmsCache[row.page_key] = row;
         }
       }
       return result;
-    } catch (err) {
-      console.warn("[Firestore CMS] Batch load failed, falling back:", err);
     }
+  } catch (err) {
+    console.warn("[Firestore CMS] Batch load failed, falling back:", err);
   }
 
   // 2. Fallback to local DB cache
@@ -298,14 +297,15 @@ export async function upsertCmsPage(
     updated_at: now,
   };
 
-  // 1. Primary: Persist immediately to Google Cloud Firestore
-  const firestore = getFirestoreDb();
-  if (firestore) {
-    try {
-      await firestore.collection("cms_pages").doc(key).set(record);
-    } catch (err) {
-      console.error(`[Firestore CMS Save Error for ${key}]:`, err);
-    }
+  // 1. Primary: Persist immediately to Google Cloud Firestore via REST
+  try {
+    await setFirestoreDocument(
+      "cms_pages",
+      key,
+      record as unknown as Record<string, unknown>
+    );
+  } catch (err) {
+    console.error(`[Firestore CMS Save Error for ${key}]:`, err);
   }
 
   // 2. Sync to in-memory cache
