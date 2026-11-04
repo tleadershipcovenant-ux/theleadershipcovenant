@@ -1468,7 +1468,11 @@ export function ApplyForm({
 
                 {/* Custom Colorful & Professional Activity / Cohort Selector */}
                 <div ref={activityDropdownRef} className="relative z-40">
-                  <label htmlFor="apply-activity" className={labelClass}>
+                  <label
+                    id="apply-activity-label"
+                    htmlFor="apply-activity"
+                    className={labelClass}
+                  >
                     {copy.step1.activity.label}{" "}
                     <span className="text-[#FF7900]">*</span>
                   </label>
@@ -1476,7 +1480,7 @@ export function ApplyForm({
                   {/* Hidden Native Input for standard Form Validation & submission */}
                   <input
                     type="hidden"
-                    id="apply-activity"
+                    id="apply-activity-hidden"
                     name="activity_slug"
                     value={formData.activity_slug}
                     required
@@ -1484,10 +1488,12 @@ export function ApplyForm({
 
                   {/* Custom Trigger Button */}
                   <button
+                    id="apply-activity"
                     type="button"
                     onClick={() => setActivityDropdownOpen((prev) => !prev)}
                     aria-haspopup="listbox"
                     aria-expanded={activityDropdownOpen}
+                    aria-labelledby="apply-activity-label"
                     className={`w-full text-left p-3 sm:p-3.5 rounded-xl border-2 transition-all flex items-center justify-between gap-3 cursor-pointer select-none shadow-2xs ${
                       activityDropdownOpen
                         ? "border-[#FF7900] ring-4 ring-[#FF7900]/15 bg-white"
@@ -1971,8 +1977,9 @@ export function ApplyForm({
 
               {/* Step 1 Action Bar: Terms & Conditions Checkbox + Next CTA with Colorful Border Container */}
               <div className="lg:col-span-12 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#EFFBF8] via-white to-[#EFFBF8] border-2 border-[#C8EFE6] shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <label className="flex items-start sm:items-center gap-3 cursor-pointer text-xs sm:text-sm text-slate-700 font-semibold select-none group">
+                <label htmlFor="agree-terms" className="flex items-start sm:items-center gap-3 cursor-pointer text-xs sm:text-sm text-slate-700 font-semibold select-none group">
                   <input
+                    id="agree-terms"
                     type="checkbox"
                     required
                     checked={agreeTerms}
