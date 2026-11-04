@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdArrowForward } from "react-icons/md";
+import { useHomePageContent } from "@/lib/cms-client";
 
 // ═══════════════ THE 6 LEADERSHIP SERVICES (ENHANCED 3D COVERFLOW) ═══════════════
 export const SERVICES_SLIDES = [
@@ -64,6 +65,9 @@ export const SERVICES_SLIDES = [
 ];
 
 export default function HomeServicesSection() {
+  const home = useHomePageContent();
+  const slides =
+    home.services.slides.length > 0 ? home.services.slides : SERVICES_SLIDES;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -75,15 +79,15 @@ export default function HomeServicesSection() {
 
   const prevSlide = useCallback(() => {
     setCurrentIndex((prev) =>
-      prev === 0 ? SERVICES_SLIDES.length - 1 : prev - 1
+      prev === 0 ? slides.length - 1 : prev - 1
     );
-  }, []);
+  }, [slides.length]);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) =>
-      prev === SERVICES_SLIDES.length - 1 ? 0 : prev + 1
+      prev === slides.length - 1 ? 0 : prev + 1
     );
-  }, []);
+  }, [slides.length]);
 
   // Smooth auto-advancing timer (pauses seamlessly on hover or touch)
   useEffect(() => {
@@ -149,7 +153,7 @@ export default function HomeServicesSection() {
 
   // 3D Motion Variants for each relative slide position (GPU-hardware accelerated only)
   const getVariants = (index: number) => {
-    const total = SERVICES_SLIDES.length;
+    const total = slides.length;
     const diff = (index - currentIndex + total) % total;
 
     if (diff === 0) {
@@ -227,15 +231,15 @@ export default function HomeServicesSection() {
         >
           <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2.5">
             <span className="w-6 h-[2px] bg-[#FF7900] inline-block" />
-            <span>What We Do</span>
+            <span>{home.services.eyebrow}</span>
             <span className="w-6 h-[2px] bg-[#FF7900] inline-block" />
           </div>
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
-            Our Services
+            {home.services.heading}
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           <p className="text-sm sm:text-base text-slate-600 mt-3.5 font-medium leading-relaxed max-w-2xl mx-auto">
-            From personal leadership development to whole-school and organizational transformation, explore our six pathways to building leadership at every level.
+            {home.services.subtitle}
           </p>
         </motion.div>
 
@@ -258,8 +262,8 @@ export default function HomeServicesSection() {
             className="relative h-[410px] sm:h-[470px] md:h-[515px] flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing"
             style={{ perspective: 1200, transformStyle: "preserve-3d" }}
           >
-            {SERVICES_SLIDES.map((slide, index) => {
-              const total = SERVICES_SLIDES.length;
+            {slides.map((slide, index) => {
+              const total = slides.length;
               const diff = (index - currentIndex + total) % total;
               const isCenter = diff === 0;
               const isPrev = diff === total - 1 || diff === -1;
@@ -267,7 +271,7 @@ export default function HomeServicesSection() {
 
               return (
                 <motion.div
-                  key={slide.id}
+                  key={slide.id ? `${slide.id}-${index}` : index}
                   animate={getVariants(index)}
                   transition={{
                     type: "spring",
@@ -316,7 +320,7 @@ export default function HomeServicesSection() {
                     {isPrev && (
                       <div className="absolute inset-0 z-10 p-5 sm:p-7 flex flex-col justify-between text-left pointer-events-none">
                         <div className="font-num text-xs font-bold text-white/70 tracking-widest">
-                          0{index + 1} / 06
+                          0{index + 1} / {String(slides.length).padStart(2, "0")}
                         </div>
                         <div className="max-w-[46%] sm:max-w-[48%]">
                           <div className="text-[10.5px] sm:text-xs font-bold text-[#FFC400] uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -337,7 +341,7 @@ export default function HomeServicesSection() {
                     {isNext && (
                       <div className="absolute inset-0 z-10 p-5 sm:p-7 flex flex-col justify-between items-end text-right pointer-events-none">
                         <div className="font-num text-xs font-bold text-white/70 tracking-widest">
-                          0{index + 1} / 06
+                          0{index + 1} / {String(slides.length).padStart(2, "0")}
                         </div>
                         <div className="max-w-[46%] sm:max-w-[48%] text-right ml-auto">
                           <div className="text-[10.5px] sm:text-xs font-bold text-[#FFC400] uppercase tracking-wider mb-1 flex items-center justify-end gap-1.5">
@@ -359,7 +363,7 @@ export default function HomeServicesSection() {
                       <div className="absolute inset-0 z-10 p-5 sm:p-7 md:p-8 flex flex-col justify-between">
                         <div className="flex items-center justify-end">
                           <span className="font-num text-xs sm:text-sm font-bold text-white/75 tracking-widest">
-                            0{index + 1} / 06
+                            0{index + 1} / {String(slides.length).padStart(2, "0")}
                           </span>
                         </div>
 
@@ -388,7 +392,7 @@ export default function HomeServicesSection() {
                               onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center gap-2 px-4.5 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all group/btn"
                             >
-                              <span>Explore Service</span>
+                              <span>{home.services.ctaLabel}</span>
                               <MdArrowForward className="text-sm sm:text-base group-hover/btn:translate-x-1 transition-transform" />
                             </Link>
                           </motion.div>
@@ -403,7 +407,7 @@ export default function HomeServicesSection() {
 
           {/* Centered Enhanced Pagination Indicators */}
           <div className="flex items-center justify-center gap-2 mt-5">
-            {SERVICES_SLIDES.map((_, i) => (
+            {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i)}

@@ -3,10 +3,19 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { FaQuoteLeft } from "react-icons/fa";
-import { HOME_CONTENT } from "@/content/home";
+import { HOME_PAGE } from "@/content/home";
+import { useHomePageContent } from "@/lib/cms-client";
 
 export default function HomeVoicesSection() {
-  const { principle, testimonials } = HOME_CONTENT;
+  const { voices } = useHomePageContent();
+  const { principle, testimonials } = voices;
+  const isDefaultQuote =
+    principle.quote.replace(/[“”"]/g, "").trim() ===
+    HOME_PAGE.voices.principle.quote;
+  const first =
+    testimonials.items[0] || HOME_PAGE.voices.testimonials.items[0];
+  const second =
+    testimonials.items[1] || HOME_PAGE.voices.testimonials.items[1];
 
   return (
     <section className="w-full py-12 sm:py-16 lg:py-20 relative overflow-hidden" id="principle">
@@ -35,13 +44,19 @@ export default function HomeVoicesSection() {
             </div>
 
             {/* Display Headline with Signature Colored Accents */}
-            <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-[42px] leading-[1.2] text-[#102E4D] tracking-tight">
-              &ldquo;The main thing is to keep{" "}
-              <span className="text-[#C0392B]">the</span>{" "}
-              <span className="text-[#D4A300]">main</span>{" "}
-              <span className="text-[#102E4D]">thing</span>{" "}
-              the main thing.&rdquo;
-            </h2>
+            {isDefaultQuote ? (
+              <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-[42px] leading-[1.2] text-[#102E4D] tracking-tight">
+                &ldquo;The main thing is to keep{" "}
+                <span className="text-[#C0392B]">the</span>{" "}
+                <span className="text-[#D4A300]">main</span>{" "}
+                <span className="text-[#102E4D]">thing</span>{" "}
+                the main thing.&rdquo;
+              </h2>
+            ) : (
+              <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-[42px] leading-[1.2] text-[#102E4D] tracking-tight">
+                &ldquo;{principle.quote}&rdquo;
+              </h2>
+            )}
 
             {/* Author Attribution with Institutional Crest Seal */}
             <div className="flex items-center gap-3.5 mt-5 sm:mt-6 pt-3 border-t border-[#D7F5EF] w-full">
@@ -50,7 +65,15 @@ export default function HomeVoicesSection() {
                   {principle.author}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium">
-                  Author, The <span className="font-num font-semibold">7</span> Habits of Highly Effective People
+                  {principle.authorSubtitle ===
+                  HOME_PAGE.voices.principle.authorSubtitle ? (
+                    <>
+                      Author, The <span className="font-num font-semibold">7</span>{" "}
+                      Habits of Highly Effective People
+                    </>
+                  ) : (
+                    principle.authorSubtitle
+                  )}
                 </span>
               </div>
             </div>
@@ -71,13 +94,13 @@ export default function HomeVoicesSection() {
                   <FaQuoteLeft className="text-[#C0392B] text-xl" />
                 </div>
                 <p className="text-sm sm:text-[15px] text-slate-700 leading-relaxed font-normal">
-                  {testimonials.items[0].quote}
+                  {first.quote}
                 </p>
               </div>
 
               <div className="mt-6 pt-3 border-t border-slate-100">
                 <h3 className="font-serif font-bold text-sm sm:text-[15px] text-[#102E4D]">
-                  {testimonials.items[0].author}
+                  {first.author}
                 </h3>
               </div>
             </motion.div>
@@ -95,13 +118,13 @@ export default function HomeVoicesSection() {
                   <FaQuoteLeft className="text-[#2563EB] text-xl" />
                 </div>
                 <p className="font-num text-sm sm:text-[15px] text-slate-700 leading-relaxed font-normal">
-                  {testimonials.items[1].quote}
+                  {second.quote}
                 </p>
               </div>
 
               <div className="mt-6 pt-3 border-t border-slate-100">
                 <h3 className="font-serif font-bold text-sm sm:text-[15px] text-[#102E4D]">
-                  {testimonials.items[1].author}
+                  {second.author}
                 </h3>
               </div>
             </motion.div>
