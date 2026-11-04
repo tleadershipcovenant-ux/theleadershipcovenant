@@ -543,7 +543,7 @@ export const EVENTS: LeadershipEvent[] = [
   },
 ];
 
-const SHORT_MONTHS = [
+export const SHORT_MONTHS = [
   "Jan",
   "Feb",
   "Mar",
@@ -558,7 +558,7 @@ const SHORT_MONTHS = [
   "Dec",
 ] as const;
 
-const LONG_MONTHS = [
+export const LONG_MONTHS = [
   "January",
   "February",
   "March",
@@ -573,7 +573,7 @@ const LONG_MONTHS = [
   "December",
 ] as const;
 
-const SHORT_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export const SHORT_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 export type EventTimeSlot = "full_day" | "half_day" | "multi_day";
 

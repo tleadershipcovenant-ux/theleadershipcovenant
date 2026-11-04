@@ -12,8 +12,7 @@ import {
   isOpenEnrollmentEvent,
   type LeadershipEvent,
 } from "@/content/events";
-import { useCmsContent } from "@/lib/cms-client";
-import { FORM_COPY } from "@/content/forms";
+import { useCmsContent, useApplyPageContent } from "@/lib/cms-client";
 import { PAYMENT_METHODS, type PaymentMethodId } from "@/content/payment";
 import { getActivityPricing } from "@/content/pricing";
 import {
@@ -81,6 +80,7 @@ export function ApplyForm({
   initialActivity = "",
   initialEvents = EVENTS,
 }: ApplyFormProps) {
+  const copy = useApplyPageContent();
   const [step, setStep] = useState<WizardStep>(1);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [bookingMode, setBookingMode] = useState<BookingMode | null>(null);
@@ -806,24 +806,26 @@ export function ApplyForm({
                       <CalendarCheck2 className="w-5 h-5 text-[#16A34A] shrink-0" />
                     )}
                     <span className="min-w-0">
-                      {isSecured ? "Priority Seat Secured" : "Reservation Confirmed"}
+                      {isSecured ? copy.success.securedStatus : copy.success.reservationStatus}
                     </span>
                   </div>
                   <p className="text-[11.5px] font-semibold text-slate-400">
-                    Official Booking Verified
+                    {copy.success.verifiedLabel}
                   </p>
                 </div>
               </div>
 
               <div>
                 <h3 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#102E4D] tracking-tight leading-tight mt-1">
-                  {isSecured ? `Congratulations, ${firstName}!` : `Thank You, ${firstName}!`}
+                  {isSecured
+                    ? `${copy.success.securedHeadline}, ${firstName}!`
+                    : `${copy.success.reservationHeadline}, ${firstName}!`}
                 </h3>
 
                 <p className="text-slate-600 text-xs sm:text-[13px] leading-relaxed mt-2 max-w-lg mx-auto lg:mx-0">
                   {isSecured
-                    ? "Your priority seat has been locked and payment record registered. Save, print, or share your official booking receipt on the right."
-                    : "Your provisional reservation has been recorded at zero upfront cost. Save, print, or share your official booking receipt on the right. Our team will contact you within 24 hours to confirm attendance."}
+                    ? copy.success.securedBody
+                    : copy.success.reservationBody}
                 </p>
               </div>
 
@@ -834,10 +836,10 @@ export function ApplyForm({
                     ✓
                   </div>
                   <p className="font-bold text-[#102E4D] text-[10.5px] sm:text-[11px] truncate">
-                    {isSecured ? "Seat Secured" : "Spot Reserved"}
+                    {isSecured ? copy.success.securedStep1 : copy.success.reservationStep1}
                   </p>
                   <span className="text-[9px] font-semibold text-emerald-700 block">
-                    Confirmed
+                    {copy.success.confirmedLabel}
                   </span>
                 </div>
                 <div className="space-y-0.5 border-x border-[#C8EFE6]">
@@ -845,10 +847,10 @@ export function ApplyForm({
                     2
                   </div>
                   <p className="font-bold text-[#102E4D] text-[10.5px] sm:text-[11px] truncate">
-                    {isSecured ? "Payment Verified" : "Team Callback"}
+                    {isSecured ? copy.success.securedStep2 : copy.success.reservationStep2}
                   </p>
                   <span className="text-[9px] font-semibold text-[#FF7900] block">
-                    Within 24 Hours
+                    {copy.success.withinHoursLabel}
                   </span>
                 </div>
                 <div className="space-y-0.5">
@@ -856,10 +858,10 @@ export function ApplyForm({
                     3
                   </div>
                   <p className="font-bold text-[#102E4D] text-[10.5px] sm:text-[11px] truncate">
-                    Joining Pass
+                    {copy.success.step3Title}
                   </p>
                   <span className="text-[9px] font-semibold text-slate-500 block">
-                    Digital Kit
+                    {copy.success.step3Status}
                   </span>
                 </div>
               </div>
@@ -880,7 +882,7 @@ export function ApplyForm({
                 className="min-h-10 w-full sm:w-auto h-9 px-3.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-[11.5px] sm:text-xs tracking-wide shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-normal cursor-pointer active:scale-98"
               >
                 <FaWhatsapp className="w-3.5 h-3.5 text-white shrink-0" />
-                <span>Connect on WhatsApp</span>
+                <span>{copy.success.whatsappButton}</span>
               </a>
 
               <button
@@ -888,7 +890,7 @@ export function ApplyForm({
                 onClick={resetWizard}
                 className="min-h-10 w-full sm:w-auto h-9 px-3.5 rounded-lg border border-[#102E4D]/25 hover:border-[#102E4D] bg-white hover:bg-[#EFFBF8] text-[#102E4D] font-bold text-[11.5px] sm:text-xs tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-normal cursor-pointer active:scale-98 sm:ml-auto"
               >
-                <span>Submit Another Application</span>
+                <span>{copy.success.submitAnother}</span>
               </button>
             </div>
           </div>
@@ -910,17 +912,17 @@ export function ApplyForm({
                     </div>
                     <div className="min-w-0">
                       <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFC400] block truncate">
-                        The Leadership Covenant
+                        {copy.success.receiptOrg}
                       </span>
                       <h4 className="font-serif font-bold text-base sm:text-[17px] text-white leading-snug truncate">
-                        Official Booking Receipt
+                        {copy.success.receiptTitle}
                       </h4>
                     </div>
                   </div>
 
                   <div className="w-full sm:w-auto text-center shrink-0 bg-[#FFC400]/10 border border-[#FFC400]/50 rounded-xl px-3.5 py-2 shadow-2xs">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#D7F5EF] block">
-                      Booking Ref
+                      {copy.success.bookingRefLabel}
                     </span>
                     <span className="font-num text-xs sm:text-[13px] font-extrabold text-[#FFC400] break-all block mt-0.5">
                       #{displayRef}
@@ -933,7 +935,7 @@ export function ApplyForm({
                   <span className="max-w-full inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] border border-[#86EFAC] text-[#15803D] text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wide">
                     <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" />
                     <span>
-                      {isSecured ? "Seat Secured • UBL" : "Provisional Reserved"}
+                      {isSecured ? copy.success.statusSecured : copy.success.statusReserved}
                     </span>
                   </span>
                   <span className="font-num text-[11px] font-semibold text-slate-500 break-words">
@@ -946,7 +948,7 @@ export function ApplyForm({
                   {selectedEvent && (
                     <div className="rounded-xl bg-gradient-to-r from-[#EFFBF8] to-[#DDEFF7]/60 border border-[#C8EFE6] px-4 py-3 space-y-1">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#FF7900] block">
-                        Selected Activity
+                        {copy.success.selectedActivityLabel}
                       </span>
                       <div className="font-bold text-sm sm:text-[15px] text-[#102E4D] leading-snug">
                         {selectedEvent.title}
@@ -963,7 +965,7 @@ export function ApplyForm({
                   <div className="divide-y divide-slate-100 px-0.5">
                     <div className="flex flex-col items-start sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 py-2">
                       <span className="text-slate-500 font-medium shrink-0">
-                        Participant
+                        {copy.success.participantLabel}
                       </span>
                       <span className="w-full sm:w-auto font-bold text-[#102E4D] text-left sm:text-right break-words">
                         {formData.full_name}
@@ -972,7 +974,7 @@ export function ApplyForm({
 
                     <div className="flex flex-col items-start sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 py-2">
                       <span className="text-slate-500 font-medium shrink-0">
-                        Booking Option
+                        {copy.success.bookingOptionLabel}
                       </span>
                       <span className="w-full sm:w-auto font-bold text-[#102E4D] inline-flex items-center gap-1.5 text-left sm:text-right break-words">
                         {isSecured && (
@@ -986,8 +988,8 @@ export function ApplyForm({
                         )}
                         <span>
                           {isSecured
-                            ? "Priority Seat (UBL Transfer)"
-                            : "Reserve Now • Pay Later"}
+                            ? copy.success.optionSecured
+                            : copy.success.optionReserved}
                         </span>
                       </span>
                     </div>
@@ -1089,24 +1091,24 @@ export function ApplyForm({
   }> = [
     {
       num: 1,
-      title: "Participant Details",
-      subtitle: "Contact info & activity",
+      title: copy.steps.step1Title,
+      subtitle: copy.steps.step1Subtitle,
     },
     {
       num: 2,
-      title: "Booking Option",
-      subtitle: "Reservation or Secure Seat",
+      title: copy.steps.step2Title,
+      subtitle: copy.steps.step2Subtitle,
     },
     {
       num: 3,
       title:
         bookingMode === "reservation"
-          ? "Instant Confirmation"
-          : "Payment & Receipt",
+          ? copy.steps.step3ReservationTitle
+          : copy.steps.step3PaymentTitle,
       subtitle:
         bookingMode === "reservation"
-          ? "Complete reservation"
-          : "UBL Bank & Scan to Pay",
+          ? copy.steps.step3ReservationSubtitle
+          : copy.steps.step3PaymentSubtitle,
     },
   ];
 
@@ -1313,24 +1315,24 @@ export function ApplyForm({
                 <div className="pb-3 border-b border-[#C8EFE6]/60 flex items-center justify-between">
                   <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#102E4D] flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#FF7900]" />
-                    Participant Information
+                    {copy.step1.sectionTitle}
                   </span>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Step 01 of 03
+                    {copy.step1.stepBadge}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="apply-name" className={labelClass}>
-                      Full Name <span className="text-[#FF7900]">*</span>
+                      {copy.step1.fullName.label} <span className="text-[#FF7900]">*</span>
                     </label>
                     <input
                       id="apply-name"
                       name="full_name"
                       type="text"
                       required
-                      placeholder="e.g. Salman Ahmed"
+                      placeholder={copy.step1.fullName.placeholder}
                       value={formData.full_name}
                       onChange={handleChange}
                       className={getInputClass(Boolean(formData.full_name.trim()))}
@@ -1340,14 +1342,14 @@ export function ApplyForm({
 
                   <div>
                     <label htmlFor="apply-email" className={labelClass}>
-                      Email Address <span className="text-[#FF7900]">*</span>
+                      {copy.step1.email.label} <span className="text-[#FF7900]">*</span>
                     </label>
                     <input
                       id="apply-email"
                       name="email"
                       type="email"
                       required
-                      placeholder="salman@school.edu.pk"
+                      placeholder={copy.step1.email.placeholder}
                       value={formData.email}
                       onChange={handleChange}
                       className={getInputClass(Boolean(formData.email.trim()))}
@@ -1359,14 +1361,14 @@ export function ApplyForm({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="apply-phone" className={labelClass}>
-                      Phone / WhatsApp <span className="text-[#FF7900]">*</span>
+                      {copy.step1.phone.label} <span className="text-[#FF7900]">*</span>
                     </label>
                     <input
                       id="apply-phone"
                       name="phone"
                       type="tel"
                       required
-                      placeholder="+92 300 1234567"
+                      placeholder={copy.step1.phone.placeholder}
                       value={formData.phone}
                       onChange={handleChange}
                       className={`${getInputClass(Boolean(formData.phone.trim()))} font-num`}
@@ -1376,14 +1378,14 @@ export function ApplyForm({
 
                   <div>
                     <label htmlFor="apply-role" className={labelClass}>
-                      Your Role / Title <span className="text-[#FF7900]">*</span>
+                      {copy.step1.role.label} <span className="text-[#FF7900]">*</span>
                     </label>
                     <input
                       id="apply-role"
                       name="role"
                       type="text"
                       required
-                      placeholder="e.g. Principal, Teacher, Parent"
+                      placeholder={copy.step1.role.placeholder}
                       value={formData.role}
                       onChange={handleChange}
                       className={getInputClass(Boolean(formData.role.trim()))}
@@ -1394,7 +1396,7 @@ export function ApplyForm({
                 {/* Custom Colorful & Professional Activity / Cohort Selector */}
                 <div ref={activityDropdownRef} className="relative z-40">
                   <label htmlFor="apply-activity" className={labelClass}>
-                    Select Activity / Cohort{" "}
+                    {copy.step1.activity.label}{" "}
                     <span className="text-[#FF7900]">*</span>
                   </label>
 
@@ -1471,7 +1473,7 @@ export function ApplyForm({
                       <div className="flex items-center gap-2.5 text-slate-400 min-w-0">
                         <CalendarCheck2 className="w-5 h-5 text-slate-400 shrink-0" />
                         <span className="text-xs sm:text-sm font-medium truncate">
-                          Choose an upcoming 2026 activity or cohort…
+                          {copy.step1.activity.placeholder}
                         </span>
                       </div>
                     )}
@@ -1511,7 +1513,7 @@ export function ApplyForm({
                         className="absolute z-[100] left-0 right-0 mt-2 max-h-72 sm:max-h-80 overflow-y-auto overscroll-contain rounded-2xl bg-white border-2 border-[#102E4D]/25 ring-2 ring-[#C8EFE6] shadow-2xl p-2 space-y-1 focus:outline-none scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-[#FF7900]"
                       >
                         <div className="px-3 py-1.5 text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center justify-between border-b border-slate-100">
-                          <span>Upcoming 2026 Leadership Activities</span>
+                          <span>{copy.step1.activityDropdownHeading}</span>
                           <span className="font-num text-[10px] text-slate-500">
                             {selectableEvents.length} Available
                           </span>
@@ -1646,16 +1648,16 @@ export function ApplyForm({
 
                 <div>
                   <label htmlFor="apply-message" className={labelClass}>
-                    Notes or Group Details{" "}
+                    {copy.step1.notes.label}{" "}
                     <span className="text-[11px] font-medium normal-case text-slate-400">
-                      (Optional)
+                      {copy.step1.notes.optionalTag}
                     </span>
                   </label>
                   <textarea
                     id="apply-message"
                     name="message"
                     rows={2}
-                    placeholder="Share your school/organization name, group size, or any questions..."
+                    placeholder={copy.step1.notes.placeholder}
                     value={formData.message}
                     onChange={handleChange}
                     className={`${getInputClass(Boolean(formData.message.trim()))} resize-none min-h-[76px]`}
@@ -1675,10 +1677,10 @@ export function ApplyForm({
                   <div className="pb-3 border-b border-white/10 flex items-center justify-between">
                     <span className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-[#FFC400] flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-                      Selected Activity Summary
+                      {copy.step1.summaryHeading}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">
-                      Live Preview
+                      {copy.step1.summaryLivePreview}
                     </span>
                   </div>
 
@@ -1754,7 +1756,7 @@ export function ApplyForm({
                                 <Hourglass className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                1-Day Regional Summit
+                                {selectedEvent.duration || "1-Day Regional Summit"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
@@ -1762,7 +1764,7 @@ export function ApplyForm({
                                 <MapPin className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                Islamabad
+                                {selectedEvent.venue || selectedEvent.city || "Islamabad"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all">
@@ -1770,7 +1772,7 @@ export function ApplyForm({
                                 <Award className="w-3.5 h-3.5" />
                               </div>
                               <span className="font-semibold text-white">
-                                Summit Participant Kit &amp; Certificate
+                                {selectedEvent.certificate || "Summit Participant Kit & Certificate"}
                               </span>
                             </div>
                           </>
@@ -1884,11 +1886,10 @@ export function ApplyForm({
                         <CalendarCheck2 className="w-5 h-5" />
                       </div>
                       <p className="text-sm font-bold text-white">
-                        No Activity Selected Yet
+                        {copy.step1.emptyTitle}
                       </p>
                       <p className="text-xs text-slate-300 max-w-xs mx-auto leading-relaxed">
-                        Select an activity from the dropdown on the left to
-                        preview date, venue, and registration fee details here.
+                        {copy.step1.emptyBody}
                       </p>
                     </div>
                   )}
@@ -1909,16 +1910,16 @@ export function ApplyForm({
                     className="mt-0.5 sm:mt-0 w-4.5 h-4.5 rounded border-2 border-slate-300 text-[#FF7900] focus:ring-[#FF7900] accent-[#FF7900] cursor-pointer"
                   />
                   <span>
-                    I agree to the{" "}
+                    {copy.step1.termsPrefix}{" "}
                     <a
                       href="/privacy"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[#102E4D] font-bold underline hover:text-[#FF7900]"
                     >
-                      Terms &amp; Conditions
+                      {copy.step1.termsLabel}
                     </a>{" "}
-                    and Privacy Policy.
+                    {copy.step1.termsSuffix}
                   </span>
                 </label>
 
@@ -1926,7 +1927,7 @@ export function ApplyForm({
                   type="submit"
                   className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#FF7900] via-[#FF8C1A] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_6px_20px_rgba(255,121,0,0.32)] hover:shadow-[0_8px_26px_rgba(255,121,0,0.45)] transition-all inline-flex items-center justify-center gap-2 cursor-pointer active:scale-98 shrink-0 border border-white/25"
                 >
-                  <span>Next: Choose Booking Option</span>
+                  <span>{copy.step1.nextButton}</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </div>
@@ -1958,7 +1959,7 @@ export function ApplyForm({
                 <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-slate-700">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-[#102E4D]" />
-                    Participant:{" "}
+                    {copy.step2.participantLabel}{" "}
                     <strong className="text-[#102E4D]">
                       {formData.full_name}
                     </strong>{" "}
@@ -1970,7 +1971,7 @@ export function ApplyForm({
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="truncate max-w-[260px] sm:max-w-none">
-                    Activity:{" "}
+                    {copy.step2.activityLabel}{" "}
                     <strong className="text-[#102E4D]">
                       {selectedEvent?.title}
                     </strong>
@@ -1981,7 +1982,7 @@ export function ApplyForm({
                   onClick={() => navigateToStep(1)}
                   className="px-3 py-1 rounded-lg border border-[#FF7900]/30 bg-[#FFF8F1] hover:bg-[#FF7900] text-[#FF7900] hover:text-white text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
                 >
-                  Edit Details
+                  {copy.step2.editButton}
                 </button>
               </div>
 
@@ -2015,10 +2016,10 @@ export function ApplyForm({
                         </div>
                         <div>
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#102E4D]/10 text-[#102E4D] border border-[#102E4D]/20">
-                            Zero Upfront Cost
+                            {copy.step2.reservation.badge}
                           </span>
                           <h4 className="font-serif font-extrabold text-lg sm:text-xl text-[#102E4D] mt-0.5 leading-tight">
-                            Reservation
+                            {copy.step2.reservation.title}
                           </h4>
                         </div>
                       </div>
@@ -2037,25 +2038,23 @@ export function ApplyForm({
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      Hold your provisional spot for free. Our team will contact you within 24 hours to confirm attendance.
+                      {copy.step2.reservation.body}
                     </p>
 
                     {/* Cost Preview */}
                     <div className="p-2.5 rounded-xl bg-white/80 border border-[#C8EFE6] flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-600">Advance Due</span>
-                      <span className="font-num font-black text-sm text-[#102E4D]">PKR 0 (Free Hold)</span>
+                      <span className="font-bold text-slate-600">{copy.step2.reservation.advanceLabel}</span>
+                      <span className="font-num font-black text-sm text-[#102E4D]">{copy.step2.reservation.advanceValue}</span>
                     </div>
 
                     {/* 2 Clear, Required Bullet Points */}
                     <div className="space-y-2 pt-2.5 border-t border-[#C8EFE6]/70 text-xs text-slate-700 font-semibold">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
-                        <span>Instant provisional hold (No advance fee)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
-                        <span>Pay later after details are confirmed</span>
-                      </div>
+                      {copy.step2.reservation.bullets.map((bullet) => (
+                        <div key={bullet} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+                          <span>{bullet}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </motion.button>
@@ -2088,10 +2087,10 @@ export function ApplyForm({
                         </div>
                         <div>
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[#FF7900]/15 text-[#FF7900] border border-[#FF7900]/30">
-                            Guaranteed Priority
+                            {copy.step2.secureSeat.badge}
                           </span>
                           <h4 className="font-serif font-extrabold text-lg sm:text-xl text-[#102E4D] mt-0.5 leading-tight">
-                            Secure Your Seat
+                            {copy.step2.secureSeat.title}
                           </h4>
                         </div>
                       </div>
@@ -2110,7 +2109,7 @@ export function ApplyForm({
                     </div>
 
                     <p className="text-xs text-slate-600 leading-relaxed">
-                      Lock your official confirmed admission right away via United Bank Limited (UBL) transfer or instant Scan to Pay.
+                      {copy.step2.secureSeat.body}
                     </p>
 
                     {/* Compact Integrated UBL Method & Fee Strip */}
@@ -2123,10 +2122,10 @@ export function ApplyForm({
                         />
                         <div className="min-w-0">
                           <p className="text-[9px] font-bold uppercase tracking-wider text-[#FF7900] leading-none">
-                            Official Partner
+                            {copy.step2.secureSeat.partnerEyebrow}
                           </p>
                           <p className="text-xs font-black text-[#102E4D] truncate mt-0.5">
-                            United Bank Limited (UBL)
+                            {copy.step2.secureSeat.partnerName}
                           </p>
                         </div>
                       </div>
@@ -2151,14 +2150,12 @@ export function ApplyForm({
 
                     {/* 2 Clear, Required Bullet Points (UBL Exclusive) */}
                     <div className="space-y-2 pt-2.5 border-t border-[#FF7900]/25 text-xs text-slate-700 font-semibold">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-[#FF7900] shrink-0" />
-                        <span>100% Guaranteed priority admission &amp; kit</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-[#FF7900] shrink-0" />
-                        <span>Official UBL IBAN &amp; Instant Scan QR</span>
-                      </div>
+                      {copy.step2.secureSeat.bullets.map((bullet) => (
+                        <div key={bullet} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#FF7900] shrink-0" />
+                          <span>{bullet}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </motion.button>
@@ -2172,7 +2169,7 @@ export function ApplyForm({
                   className="px-6 py-3.5 rounded-xl border-2 border-[#C8EFE6] bg-white hover:bg-slate-50 hover:border-[#102E4D]/40 text-xs sm:text-sm font-bold text-[#102E4D] uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Details</span>
+                  <span>{copy.step2.backButton}</span>
                 </button>
 
                 {bookingMode === "reservation" ? (
@@ -2185,11 +2182,11 @@ export function ApplyForm({
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Completing Reservation...</span>
+                        <span>{copy.step2.completingReservation}</span>
                       </>
                     ) : (
                       <>
-                        <span>Complete Reservation Now</span>
+                        <span>{copy.step2.completeReservation}</span>
                         <CheckCircle2 className="w-4 h-4" />
                       </>
                     )}
@@ -2200,7 +2197,7 @@ export function ApplyForm({
                     onClick={() => navigateToStep(3)}
                     className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#FF7900] via-[#FF8C1A] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-[0_6px_20px_rgba(255,121,0,0.32)] hover:shadow-[0_8px_26px_rgba(255,121,0,0.45)] transition-all inline-flex items-center justify-center gap-2.5 cursor-pointer active:scale-98 border border-white/25"
                   >
-                    <span>Next: Payment &amp; Screenshot Upload</span>
+                    <span>{copy.step2.nextPayment}</span>
                     <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   </button>
                 ) : (
@@ -2213,7 +2210,7 @@ export function ApplyForm({
                     }
                     className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-slate-200 text-slate-500 font-bold text-xs sm:text-sm uppercase tracking-wider inline-flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Select a Booking Option Above</span>
+                    <span>{copy.step2.selectOption}</span>
                   </button>
                 )}
               </div>
@@ -2247,10 +2244,10 @@ export function ApplyForm({
                   <div>
                     <h4 className="font-serif font-extrabold text-xl text-[#102E4D]">
                       <span className="font-num text-[#FF7900] mr-1">1.</span>{" "}
-                      Payment Method &amp; Account
+                      {copy.step3.paymentHeading}
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                      Pay via United Bank Limited (UBL) IBAN transfer or scan the official QR code below.
+                      {copy.step3.paymentSubheading}
                     </p>
                   </div>
 
@@ -2259,7 +2256,7 @@ export function ApplyForm({
                     <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-[#EFFBF8] to-[#FFF8F1] border border-[#C8EFE6] flex items-center justify-between gap-3 text-xs sm:text-sm">
                       <div>
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                          Registration Fee Payable
+                          {copy.step3.feePayableLabel}
                         </span>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="font-num font-extrabold text-[#102E4D] text-lg">
@@ -2724,16 +2721,16 @@ export function ApplyForm({
                   {/* Optional Transaction ID field */}
                   <div>
                     <label htmlFor="apply-tid" className={labelClass}>
-                      Transaction ID / Reference{" "}
+                      {copy.step3.transactionLabel}{" "}
                       <span className="text-[11px] font-medium normal-case text-slate-400">
-                        (Optional)
+                        {copy.step3.optionalTag}
                       </span>
                     </label>
                     <input
                       id="apply-tid"
                       name="transaction_ref"
                       type="text"
-                      placeholder="e.g. TID 8392019482"
+                      placeholder={copy.step3.transactionPlaceholder}
                       value={formData.transaction_ref}
                       onChange={handleChange}
                       className={`${getInputClass(Boolean(formData.transaction_ref.trim()))} font-num`}
@@ -2750,7 +2747,7 @@ export function ApplyForm({
                   className="px-6 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-xs sm:text-sm font-bold text-[#102E4D] uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Booking Options</span>
+                  <span>{copy.step3.backButton}</span>
                 </button>
 
                 <button
@@ -2762,11 +2759,11 @@ export function ApplyForm({
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Securing Your Seat...</span>
+                      <span>{copy.step3.submittingButton}</span>
                     </>
                   ) : (
                     <>
-                      <span>Complete &amp; Secure My Seat</span>
+                      <span>{copy.step3.submitButton}</span>
                       <CheckCircle2 className="w-4 h-4" />
                     </>
                   )}
