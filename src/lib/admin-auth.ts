@@ -1,5 +1,4 @@
 import type { NextRequest } from "next/server";
-import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 export const ADMIN_COOKIE_NAME = "tlc_admin_jwt";
 // Strict 30-minute inactivity session timeout as requested
@@ -61,14 +60,14 @@ async function importHmacKey(secret: string): Promise<CryptoKey> {
 }
 
 /**
- * Verifies admin credentials directly against Supabase Auth (auth.users).
- * No admin credentials are stored in environment files.
+ * Verifies admin credentials directly against Supabase Auth (auth.users) via high-speed native REST.
+ * Eliminates heavy SDK initialization overhead on Cloudflare Workers and serverless Edge runtimes.
  */
 export async function verifyAdminWithSupabase(
   inputEmail: string,
   inputPassword: string
 ): Promise<{ ok: boolean; email?: string; error?: string }> {
-  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "");
   const key = (
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -79,36 +78,71 @@ export async function verifyAdminWithSupabase(
     return { ok: false, error: "Supabase service is not configured." };
   }
 
-  const supabase = createSupabaseJsClient(url, key, {
-    auth: { persistSession: false },
-  });
+  const endpoint = `${url}/auth/v1/token?grant_type=password`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: inputEmail.trim().toLowerCase(),
-    password: inputPassword,
-  });
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: inputEmail.trim().toLowerCase(),
+        password: inputPassword,
+      }),
+      signal: controller.signal,
+    });
 
-  if (error || !data?.user) {
+    const data = (await res.json().catch(() => null)) as {
+      user?: {
+        id: string;
+        email?: string;
+        app_metadata?: { role?: string };
+        user_metadata?: { role?: string };
+      };
+      error_description?: string;
+      msg?: string;
+      message?: string;
+    } | null;
+
+    if (!res.ok || !data?.user) {
+      const errMsg =
+        data?.error_description ||
+        data?.msg ||
+        data?.message ||
+        "Invalid admin email or password.";
+      return { ok: false, error: errMsg };
+    }
+
+    const user = data.user;
+    const isSuperAdmin =
+      user.app_metadata?.role === "admin" ||
+      user.user_metadata?.role === "admin" ||
+      user.email === "tleadershipcovenant@gmail.com";
+
+    if (!isSuperAdmin) {
+      return {
+        ok: false,
+        error: "Access denied. This user does not have administrator privileges.",
+      };
+    }
+
+    return { ok: true, email: user.email || inputEmail };
+  } catch (err: unknown) {
+    const isAbort = err instanceof Error && err.name === "AbortError";
     return {
       ok: false,
-      error: error?.message || "Invalid admin email or password.",
+      error: isAbort
+        ? "Authentication request timed out. Please verify your connection."
+        : "Failed to connect to authentication service.",
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const user = data.user;
-  const isSuperAdmin =
-    user.app_metadata?.role === "admin" ||
-    user.user_metadata?.role === "admin" ||
-    user.email === "tleadershipcovenant@gmail.com";
-
-  if (!isSuperAdmin) {
-    return {
-      ok: false,
-      error: "Access denied. This user does not have administrator privileges.",
-    };
-  }
-
-  return { ok: true, email: user.email || inputEmail };
 }
 
 /**
@@ -166,7 +200,7 @@ export async function verifyAdminJwt(
     const valid = await crypto.subtle.verify(
       "HMAC",
       key,
-      sigBytes.buffer as ArrayBuffer,
+      sigBytes as unknown as BufferSource,
       new TextEncoder().encode(`${headerSeg}.${payloadSeg}`)
     );
     if (!valid) return null;

@@ -88,32 +88,62 @@ export default function AdminShell({
     pendingRegistrations: 0,
   });
 
-  const fetchShellMeta = useCallback(async () => {
+  const lastFetchRef = React.useRef<number>(0);
+
+  const fetchShellMeta = useCallback(async (force = false) => {
     if (isLoginRoute) return;
+    const now = Date.now();
+    // Throttle to at most once every 30 seconds unless forced, avoiding DB hammer on route navigation
+    if (!force && now - lastFetchRef.current < 30000) return;
+    lastFetchRef.current = now;
+
     try {
       const statsRes = await fetch("/api/admin/stats", { cache: "no-store" });
       if (statsRes.status === 401) {
-        router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
+        if (typeof window !== "undefined") {
+          window.location.href = isCleanUrl ? "/login?reason=inactivity" : "/AD_Admin/login?reason=inactivity";
+        } else {
+          router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
+        }
         return;
       }
 
       if (statsRes.ok) {
         const sJson = await statsRes.json();
-        setBadges({
+        const newBadges = {
           newContacts: sJson?.contactStats?.newCount || 0,
           pendingRegistrations:
             (sJson?.registrationStats?.awaitingVerification || 0) +
             (sJson?.registrationStats?.pendingCallback || 0),
-        });
+        };
+        setBadges(newBadges);
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem("tlc_admin_badges", JSON.stringify(newBadges));
+          } catch {
+            // Ignore
+          }
+        }
       }
     } catch {
       // Non-blocking meta fetch
     }
   }, [isCleanUrl, isLoginRoute, router]);
 
+  // Load cached badges instantly on mount to eliminate layout jump
   useEffect(() => {
-    fetchShellMeta();
-  }, [fetchShellMeta, pathname]);
+    if (typeof window !== "undefined") {
+      try {
+        const cached = sessionStorage.getItem("tlc_admin_badges");
+        if (cached) {
+          setBadges(JSON.parse(cached));
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    fetchShellMeta(true);
+  }, [fetchShellMeta]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -129,8 +159,12 @@ export default function AdminShell({
       await fetch("/api/admin/auth/logout", { method: "POST" });
       if (typeof window !== "undefined") {
         window.sessionStorage.removeItem("tlc_admin_dashboard_cache");
+        window.sessionStorage.removeItem("tlc_admin_badges");
+        window.localStorage.removeItem("tlc_admin_dashboard_cache");
+        window.location.href = isCleanUrl ? "/login" : "/AD_Admin/login";
+      } else {
+        router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
       }
-      router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
     } finally {
       setLoggingOut(false);
     }
@@ -481,7 +515,7 @@ export default function AdminShell({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={fetchShellMeta}
+                onClick={() => fetchShellMeta(true)}
                 className="h-8.5 px-2.5 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-slate-200 hover:text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
                 title="Refresh CRM stats"
               >
@@ -504,7 +538,7 @@ export default function AdminShell({
             <div className="flex flex-col items-center gap-2">
               <button
                 type="button"
-                onClick={fetchShellMeta}
+                onClick={() => fetchShellMeta(true)}
                 className="w-12 h-10 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-[#FFC400] flex items-center justify-center mx-auto cursor-pointer transition-colors active:scale-95"
                 title="Refresh statistics"
               >
@@ -579,7 +613,7 @@ export default function AdminShell({
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={fetchShellMeta}
+              onClick={() => fetchShellMeta(true)}
               className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FFC400] border border-white/10 cursor-pointer active:scale-95 transition-all"
               title="Refresh statistics"
               aria-label="Refresh statistics"

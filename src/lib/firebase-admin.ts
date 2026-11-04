@@ -19,6 +19,51 @@ interface ServiceAccountCredentials {
 
 let cachedCredentials: ServiceAccountCredentials | null = null;
 let cachedAccessToken: { token: string; expiresAt: number } | null = null;
+let cachedCryptoKey: CryptoKey | null = null;
+
+function pemToPkcs8Bytes(pem: string): Uint8Array {
+  const b64 = pem
+    .replace(/-----BEGIN (?:RSA )?PRIVATE KEY-----/g, "")
+    .replace(/-----END (?:RSA )?PRIVATE KEY-----/g, "")
+    .replace(/\s+/g, "");
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function signRs256Assertion(signingInput: string, privateKeyPem: string): Promise<string> {
+  // 1. Prefer native Web Crypto API (100% native in Cloudflare Workers workerd & Node.js 18+)
+  try {
+    if (typeof globalThis.crypto !== "undefined" && globalThis.crypto.subtle) {
+      if (!cachedCryptoKey) {
+        const pkcs8 = pemToPkcs8Bytes(privateKeyPem);
+        cachedCryptoKey = await globalThis.crypto.subtle.importKey(
+          "pkcs8",
+          pkcs8 as unknown as BufferSource,
+          { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+      }
+      const sigBuf = await globalThis.crypto.subtle.sign(
+        "RSASSA-PKCS1-v1_5",
+        cachedCryptoKey,
+        new TextEncoder().encode(signingInput)
+      );
+      return Buffer.from(sigBuf).toString("base64url");
+    }
+  } catch (webCryptoErr) {
+    console.warn("[Web Crypto RS256 signing fallback to node:crypto]:", webCryptoErr);
+  }
+
+  // 2. Fallback to Node.js crypto module if available
+  const sign = crypto.createSign("RSA-SHA256");
+  sign.update(signingInput);
+  return sign.sign(privateKeyPem, "base64url");
+}
 
 export function loadServiceAccountCredentials(): ServiceAccountCredentials | null {
   if (cachedCredentials) return cachedCredentials;
@@ -91,10 +136,9 @@ export async function getGoogleAccessToken(): Promise<string | null> {
       })
     ).toString("base64url");
 
-    const sign = crypto.createSign("RSA-SHA256");
-    sign.update(`${header}.${claimSet}`);
-    const signature = sign.sign(credentials.privateKey, "base64url");
-    const assertion = `${header}.${claimSet}.${signature}`;
+    const signingInput = `${header}.${claimSet}`;
+    const signature = await signRs256Assertion(signingInput, credentials.privateKey);
+    const assertion = `${signingInput}.${signature}`;
 
     const res = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",

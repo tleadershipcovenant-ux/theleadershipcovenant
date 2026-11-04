@@ -17,6 +17,7 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
+  Loader2,
   Plus,
   RotateCcw,
   Save,
@@ -196,17 +197,17 @@ const SHORT_WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as cons
 function ActivityPreviewCard({
   event,
   onEdit,
-  onDuplicate,
   onToggleHidden,
   onDelete,
   onPreviewModal,
+  isTogglingHidden = false,
 }: {
   event: LeadershipEvent;
   onEdit: () => void;
-  onDuplicate: () => void;
   onToggleHidden: () => void;
   onDelete: () => void;
   onPreviewModal: () => void;
+  isTogglingHidden?: boolean;
 }) {
   const [yStr, mStr, dStr] = (event.startDate || "2026-01-01").split("-");
   const yearStr = Number(yStr) || 2026;
@@ -230,12 +231,10 @@ function ActivityPreviewCard({
 
   return (
     <article
-      className={`rounded-2xl flex flex-col overflow-hidden relative ${
+      className={`rounded-2xl flex flex-col overflow-hidden relative transition-all ${
         event.hidden
-          ? "opacity-60 grayscale-[0.25]"
-          : ""
-      } ${
-        isOpenEnrollment
+          ? "opacity-75 border-2 border-amber-300 bg-amber-50/20 shadow-sm"
+          : isOpenEnrollment
           ? "bg-gradient-to-b from-[#F0FDF4] via-white to-[#F0FDF4] border-[3px] border-[#16A34A] ring-4 ring-[#16A34A]/25 shadow-[0_22px_45px_-8px_rgba(22,163,74,0.25)]"
           : `bg-white border border-[#D7F5EF] shadow-md ${theme.ring}`
       }`}
@@ -248,8 +247,18 @@ function ActivityPreviewCard({
         }`}
       />
 
-      {isOpenEnrollment ? (
-        <div className="px-4 py-2 bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#16A34A] text-white flex items-center justify-between gap-2">
+      {event.hidden ? (
+        <div className="px-4 py-2 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-600 text-white text-[11px] font-black uppercase tracking-wider flex items-center justify-between shadow-xs">
+          <span className="flex items-center gap-2">
+            <EyeOff className="w-4 h-4 text-amber-200" />
+            <span>Hidden from Public Website</span>
+          </span>
+          <span className="text-[10px] bg-black/30 px-2.5 py-0.5 rounded-full font-extrabold tracking-wide">
+            Draft Mode
+          </span>
+        </div>
+      ) : isOpenEnrollment ? (
+        <div className="px-4 py-2 bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#16A34A] text-white flex items-center justify-between gap-2 shadow-xs">
           <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-90" />
@@ -258,22 +267,20 @@ function ActivityPreviewCard({
             <span>ENROLLMENTS OPEN</span>
           </span>
           <span className="font-num text-[10.5px] font-black px-2.5 py-0.5 rounded-full bg-white text-[#15803D] uppercase tracking-wider shadow-xs">
-            Live Now
+            Live on Website
           </span>
         </div>
-      ) : null}
-
-      {event.hidden ? (
-        <div className="px-4 py-1.5 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-600 text-white text-[10.5px] font-black uppercase tracking-wider flex items-center justify-between shadow-xs">
-          <span className="flex items-center gap-1.5">
-            <EyeOff className="w-3.5 h-3.5" />
-            Hidden from Public Website
+      ) : (
+        <div className="px-4 py-1.5 bg-[#F0FDF4] border-b border-emerald-200 text-emerald-800 text-[10.5px] font-extrabold uppercase tracking-wider flex items-center justify-between">
+          <span className="flex items-center gap-1.5 text-emerald-700">
+            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Live on Public Website</span>
           </span>
-          <span className="text-[9px] bg-black/25 px-2 py-0.5 rounded-full font-bold">
-            Draft Only
+          <span className="text-[9.5px] font-bold text-emerald-700 font-num">
+            {EVENT_LIFECYCLE_LABELS[lifecycle]}
           </span>
         </div>
-      ) : null}
+      )}
 
       <div className="p-4 sm:p-5 flex flex-col flex-1">
         <div className="flex items-start gap-3 sm:gap-4">
@@ -333,10 +340,15 @@ function ActivityPreviewCard({
               </span>
             </div>
             <div className="flex items-center gap-2 pt-1">
-              <span className="flex-1 py-2.5 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 text-[#102E4D] text-[11px] font-bold inline-flex items-center justify-center gap-1.5">
+              <button
+                type="button"
+                onClick={onPreviewModal}
+                className="flex-1 py-2.5 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF] text-[#102E4D] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Preview visitor detailed information popup"
+              >
                 <MdInfoOutline className="text-sm text-[#FF7900]" />
                 More details
-              </span>
+              </button>
               {isPreviousEvent ? null : (
                 <span
                   className={`flex-1 py-2.5 rounded-xl text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 ${
@@ -354,50 +366,51 @@ function ActivityPreviewCard({
         </div>
       </div>
 
-      <div className="px-3 py-3 bg-[#F8FBFA] border-t border-[#D7F5EF] grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+      {/* Styled Card Actions: Edit, Live/Hide Toggle, and Delete */}
+      <div className="px-3.5 py-3 bg-[#F8FBFA] border-t border-[#D7F5EF] flex items-center gap-2">
         <button
           type="button"
           onClick={onEdit}
-          className="h-8 rounded-lg bg-[#102E4D] text-white text-[11px] font-extrabold uppercase tracking-wider"
+          className="flex-1 h-9 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-[11px] font-extrabold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-98"
+          title="Edit full activity copy, dates, modal, and pricing"
         >
-          Edit
+          <Sparkles className="w-3.5 h-3.5 text-[#FFC400]" />
+          <span>Edit Activity</span>
         </button>
+
         <button
           type="button"
           onClick={onToggleHidden}
-          className={`h-8 rounded-lg border text-[11px] font-bold inline-flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
+          disabled={isTogglingHidden}
+          className={`h-9 px-3.5 rounded-xl border text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-60 ${
             event.hidden
-              ? "border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 shadow-2xs"
-              : "border-[#C8EFE6] bg-white text-[#102E4D] hover:bg-slate-50"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 shadow-xs"
+              : "border-amber-300 bg-amber-50/70 text-amber-900 hover:bg-amber-100 shadow-xs"
           }`}
           title={
             event.hidden
-              ? "Click to unhide and make this activity LIVE on the public page"
+              ? "Click to publish this activity LIVE on the public page"
               : "Click to hide this activity from the public page"
           }
         >
-          {event.hidden ? (
-            <Eye className="w-3.5 h-3.5 text-amber-600" />
+          {isTogglingHidden ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : event.hidden ? (
+            <Eye className="w-3.5 h-3.5 text-emerald-600" />
           ) : (
-            <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+            <EyeOff className="w-3.5 h-3.5 text-amber-700" />
           )}
-          {event.hidden ? "Unhide" : "Hide"}
+          <span>{isTogglingHidden ? "Saving…" : event.hidden ? "Make Live" : "Hide"}</span>
         </button>
-        <button
-          type="button"
-          onClick={onDuplicate}
-          className="h-8 rounded-lg border border-[#C8EFE6] bg-white text-[11px] font-bold text-[#102E4D] inline-flex items-center justify-center gap-1"
-        >
-          <Copy className="w-3.5 h-3.5" />
-          Copy
-        </button>
+
         <button
           type="button"
           onClick={onDelete}
-          className="h-8 rounded-lg border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 inline-flex items-center justify-center gap-1"
+          className="h-9 px-3 rounded-xl border border-rose-200 bg-rose-50/80 hover:bg-rose-100 text-rose-700 text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+          title={`Delete “${event.title}”`}
         >
-          <Trash2 className="w-3.5 h-3.5" />
-          Delete
+          <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+          <span>Delete</span>
         </button>
       </div>
     </article>
@@ -556,6 +569,7 @@ function ActivityEditorForm({
           </div>
         </div>
       ) : null}
+
       {/* ─────────────────────────────────────────────────────────────
           SECTION 01: CARD DETAILS & PUBLIC PRESENTATION (VIOLET)
       ───────────────────────────────────────────────────────────── */}
@@ -1217,43 +1231,53 @@ function ActivityEditorForm({
           </Field>
 
           {/* Public Visibility Status Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-2xl border border-amber-200/90 bg-amber-50/60 mt-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4.5 rounded-2xl border border-slate-200 bg-white shadow-xs mt-3 gap-3">
             <div>
-              <div className="text-xs font-extrabold text-[#102E4D] flex items-center gap-1.5">
+              <div className="text-xs font-extrabold text-[#102E4D] flex items-center gap-2">
                 {event.hidden ? (
-                  <EyeOff className="w-4 h-4 text-amber-600" />
+                  <span className="p-1 rounded-lg bg-amber-100 text-amber-800">
+                    <EyeOff className="w-4 h-4" />
+                  </span>
                 ) : (
-                  <Eye className="w-4 h-4 text-emerald-600" />
+                  <span className="p-1 rounded-lg bg-emerald-100 text-emerald-800">
+                    <Eye className="w-4 h-4" />
+                  </span>
                 )}
-                <span>Public Website Visibility</span>
+                <span>Public Website Visibility Status</span>
               </div>
-              <p className="text-[11px] text-slate-600 mt-0.5">
+              <p className="text-[11.5px] text-slate-600 mt-1 max-w-md">
                 {event.hidden
-                  ? "Currently HIDDEN from visitors on /activities and the application form."
-                  : "Currently LIVE and visible to all visitors on /activities and /apply."}
+                  ? "Currently HIDDEN (Draft) — Not visible on /activities or in the /apply form."
+                  : "Currently LIVE (Public) — Visible to all website visitors on /activities and /apply."}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => onChange({ ...event, hidden: !event.hidden })}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider cursor-pointer border transition-all active:scale-95 shadow-xs ${
-                event.hidden
-                  ? "bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200"
-                  : "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
-              }`}
-            >
-              {event.hidden ? (
-                <>
-                  <EyeOff className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Hidden (Draft)</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Live on Website</span>
-                </>
-              )}
-            </button>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => onChange({ ...event, hidden: false })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer border transition-all inline-flex items-center gap-1.5 active:scale-95 ${
+                  !event.hidden
+                    ? "bg-[#10B981] text-white border-[#10B981] shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Live (Open)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange({ ...event, hidden: true })}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider cursor-pointer border transition-all inline-flex items-center gap-1.5 active:scale-95 ${
+                  event.hidden
+                    ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                    : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                <EyeOff className="w-3.5 h-3.5" />
+                <span>Hidden (Draft)</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -1436,6 +1460,12 @@ export default function ActivitiesCmsEditor() {
   const [filter, setFilter] = useState<"all" | EventLifecycle | "hidden">("all");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [previewModalEvent, setPreviewModalEvent] = useState<LeadershipEvent | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    index: number;
+    event: LeadershipEvent;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingIndex, setTogglingIndex] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(
     null
   );
@@ -1576,13 +1606,13 @@ export default function ActivitiesCmsEditor() {
   }, [loadPage]);
 
   useEffect(() => {
-    if (editingIndex === null) return;
+    if (editingIndex === null && deleteTarget === null && previewModalEvent === null) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [editingIndex]);
+  }, [editingIndex, deleteTarget, previewModalEvent]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
@@ -1633,6 +1663,7 @@ export default function ActivitiesCmsEditor() {
       const next = [...events];
       next[index] = { ...target, hidden: newHidden };
       setEvents(next);
+      setTogglingIndex(index);
 
       try {
         const cleaned = next.map((event) => ({
@@ -1670,59 +1701,65 @@ export default function ActivitiesCmsEditor() {
           type: "error",
           text: err instanceof Error ? err.message : "Failed to update visibility.",
         });
+      } finally {
+        setTogglingIndex(null);
       }
     },
     [events, visible]
   );
 
-  const handleDeleteCard = useCallback(
-    async (index: number) => {
-      const target = events[index];
-      if (!target) return;
-      if (!window.confirm(`Delete “${target.title}”? This will remove it from the catalog.`)) {
-        return;
-      }
-      const next = events.filter((_, i) => i !== index);
-      setEvents(next);
-      if (editingIndex === index) setEditingIndex(null);
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    const { index, event: target } = deleteTarget;
+    setIsDeleting(true);
 
-      try {
-        const cleaned = next.map((event) => ({
-          ...event,
-          highlights: (event.highlights || []).map((item) => item.trim()).filter(Boolean),
-          whoShouldAttend: (event.whoShouldAttend || [])
-            .map((item) => item.trim())
-            .filter(Boolean),
-        }));
-        const payload = { events: cleaned, _visible: visible };
-        const res = await fetch("/api/admin/cms", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ page_key: "events", content: payload }),
-        });
-        const json = await res.json();
-        if (!res.ok || !json.ok) throw new Error(json.error || "Failed to delete from Firebase.");
+    const next = events.filter((_, i) => i !== index);
+    setEvents(next);
+    if (editingIndex === index) {
+      setEditingIndex(null);
+    } else if (editingIndex !== null && editingIndex > index) {
+      setEditingIndex(editingIndex - 1);
+    }
 
-        setOriginal(
-          JSON.stringify({
-            events: cleaned,
-            _visible: visible,
-          })
-        );
-        setFeedback({
-          type: "success",
-          text: `“${target.title}” deleted and saved to Firebase.`,
-        });
-      } catch (err) {
-        setEvents(events);
-        setFeedback({
-          type: "error",
-          text: err instanceof Error ? err.message : "Failed to delete activity.",
-        });
-      }
-    },
-    [events, visible, editingIndex]
-  );
+    try {
+      const cleaned = next.map((event) => ({
+        ...event,
+        highlights: (event.highlights || []).map((item) => item.trim()).filter(Boolean),
+        whoShouldAttend: (event.whoShouldAttend || [])
+          .map((item) => item.trim())
+          .filter(Boolean),
+      }));
+      const payload = { events: cleaned, _visible: visible };
+      const res = await fetch("/api/admin/cms", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ page_key: "events", content: payload }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error(json.error || "Failed to delete from Firebase.");
+
+      setOriginal(
+        JSON.stringify({
+          events: cleaned,
+          _visible: visible,
+        })
+      );
+      setDeleteTarget(null);
+      setFeedback({
+        type: "success",
+        text: `Activity “${target.title}” deleted successfully and saved to Firebase.`,
+      });
+    } catch (err) {
+      // Rollback on failure
+      setEvents(events);
+      setFeedback({
+        type: "error",
+        text: err instanceof Error ? err.message : "Failed to delete activity.",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteTarget, events, visible, editingIndex]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -2015,10 +2052,12 @@ export default function ActivitiesCmsEditor() {
                 key={id}
                 type="button"
                 onClick={() => setFilter(id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   filter === id
-                    ? "bg-[#102E4D] text-white"
-                    : "bg-[#EFFBF8] text-[#102E4D] border border-[#C8EFE6]"
+                    ? "bg-[#102E4D] text-white shadow-xs"
+                    : id === "hidden" && counts.hidden > 0
+                    ? "bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100"
+                    : "bg-[#EFFBF8] text-[#102E4D] border border-[#C8EFE6] hover:bg-[#D7F5EF]"
                 }`}
               >
                 {label}
@@ -2047,19 +2086,9 @@ export default function ActivitiesCmsEditor() {
                   event={event}
                   onEdit={() => setEditingIndex(index)}
                   onPreviewModal={() => setPreviewModalEvent(event)}
-                  onDuplicate={() => {
-                    const clone: LeadershipEvent = {
-                      ...JSON.parse(JSON.stringify(event)),
-                      title: `${event.title} (Copy)`,
-                      slug: uniqueSlug(`${event.slug}-copy`, events, -1),
-                    };
-                    const next = [...events];
-                    next.splice(index + 1, 0, clone);
-                    setEvents(next);
-                    setEditingIndex(index + 1);
-                  }}
                   onToggleHidden={() => handleToggleHidden(index)}
-                  onDelete={() => handleDeleteCard(index)}
+                  onDelete={() => setDeleteTarget({ index, event })}
+                  isTogglingHidden={togglingIndex === index}
                 />
               ))}
             </div>
@@ -2192,6 +2221,17 @@ export default function ActivitiesCmsEditor() {
                 <button
                   type="button"
                   onClick={() => {
+                    setDeleteTarget({ index: editingIndex, event: editingEvent });
+                  }}
+                  className="h-10 px-3.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-700 inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs active:scale-98"
+                  title="Delete this activity from catalog"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                  Delete Activity
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
                     const defaultEvt = EVENTS.find((e) => e.slug === editingEvent.slug);
                     if (defaultEvt) {
                       if (
@@ -2254,6 +2294,120 @@ export default function ActivitiesCmsEditor() {
                     <>
                       <Save className="w-4 h-4" />
                       Publish All Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Dedicated Activity Delete Confirmation Modal with Clear Warning */}
+      {deleteTarget ? (
+        <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-[#001020]/80 backdrop-blur-md animate-in fade-in duration-200">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default"
+            aria-label="Cancel deletion"
+            onClick={() => !isDeleting && setDeleteTarget(null)}
+          />
+
+          <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Top Red Gradient Accent Stripe */}
+            <div className="h-2 w-full bg-gradient-to-r from-rose-500 via-red-600 to-rose-700" />
+
+            <div className="p-6 sm:p-7 space-y-5">
+              {/* Header with Danger Trash Icon */}
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0 shadow-sm">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-black text-xl text-[#102E4D]">
+                    Delete Activity from Catalog?
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Please review the activity details below before permanently deleting.
+                  </p>
+                </div>
+              </div>
+
+              {/* Activity Preview Summary Box */}
+              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200/90 space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                    {CATEGORY_LABELS[deleteTarget.event.category] || deleteTarget.event.category}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500 flex items-center gap-1 font-num">
+                    <MdLocationOn className="text-[#FF7900]" />
+                    {deleteTarget.event.city || "Islamabad"} · {deleteTarget.event.startDate || "2026"}
+                  </span>
+                </div>
+                <h4 className="font-serif font-bold text-base text-[#102E4D]">
+                  {deleteTarget.event.title}
+                </h4>
+                <p className="text-xs text-slate-600 line-clamp-2">
+                  {deleteTarget.event.description || "No description provided."}
+                </p>
+              </div>
+
+              {/* Warning Notice Box */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2.5 text-xs text-amber-900">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold">
+                    Warning: This action permanently deletes this activity
+                  </p>
+                  <p className="text-[11.5px] text-amber-800 leading-relaxed">
+                    This will remove the activity from Firebase, the public /activities catalog, and applicant cohort selection. If you only want to take it down temporarily, use <strong>Hide Instead</strong> to keep your data safe.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Cancel, Hide Instead, and Confirm Delete */}
+              <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteTarget(null)}
+                  className="w-full sm:w-auto h-11 px-5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                {!deleteTarget.event.hidden ? (
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={async () => {
+                      const idx = deleteTarget.index;
+                      setDeleteTarget(null);
+                      await handleToggleHidden(idx);
+                    }}
+                    className="w-full sm:w-auto h-11 px-4.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                    title="Hide this activity from public view instead of deleting"
+                  >
+                    <EyeOff className="w-4 h-4 text-amber-700" />
+                    <span>Hide Instead</span>
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={handleConfirmDelete}
+                  className="w-full sm:w-auto h-11 px-5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white text-xs font-black uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-98 disabled:opacity-60"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white" />
+                      <span>Deleting from Firebase…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      <span>Confirm &amp; Delete</span>
                     </>
                   )}
                 </button>

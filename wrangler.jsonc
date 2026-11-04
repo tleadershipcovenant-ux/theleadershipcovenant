@@ -14,7 +14,7 @@
     "command": "npx opennextjs-cloudflare build"
   },
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://theleadershipcovenant.com",
+    "NEXT_PUBLIC_SITE_URL": "https://leadershipcovenant.com.pk",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_Dzvmh7YTo2Y9C0122xV3BQ_WZU4Z57R",
     "NEXT_PUBLIC_SUPABASE_URL": "https://qyyipcbzualacxwfvsih.supabase.co",

@@ -2,8 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import ApplyBookingView from "@/components/forms/ApplyBookingView";
-import { getCmsPage } from "@/lib/firebase-cms";
-import { EVENTS, type LeadershipEvent } from "@/content/events";
+import { EVENTS } from "@/content/events";
 import { FaWhatsapp } from "react-icons/fa";
 
 export const metadata: Metadata = {
@@ -39,21 +38,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ApplyPage() {
-  let initialEvents: LeadershipEvent[] = EVENTS;
-  try {
-    const page = await getCmsPage("events");
-    if (
-      page?.content?.events &&
-      Array.isArray(page.content.events) &&
-      page.content.events.length > 0
-    ) {
-      initialEvents = page.content.events as LeadershipEvent[];
-    }
-  } catch {
-    // Graceful fallback to static EVENTS
-  }
-
+export default function ApplyPage() {
   ReactDOM.preload("/Apply%20now/O1.png", {
     as: "image",
     fetchPriority: "high",
@@ -131,7 +116,7 @@ export default async function ApplyPage() {
               </div>
 
               {/* Client Interactive Wizard with Suspense-enabled searchParam reading */}
-              <ApplyBookingView initialEvents={initialEvents} />
+              <ApplyBookingView initialEvents={EVENTS} />
             </div>
           </div>
         </div>

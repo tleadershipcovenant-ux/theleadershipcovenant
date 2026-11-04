@@ -340,6 +340,14 @@ function RegistrationsCrmInner() {
       const res = await fetch("/api/admin/registrations", {
         cache: "no-store",
       });
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          window.location.href = window.location.pathname.startsWith("/AD_Admin")
+            ? "/AD_Admin/login?reason=inactivity"
+            : "/login?reason=inactivity";
+        }
+        return;
+      }
       if (res.ok) {
         const json = await res.json();
         setRegistrations(Array.isArray(json.registrations) ? json.registrations : []);

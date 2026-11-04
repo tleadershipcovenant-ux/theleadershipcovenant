@@ -39,6 +39,7 @@ function AdminLoginFormInner() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Field-level validation states
@@ -199,14 +200,20 @@ function AdminLoginFormInner() {
         }
       }
 
-      router.replace(safeDestination);
+      setIsSuccess(true);
+      // Hard navigation ensures the browser triggers the middleware rewrite with the new session cookie attached
+      if (typeof window !== "undefined") {
+        window.location.href = safeDestination;
+      } else {
+        router.replace(safeDestination);
+      }
+      return;
     } catch (err: unknown) {
       setError(
         err instanceof Error
           ? err.message
           : "Unable to sign in right now. Please try again."
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -439,7 +446,12 @@ function AdminLoginFormInner() {
                   disabled={loading}
                   className="w-full mt-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#FF7900] via-[#FF6D00] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-[#FF7900]/25 transition-all inline-flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 active:scale-[0.99] min-h-[48px]"
                 >
-                  {loading ? (
+                  {isSuccess ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-white animate-bounce" />
+                      <span>Authenticated • Opening Dashboard…</span>
+                    </>
+                  ) : loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Signing In to Portal…</span>

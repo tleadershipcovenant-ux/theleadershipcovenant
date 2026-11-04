@@ -107,6 +107,14 @@ export default function AdminDashboardPage() {
       const res = await fetch(`/api/admin/stats${isRefresh ? "?fresh=1" : ""}`, {
         cache: "no-store",
       });
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          window.location.href = window.location.pathname.startsWith("/AD_Admin")
+            ? "/AD_Admin/login?reason=inactivity"
+            : "/login?reason=inactivity";
+        }
+        return;
+      }
       if (res.ok) {
         const json = await res.json();
         setData(json);
