@@ -399,8 +399,18 @@ export function normalizeSummitCms(
       description: defaults.meta.description,
     },
     hero,
-    objectives,
-    audience,
+    objectives: {
+      ...objectives,
+      items:
+        objectives.items.length > 0
+          ? objectives.items
+          : defaults.objectives.items,
+    },
+    audience: {
+      ...audience,
+      items:
+        audience.items.length > 0 ? audience.items : defaults.audience.items,
+    },
     speakers: {
       ...speakers,
       items: speakers.items.length > 0 ? speakers.items : defaults.speakers.items,
