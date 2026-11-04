@@ -11,7 +11,6 @@ const EventDetailModal = dynamic(
 import {
   AlertCircle,
   ArrowLeft,
-  BadgePercent,
   CheckCircle2,
   Copy,
   Eye,
@@ -49,7 +48,6 @@ import {
   type LeadershipEvent,
   type StatusTone,
 } from "@/content/events";
-import { getActivityPricing } from "@/content/pricing";
 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS) as Array<
   [EventCategory, string]
@@ -102,16 +100,6 @@ function uniqueSlug(base: string, events: LeadershipEvent[], ignoreIndex: number
   let n = 2;
   while (used.has(`${slug}-${n}`)) n += 1;
   return `${slug}-${n}`;
-}
-
-function toDatetimeLocal(value?: string): string {
-  if (!value) return "";
-  return value.slice(0, 16);
-}
-
-function fromDatetimeLocal(value: string): string {
-  if (!value) return "";
-  return `${value}:00+05:00`;
 }
 
 function createBlankEvent(events: LeadershipEvent[]): LeadershipEvent {
@@ -461,55 +449,6 @@ function StringListEditor({
   );
 }
 
-function ApplyPricingPreview({ event }: { event: LeadershipEvent }) {
-  const pricing = getActivityPricing(event.slug, event);
-  if (!pricing.hasPricing) {
-    return (
-      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
-        No fee is shown on the apply form for this activity. Visitors see a
-        provisional hold message until you add a standard fee.
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-4 rounded-2xl bg-gradient-to-br from-[#001B33] to-[#0B2540] text-white space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[10.5px] font-extrabold uppercase tracking-widest text-[#FFC400] inline-flex items-center gap-1.5">
-          <BadgePercent className="w-4 h-4" />
-          Registration Fee & Offer
-        </span>
-        {pricing.isEarlyBirdActive ? (
-          <span className="px-2.5 py-0.5 rounded-full bg-[#16A34A] text-[10px] font-black uppercase">
-            {pricing.discountPercent}% OFF
-          </span>
-        ) : null}
-      </div>
-      {pricing.isEarlyBirdActive ? (
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-num font-black text-2xl text-[#FFC400]">
-              {pricing.formattedPayablePrice}
-            </span>
-            <span className="font-num text-sm text-slate-300 line-through">
-              {pricing.formattedRegularPrice}
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-200">
-            {pricing.note || "Early Bird Offer"} valid till{" "}
-            <strong className="text-[#FFC400]">{pricing.deadlineText}</strong>.
-          </p>
-        </div>
-      ) : (
-        <div>
-          <div className="font-num font-black text-2xl">{pricing.formattedPayablePrice}</div>
-          <p className="text-[11px] text-slate-300">Standard registration fee on the apply form.</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function ActivityEditorForm({
   event,
   onChange,
@@ -524,7 +463,6 @@ function ActivityEditorForm({
   const lifecycle = event.lifecycleOverride || getEventLifecycle(event);
   const start = new Date(`${event.startDate || "2026-01-01"}T00:00:00`);
   const theme = getMonthTheme(start.getMonth());
-  const showPricing = Number(event.regularPrice || 0) > 0;
 
   const setLifecycle = (next: EventLifecycle) => {
     const statusTone: StatusTone =
@@ -1281,170 +1219,6 @@ function ActivityEditorForm({
           </div>
         </div>
       </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          SECTION 04: PRICING & EARLY BIRD RULES (EMERALD)
-      ───────────────────────────────────────────────────────────── */}
-      <section
-        id="cms-pricing"
-        className="rounded-2xl border-2 border-emerald-200/90 bg-white shadow-xs overflow-hidden transition-all"
-      >
-        <div className="px-5 py-3.5 bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white border-b border-emerald-100 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              04
-            </span>
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-emerald-700">
-                Application Pricing & Discount Offers
-              </p>
-              <h4 className="font-serif font-bold text-[#102E4D] text-sm sm:text-base">
-                Checkout & Early Bird Configuration
-              </h4>
-            </div>
-          </div>
-          <span className="hidden sm:inline-flex text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 px-2.5 py-1 rounded-full border border-emerald-200">
-            Visible on /apply
-          </span>
-        </div>
-
-        <div className="p-5 space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-2xl border border-emerald-200 bg-emerald-50/60">
-            <div>
-              <div className="text-xs font-extrabold text-[#102E4D]">
-                Require Application Fee for this Activity
-              </div>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                When enabled, the registration form requires fee payment and payment screenshot proof.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                onChange({
-                  ...event,
-                  regularPrice: showPricing ? 0 : event.regularPrice || 5000,
-                  currency: event.currency || "PKR",
-                })
-              }
-              className={`relative inline-flex h-6 w-11 rounded-full cursor-pointer transition-colors ${
-                showPricing ? "bg-[#10B981]" : "bg-slate-300"
-              }`}
-            >
-              <span
-                className={`mt-0.5 inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                  showPricing ? "translate-x-5" : "translate-x-0.5"
-                }`}
-              />
-            </button>
-          </div>
-
-          {showPricing ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Field label="Standard Fee (PKR)">
-                  <input
-                    type="number"
-                    min={0}
-                    className={inputClass}
-                    value={event.regularPrice || 0}
-                    onChange={(e) =>
-                      onChange({ ...event, regularPrice: Number(e.target.value) })
-                    }
-                  />
-                </Field>
-                <Field label="Currency">
-                  <input
-                    className={inputClass}
-                    value={event.currency || "PKR"}
-                    onChange={(e) => onChange({ ...event, currency: e.target.value })}
-                  />
-                </Field>
-                <Field label="Discount %">
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    className={inputClass}
-                    value={event.discountPercent || 0}
-                    onChange={(e) =>
-                      onChange({ ...event, discountPercent: Number(e.target.value) })
-                    }
-                  />
-                </Field>
-                <Field label="Seat Limit" hint="0 for unlimited">
-                  <input
-                    type="number"
-                    min={0}
-                    className={inputClass}
-                    value={event.seatLimit || 0}
-                    onChange={(e) =>
-                      onChange({ ...event, seatLimit: Number(e.target.value) })
-                    }
-                  />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Field label="Offer Start Date & Time">
-                  <input
-                    type="datetime-local"
-                    className={inputClass}
-                    value={toDatetimeLocal(event.offerStartDate)}
-                    onChange={(e) =>
-                      onChange({ ...event, offerStartDate: fromDatetimeLocal(e.target.value) })
-                    }
-                  />
-                </Field>
-                <Field label="Offer Deadline Date & Time">
-                  <input
-                    type="datetime-local"
-                    className={inputClass}
-                    value={toDatetimeLocal(event.offerEndDate)}
-                    onChange={(e) =>
-                      onChange({ ...event, offerEndDate: fromDatetimeLocal(e.target.value) })
-                    }
-                  />
-                </Field>
-                <Field label="Offer Badge Label">
-                  <input
-                    className={inputClass}
-                    value={event.offerLabel || ""}
-                    onChange={(e) => onChange({ ...event, offerLabel: e.target.value })}
-                    placeholder="e.g. Early Bird 20% OFF"
-                  />
-                </Field>
-              </div>
-
-              <div className="flex items-center justify-between p-3.5 rounded-2xl border border-emerald-200 bg-white">
-                <div>
-                  <div className="text-xs font-bold text-[#102E4D]">Early Bird Discount Active</div>
-                  <p className="text-[10px] text-slate-500">Master switch for the discount pricing window</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onChange({ ...event, isOfferActive: event.isOfferActive === false })
-                  }
-                  className={`relative inline-flex h-6 w-11 rounded-full cursor-pointer transition-colors ${
-                    event.isOfferActive !== false ? "bg-[#10B981]" : "bg-slate-300"
-                  }`}
-                >
-                  <span
-                    className={`mt-0.5 inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                      event.isOfferActive !== false ? "translate-x-5" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <ApplyPricingPreview event={event} />
-            </div>
-          ) : (
-            <ApplyPricingPreview event={event} />
-          )}
-        </div>
-      </section>
     </div>
   );
 }
@@ -2177,7 +1951,6 @@ export default function ActivitiesCmsEditor() {
                 { id: "cms-card", label: "01 · Card Details", color: "text-violet-700 bg-violet-50 hover:bg-violet-100 border-violet-200" },
                 { id: "cms-modal", label: "02 · Modal Details", color: "text-sky-700 bg-sky-50 hover:bg-sky-100 border-sky-200" },
                 { id: "cms-type", label: "03 · Lifecycle & Status", color: "text-amber-700 bg-amber-50 hover:bg-amber-100 border-amber-200" },
-                { id: "cms-pricing", label: "04 · Pricing & Offers", color: "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200" },
               ].map((tab) => (
                 <button
                   key={tab.id}
