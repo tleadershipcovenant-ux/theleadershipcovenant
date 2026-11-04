@@ -1,13 +1,13 @@
 import path from "path";
 import { promises as fs } from "fs";
 import { SITE, ANNOUNCEMENTS, MAIN_NAV, HEADER_CTA } from "@/config/site";
-import { HOME_CONTENT } from "@/content/home";
+import { HOME_PAGE } from "@/content/home";
 import { EVENTS } from "@/content/events";
 import { SUMMIT_CONTENT } from "@/content/summit";
-import { SERVICES } from "@/content/services";
+import { SERVICES_PAGE } from "@/content/services";
 import { ABOUT_CONTENT } from "@/content/about";
 import { PAYMENT_METHODS } from "@/content/payment";
-import { FORM_COPY } from "@/content/forms";
+import { APPLY_PAGE } from "@/content/forms";
 import {
   getFirestoreDocument,
   setFirestoreDocument,
@@ -58,7 +58,7 @@ export const CMS_PAGE_TITLES: Record<CmsPageKey, string> = {
   services: "Services & Flagship Programs Page",
   about: "Our Story, Covenant & CEO Message Page",
   payment: "Official Bank & QR Payment Settings",
-  forms: "Application & Contact Forms Copy",
+  forms: "Submit / Apply Page & Form Copy",
   contact: "Contact Us & Regional Headquarters Page",
 };
 
@@ -85,7 +85,7 @@ export function getDefaultCmsContent(key: CmsPageKey): Record<string, unknown> {
         headerCta: JSON.parse(JSON.stringify(HEADER_CTA)),
       };
     case "home":
-      return JSON.parse(JSON.stringify(HOME_CONTENT));
+      return JSON.parse(JSON.stringify(HOME_PAGE));
     case "events":
       return {
         events: JSON.parse(JSON.stringify(EVENTS)),
@@ -101,9 +101,7 @@ export function getDefaultCmsContent(key: CmsPageKey): Record<string, unknown> {
     case "summit":
       return JSON.parse(JSON.stringify(SUMMIT_CONTENT));
     case "services":
-      return {
-        services: JSON.parse(JSON.stringify(SERVICES)),
-      };
+      return JSON.parse(JSON.stringify(SERVICES_PAGE));
     case "about":
       return JSON.parse(JSON.stringify(ABOUT_CONTENT));
     case "payment":
@@ -111,7 +109,7 @@ export function getDefaultCmsContent(key: CmsPageKey): Record<string, unknown> {
         methods: JSON.parse(JSON.stringify(PAYMENT_METHODS)),
       };
     case "forms":
-      return JSON.parse(JSON.stringify(FORM_COPY));
+      return JSON.parse(JSON.stringify(APPLY_PAGE));
     case "contact":
       return {
         hero: {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
@@ -10,24 +10,22 @@ import {
   MdInfoOutline,
 } from "react-icons/md";
 import {
+  EVENTS,
   PRECOMPUTED_EVENTS,
   CATEGORY_LABELS,
   EVENT_LIFECYCLE_LABELS,
   getEventLifecycle,
+  precomputeLeadershipEvents,
   type LeadershipEvent,
 } from "@/content/events";
+import { useCmsContent, useHomePageContent } from "@/lib/cms-client";
 
 const EventDetailModal = dynamic(
   () => import("@/components/EventDetailModal"),
   { ssr: false }
 );
 
-// Filter out past activities (before today) and prioritize / show upcoming events
 const todayIso = new Date().toISOString().split("T")[0];
-const UPCOMING_EVENTS = PRECOMPUTED_EVENTS.filter((e) => e.endDate >= todayIso);
-
-// Duplicated for continuous marquee scroll
-const MARQUEE_EVENTS = [...UPCOMING_EVENTS, ...UPCOMING_EVENTS];
 
 const STATUS_DOT: Record<LeadershipEvent["statusTone"], string> = {
   open: "bg-[#16A34A]",
@@ -37,6 +35,25 @@ const STATUS_DOT: Record<LeadershipEvent["statusTone"], string> = {
 
 export default function HomeUpcomingSection() {
   const [selectedEvent, setSelectedEvent] = useState<LeadershipEvent | null>(null);
+  const { upcoming } = useHomePageContent();
+  const { content: eventsCms } = useCmsContent<{ events?: LeadershipEvent[] }>(
+    "events",
+    { events: EVENTS }
+  );
+
+  const MARQUEE_EVENTS = useMemo(() => {
+    const list =
+      Array.isArray(eventsCms.events) && eventsCms.events.length > 0
+        ? eventsCms.events.filter((event) => !event.hidden)
+        : EVENTS.filter((event) => !event.hidden);
+    const upcomingEvents = precomputeLeadershipEvents(list).filter(
+      (event) => event.endDate >= todayIso
+    );
+    const source = upcomingEvents.length > 0 ? upcomingEvents : PRECOMPUTED_EVENTS.filter(
+      (event) => event.endDate >= todayIso
+    );
+    return [...source, ...source];
+  }, [eventsCms]);
 
   return (
     <section className="w-full py-10 sm:py-12 lg:py-14 relative overflow-hidden" id="upcoming">
@@ -57,10 +74,10 @@ export default function HomeUpcomingSection() {
           className="text-center max-w-3xl mx-auto mb-8 sm:mb-10"
         >
           <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
-            WHAT&apos;S COMING UP
+            {upcoming.eyebrow}
           </p>
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
-            Programs, Events &amp; Learning Experiences
+            {upcoming.heading}
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
         </motion.div>

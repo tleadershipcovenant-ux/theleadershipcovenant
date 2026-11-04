@@ -12,125 +12,18 @@ import {
   MdHistoryEdu,
   MdWorkspacePremium,
 } from "react-icons/md";
+import { useHomePageContent } from "@/lib/cms-client";
+import type { StatIconKey } from "@/content/home";
 
-interface StatItem {
-  value: number;
-  suffix: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tone: "gold" | "orange" | "mint" | "cyan";
-}
-
-interface StatTab {
-  id: string;
-  label: string;
-  stats: StatItem[];
-}
-
-const STATS_TABS: StatTab[] = [
-  {
-    id: "international",
-    label: "International Footprint",
-    stats: [
-      {
-        value: 8000,
-        suffix: "+",
-        label: "Schools worldwide",
-        icon: MdSchool,
-        tone: "gold",
-      },
-      {
-        value: 70,
-        suffix: "+",
-        label: "Countries served",
-        icon: MdPublic,
-        tone: "cyan",
-      },
-      {
-        value: 3000000,
-        suffix: "+",
-        label: "Students impacted",
-        icon: MdGroups,
-        tone: "mint",
-      },
-      {
-        value: 25,
-        suffix: "+",
-        label: "Years of research",
-        icon: MdHistoryEdu,
-        tone: "orange",
-      },
-    ],
-  },
-  {
-    id: "pakistan",
-    label: "Pakistan Reach",
-    stats: [
-      {
-        value: 500,
-        suffix: "+",
-        label: "Schools engaged",
-        icon: MdSchool,
-        tone: "gold",
-      },
-      {
-        value: 40,
-        suffix: "+",
-        label: "Cities covered",
-        icon: MdLocationCity,
-        tone: "cyan",
-      },
-      {
-        value: 90000,
-        suffix: "+",
-        label: "Students impacted",
-        icon: MdGroups,
-        tone: "mint",
-      },
-      {
-        value: 10,
-        suffix: "+",
-        label: "Years of implementation",
-        icon: MdWorkspacePremium,
-        tone: "orange",
-      },
-    ],
-  },
-  {
-    id: "north",
-    label: "North Region Spread",
-    stats: [
-      {
-        value: 100,
-        suffix: "+",
-        label: "Schools engaged",
-        icon: MdSchool,
-        tone: "gold",
-      },
-      {
-        value: 18,
-        suffix: "+",
-        label: "Districts",
-        icon: MdPlace,
-        tone: "cyan",
-      },
-      {
-        value: 19000,
-        suffix: "+",
-        label: "Students impacted",
-        icon: MdGroups,
-        tone: "mint",
-      },
-      {
-        value: 10,
-        suffix: "+",
-        label: "Years of implementation",
-        icon: MdWorkspacePremium,
-        tone: "orange",
-      },
-    ],
-  },
-];
+const STAT_ICONS: Record<StatIconKey, React.ComponentType<{ className?: string }>> = {
+  school: MdSchool,
+  public: MdPublic,
+  city: MdLocationCity,
+  place: MdPlace,
+  groups: MdGroups,
+  history: MdHistoryEdu,
+  premium: MdWorkspacePremium,
+};
 
 const TONE_STYLES = {
   gold: {
@@ -164,9 +57,11 @@ const TONE_STYLES = {
 };
 
 export default function StatsSection() {
+  const { stats } = useHomePageContent();
   const [activeTab, setActiveTab] = useState(0);
-
-  const currentTabData = STATS_TABS[activeTab];
+  const tabs = stats.tabs;
+  const currentTabData = tabs[activeTab] ?? tabs[0];
+  if (!currentTabData) return null;
 
   return (
     <section className="w-full py-6 sm:py-8 lg:py-10 relative overflow-hidden" id="stats">
@@ -183,7 +78,7 @@ export default function StatsSection() {
           {/* Segmented Pill Switcher */}
           <div className="flex items-center justify-center mb-5 sm:mb-6 relative z-10">
             <div className="inline-flex items-center p-1 rounded-full bg-white/[0.08] border border-white/15 backdrop-blur-md shadow-inner max-w-full overflow-x-auto">
-              {STATS_TABS.map((tab, idx) => {
+              {tabs.map((tab, idx) => {
                 const isActive = activeTab === idx;
                 return (
                   <button
@@ -219,8 +114,8 @@ export default function StatsSection() {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 items-stretch relative z-10"
             >
               {currentTabData.stats.map((stat, idx) => {
-                const Icon = stat.icon;
-                const tone = TONE_STYLES[stat.tone];
+                const Icon = STAT_ICONS[stat.icon] || MdSchool;
+                const tone = TONE_STYLES[stat.tone] || TONE_STYLES.gold;
 
                 return (
                   <div

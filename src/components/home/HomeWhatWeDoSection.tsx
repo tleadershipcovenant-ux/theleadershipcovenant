@@ -4,10 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MdArrowForward } from "react-icons/md";
-import { HOME_CONTENT } from "@/content/home";
+import { useHomePageContent } from "@/lib/cms-client";
 
 export default function HomeWhatWeDoSection() {
-  const { whatWeDo } = HOME_CONTENT;
+  const { whatWeDo } = useHomePageContent();
 
   return (
     <section className="w-full py-16 sm:py-20 lg:py-24 relative overflow-hidden bg-slate-50/50" id="services">

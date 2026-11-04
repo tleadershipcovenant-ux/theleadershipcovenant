@@ -10,8 +10,13 @@ import {
   MdVerifiedUser,
   MdArrowForward,
 } from "react-icons/md";
+import { useHomePageContent } from "@/lib/cms-client";
+
+const PROMISE_ICONS = [MdAutoStories, MdMenuBook, MdMemory, MdVerifiedUser];
 
 export default function AboutSection() {
+  const { story } = useHomePageContent();
+
   return (
     <section className="w-full py-10 sm:py-12 lg:py-14 relative overflow-hidden" id="overview">
       {/* Subtle top divider line */}
@@ -31,14 +36,14 @@ export default function AboutSection() {
           className="text-center max-w-3xl mx-auto mb-8 sm:mb-10"
         >
           <p className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
-            Our Story
+            {story.eyebrow}
           </p>
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
-            Everyone has a leader within. We help them discover and develop it.
+            {story.heading}
           </h2>
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
           <p className="text-sm sm:text-base text-slate-600 mt-3.5 font-medium leading-relaxed">
-            The Leadership Covenant exists to prepare individuals for life, organizations for meaningful contribution, and education for awareness and wisdom.
+            {story.subtitle}
           </p>
         </motion.div>
 
@@ -53,8 +58,8 @@ export default function AboutSection() {
           >
             <div className="relative rounded-2xl overflow-hidden shadow-xl border border-[#D7F5EF] bg-white aspect-[4/3] sm:aspect-[16/11] lg:h-[480px] w-full group">
               <img
-                src="/images/hero-students.jpg"
-                alt="Students in collaborative leadership session at The Leadership Covenant"
+                src={story.image}
+                alt={story.imageAlt}
                 loading="lazy"
                 decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -71,66 +76,54 @@ export default function AboutSection() {
             className="lg:col-span-6 flex flex-col items-start gap-4"
           >
             <p className="text-xs font-bold uppercase tracking-widest text-[#FF7900]">
-              Four promises. One covenant.
+              {story.promisesEyebrow}
             </p>
 
             <h3 className="font-serif font-bold text-2xl sm:text-3xl text-[#102E4D] tracking-tight leading-snug">
-              To be the most trusted catalyst for leadership.
+              {story.promisesHeading}
             </h3>
 
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium">
-              Raising a generation that leads with character, contributes with purpose, and transforms the communities it belongs to. Sustainable transformation starts with people, not programs. Character shapes culture; culture shapes results.
+              {story.promisesBody}
             </p>
 
             {/* 4 Promises Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full pt-1">
-              <div className="p-4 rounded-xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:bg-[#EFFBF8] transition-all flex items-start gap-3 shadow-xs">
-                <MdAutoStories className="text-[#FF7900] text-xl shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-bold text-base sm:text-[17px] text-[#102E4D] tracking-tight leading-snug">Learn</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">We commit to lifelong learning as the foundation of leadership.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:bg-[#EFFBF8] transition-all flex items-start gap-3 shadow-xs">
-                <MdMenuBook className="text-[#FF7900] text-xl shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-bold text-base sm:text-[17px] text-[#102E4D] tracking-tight leading-snug">Develop</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">We grow habits, character, and skill, patiently and deliberately.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:bg-[#EFFBF8] transition-all flex items-start gap-3 shadow-xs">
-                <MdMemory className="text-[#FF7900] text-xl shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-bold text-base sm:text-[17px] text-[#102E4D] tracking-tight leading-snug">Lead</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">We lead ourselves first, then serve those around us.</p>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:bg-[#EFFBF8] transition-all flex items-start gap-3 shadow-xs">
-                <MdVerifiedUser className="text-[#FF7900] text-xl shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-bold text-base sm:text-[17px] text-[#102E4D] tracking-tight leading-snug">Transform</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">We build cultures where change is chosen, not feared.</p>
-                </div>
-              </div>
+              {story.promises.map((promise, index) => {
+                const Icon = PROMISE_ICONS[index] || MdAutoStories;
+                return (
+                  <div
+                    key={`${promise.title}-${index}`}
+                    className="p-4 rounded-xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:bg-[#EFFBF8] transition-all flex items-start gap-3 shadow-xs"
+                  >
+                    <Icon className="text-[#FF7900] text-xl shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-serif font-bold text-base sm:text-[17px] text-[#102E4D] tracking-tight leading-snug">
+                        {promise.title}
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                        {promise.body}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Action Buttons */}
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link
-                href="/services"
+                href={story.primaryCta.href}
                 className="px-5 py-2.5 rounded-lg bg-[#FF7900] hover:bg-[#E56D00] text-white font-bold text-xs sm:text-sm shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
               >
-                <span>Explore Our Services</span>
+                <span>{story.primaryCta.label}</span>
                 <MdArrowForward className="text-[16px]" />
               </Link>
               <Link
-                href="/about"
+                href={story.secondaryCta.href}
                 className="px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-[#102E4D] font-semibold text-xs sm:text-sm hover:border-[#102E4D] hover:bg-[#EFFBF8] transition-all inline-flex items-center gap-1.5"
               >
-                <span>Read Our Full Story</span>
+                <span>{story.secondaryCta.label}</span>
               </Link>
             </div>
           </motion.div>

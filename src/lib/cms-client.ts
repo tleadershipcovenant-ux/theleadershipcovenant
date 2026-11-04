@@ -1,7 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { CmsPageKey } from "@/lib/firebase-cms";
+import { HOME_PAGE, normalizeHomeCms, type HomePageContent } from "@/content/home";
+import {
+  SERVICES_PAGE,
+  normalizeServicesCms,
+  type ServicesPageContent,
+} from "@/content/services";
+import {
+  APPLY_PAGE,
+  normalizeApplyCms,
+  type ApplyPageContent,
+} from "@/content/forms";
 
 /**
  * React hook for consuming CMS page content on client components.
@@ -50,5 +61,29 @@ export function useCmsContent<T extends Record<string, unknown>>(
   }, [pageKey]);
 
   return { content, isLive };
+}
+
+export function useHomePageContent(): HomePageContent {
+  const { content } = useCmsContent(
+    "home",
+    HOME_PAGE as unknown as Record<string, unknown>
+  );
+  return useMemo(() => normalizeHomeCms(content), [content]);
+}
+
+export function useServicesPageContent(): ServicesPageContent {
+  const { content } = useCmsContent(
+    "services",
+    SERVICES_PAGE as unknown as Record<string, unknown>
+  );
+  return useMemo(() => normalizeServicesCms(content), [content]);
+}
+
+export function useApplyPageContent(): ApplyPageContent {
+  const { content } = useCmsContent(
+    "forms",
+    APPLY_PAGE as unknown as Record<string, unknown>
+  );
+  return useMemo(() => normalizeApplyCms(content), [content]);
 }
 

@@ -4,10 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MdArrowForward } from "react-icons/md";
-import { HOME_CONTENT } from "@/content/home";
+import { useHomePageContent } from "@/lib/cms-client";
 
 export default function HomeCtaSection() {
-  const { cta } = HOME_CONTENT;
+  const { cta } = useHomePageContent();
 
   return (
     <section className="w-full py-10 sm:py-14 relative overflow-hidden" id="cta-banner">
@@ -29,7 +29,7 @@ export default function HomeCtaSection() {
 
           <div className="max-w-2xl mx-auto text-center relative z-10">
             <p className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#FFC400] mb-2 sm:mb-2.5">
-              Start Your Transformation
+              {cta.eyebrow}
             </p>
             <h2 className="font-serif font-extrabold text-2xl sm:text-3xl lg:text-[34px] text-white tracking-tight leading-snug">
               {cta.heading}
@@ -40,19 +40,23 @@ export default function HomeCtaSection() {
             </p>
 
             <div className="pt-6 sm:pt-7 flex flex-wrap items-center justify-center gap-3.5">
-              <Link
-                href={cta.buttons[0].href}
-                className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer"
-              >
-                <span>{cta.buttons[0].label}</span>
-                <MdArrowForward className="text-base" />
-              </Link>
-              <Link
-                href={cta.buttons[1].href}
-                className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 hover:border-[#FFC400] bg-white/5 hover:bg-white/10 text-white font-semibold text-xs uppercase tracking-wider transition-all active:scale-98"
-              >
-                <span>{cta.buttons[1].label}</span>
-              </Link>
+              {cta.buttons[0] ? (
+                <Link
+                  href={cta.buttons[0].href}
+                  className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer"
+                >
+                  <span>{cta.buttons[0].label}</span>
+                  <MdArrowForward className="text-base" />
+                </Link>
+              ) : null}
+              {cta.buttons[1] ? (
+                <Link
+                  href={cta.buttons[1].href}
+                  className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 hover:border-[#FFC400] bg-white/5 hover:bg-white/10 text-white font-semibold text-xs uppercase tracking-wider transition-all active:scale-98"
+                >
+                  <span>{cta.buttons[1].label}</span>
+                </Link>
+              ) : null}
             </div>
           </div>
         </motion.div>
