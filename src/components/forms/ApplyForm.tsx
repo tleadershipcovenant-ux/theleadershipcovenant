@@ -27,6 +27,11 @@ import {
   compressScreenshotImage,
   type CompressionResult,
 } from "@/lib/image-compressor";
+import {
+  loadApplyFormDraft,
+  saveApplyFormDraft,
+  clearApplyFormDraft,
+} from "@/lib/apply-cookies";
 
 const PartyConfetti = dynamic(() => import("@/components/PartyConfetti"), {
   ssr: false,
@@ -164,6 +169,72 @@ export function ApplyForm({
       });
     }
   }, [initialActivity]);
+
+  // ─── COOKIE & DRAFT PERSISTENCE ───
+  // Restore saved application draft from cookies/storage if user accepted cookies
+  useEffect(() => {
+    const draft = loadApplyFormDraft();
+    if (draft) {
+      setFormData((prev) => ({
+        ...prev,
+        full_name: draft.full_name || prev.full_name,
+        email: draft.email || prev.email,
+        phone: draft.phone || prev.phone,
+        role: draft.role || prev.role,
+        activity_slug: prev.activity_slug || draft.activity_slug,
+        message: draft.message || prev.message,
+      }));
+      if (draft.bookingMode && !bookingMode) {
+        setBookingMode(draft.bookingMode);
+      }
+    }
+  }, []);
+
+  // Auto-save form draft to cookies when cookies are accepted (debounced)
+  useEffect(() => {
+    if (
+      formData.full_name ||
+      formData.email ||
+      formData.phone ||
+      formData.role ||
+      formData.activity_slug ||
+      bookingMode
+    ) {
+      const timer = setTimeout(() => {
+        saveApplyFormDraft({
+          full_name: formData.full_name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+          activity_slug: formData.activity_slug,
+          bookingMode,
+          message: formData.message,
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [formData, bookingMode]);
+
+  // When cookie consent is accepted live via banner, immediately persist current form draft
+  useEffect(() => {
+    const handleConsentEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<"accepted" | "rejected">;
+      if (customEvent.detail === "accepted") {
+        saveApplyFormDraft({
+          full_name: formData.full_name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+          activity_slug: formData.activity_slug,
+          bookingMode,
+          message: formData.message,
+        });
+      }
+    };
+    window.addEventListener("tlc_cookie_consent_changed", handleConsentEvent);
+    return () =>
+      window.removeEventListener("tlc_cookie_consent_changed", handleConsentEvent);
+  }, [formData, bookingMode]);
 
   // Revoke object URL on unmount/change
   useEffect(() => {
@@ -630,6 +701,7 @@ export function ApplyForm({
       setReceiptFeedback(null);
       setDirection(1);
       setStep("complete");
+      clearApplyFormDraft();
       setIsServerBusy(false);
       scrollWizardIntoView();
     } catch (err: unknown) {
@@ -645,6 +717,7 @@ export function ApplyForm({
   };
 
   const resetWizard = () => {
+    clearApplyFormDraft();
     clearScreenshot();
     setBookingMode(null);
     setPaymentMethod("ubl");

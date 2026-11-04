@@ -3,6 +3,7 @@
 import React from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import ApplyBookingView from "@/components/forms/ApplyBookingView";
+import ApplyCookieBanner from "@/components/forms/ApplyCookieBanner";
 import { useApplyPageContent } from "@/lib/cms-client";
 import type { LeadershipEvent } from "@/content/events";
 
@@ -81,6 +82,9 @@ export default function ApplyPageView({
           </div>
         </div>
       </section>
+
+      {/* Accept / Reject Cookies Bottom Banner */}
+      <ApplyCookieBanner />
     </main>
   );
 }
