@@ -41,8 +41,8 @@ export default function ServiceCard({
           }`}
         >
           <img
-            src={imageSrc}
-            alt={service.imageAlt || service.title}
+            src={imageSrc || service.image || "/images/hero-students.jpg"}
+            alt={service.imageAlt || service.title || "Leadership Program"}
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -83,15 +83,17 @@ export default function ServiceCard({
 
             <div className="pt-2">
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2.5 text-xs sm:text-[13px] text-slate-700 font-medium">
-                {service.bullets.map((bullet) => (
-                  <li
-                    key={bullet}
-                    className="flex items-start gap-2 leading-snug"
-                  >
-                    <MdCheckCircle className="text-[#FF7900] text-[16px] shrink-0 mt-0.5" />
-                    <span className="font-num">{bullet}</span>
-                  </li>
-                ))}
+                {(Array.isArray(service.bullets) ? service.bullets : []).map(
+                  (bullet, bIdx) => (
+                    <li
+                      key={`${service.id}-b-${bIdx}`}
+                      className="flex items-start gap-2 leading-snug"
+                    >
+                      <MdCheckCircle className="text-[#FF7900] text-[16px] shrink-0 mt-0.5" />
+                      <span className="font-num">{bullet}</span>
+                    </li>
+                  )
+                )}
               </ul>
             </div>
           </div>
@@ -101,10 +103,12 @@ export default function ServiceCard({
               Tailored for schools, educators &amp; learners
             </span>
             <Link
-              href={`/contact?interest=${service.interest}#enquiry-form`}
+              href={`/contact?interest=${encodeURIComponent(
+                service.interest || service.id || "program"
+              )}#enquiry-form`}
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs sm:text-sm tracking-wide transition-all inline-flex items-center gap-2 shadow-md hover:shadow-lg group/btn"
             >
-              <span>{service.ctaLabel}</span>
+              <span>{service.ctaLabel || "Enquire about this Program"}</span>
               <MdArrowForward className="text-[16px] group-hover/btn:translate-x-1 transition-transform" />
             </Link>
           </div>

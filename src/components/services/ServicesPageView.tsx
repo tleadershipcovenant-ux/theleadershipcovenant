@@ -17,7 +17,10 @@ export default function ServicesPageView() {
   );
   const content = useMemo(() => normalizeServicesCms(raw), [raw]);
   const isVisible = (raw as { _visible?: boolean })._visible !== false;
-  const services = isVisible ? content.services : [];
+  const services =
+    isVisible && content.services.length > 0
+      ? content.services
+      : SERVICES_PAGE.services;
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
@@ -56,7 +59,7 @@ export default function ServicesPageView() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-14 relative z-10">
           {services.map((service, index) => (
             <ServiceCard
-              key={service.id}
+              key={service.id || `service-${index}`}
               service={service}
               index={index}
               imageSrc={service.image || "/images/hero-students.jpg"}

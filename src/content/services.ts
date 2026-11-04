@@ -190,6 +190,81 @@ export const SERVICES_PAGE: ServicesPageContent = {
   },
 };
 
+function normalizeServiceItem(
+  item: unknown,
+  index: number,
+  fallbackList: Service[]
+): Service {
+  const raw = item && typeof item === "object" ? (item as Partial<Service>) : {};
+  const fallback = fallbackList[index] || fallbackList[0] || {
+    id: `service-${index + 1}`,
+    interest: `service-${index + 1}`,
+    chipLabel: "Program",
+    icon: "star",
+    badge: "Executive Leadership Program",
+    title: "Leadership Program",
+    tagline: "",
+    body: "",
+    bullets: [],
+    image: "/images/hero-students.jpg",
+    imageAlt: "Leadership Program",
+    ctaLabel: "Enquire about this Program",
+    accent: "blue",
+  };
+
+  const id = String(raw.id || fallback.id || `service-${index + 1}`).trim() || `service-${index + 1}`;
+  const interest = String(raw.interest || raw.id || fallback.interest || id).trim() || id;
+  const title = String(raw.title || fallback.title || "Leadership Program").trim();
+  const chipLabel = String(raw.chipLabel || title || fallback.chipLabel || "Program").trim();
+  const validIcons: ServiceIcon[] = ["star", "diamond", "sparkles", "mountain", "heart", "mic"];
+  const icon = (raw.icon && validIcons.includes(raw.icon as ServiceIcon)
+    ? raw.icon
+    : fallback.icon || "star") as ServiceIcon;
+  const badge = String(raw.badge || fallback.badge || "Executive Program").trim();
+  const tagline = String(raw.tagline ?? fallback.tagline ?? "").trim();
+  const body = String(raw.body ?? fallback.body ?? "").trim();
+
+  const rawBullets = Array.isArray(raw.bullets)
+    ? raw.bullets
+    : Array.isArray(fallback.bullets)
+    ? fallback.bullets
+    : [];
+  const bullets = rawBullets
+    .map((b) => (typeof b === "string" ? b.trim() : String(b || "").trim()))
+    .filter((b) => b.length > 0);
+
+  const image = String(raw.image || fallback.image || "/images/hero-students.jpg").trim();
+  const imageAlt = String(raw.imageAlt || title || fallback.imageAlt || "Leadership Program").trim();
+  const ctaLabel = String(raw.ctaLabel || fallback.ctaLabel || "Enquire about this Program").trim();
+  const validAccents: Service["accent"][] = [
+    "blue",
+    "crimson",
+    "green",
+    "orange",
+    "teal",
+    "yellow",
+  ];
+  const accent = (raw.accent && validAccents.includes(raw.accent as Service["accent"])
+    ? raw.accent
+    : fallback.accent || "blue") as Service["accent"];
+
+  return {
+    id,
+    interest,
+    chipLabel,
+    icon,
+    badge,
+    title,
+    tagline,
+    body,
+    bullets: bullets.length > 0 ? bullets : fallback.bullets || [],
+    image: image || "/images/hero-students.jpg",
+    imageAlt,
+    ctaLabel,
+    accent,
+  };
+}
+
 export function normalizeServicesCms(
   raw: Record<string, unknown> | null | undefined
 ): ServicesPageContent {
@@ -197,9 +272,11 @@ export function normalizeServicesCms(
   const source = raw && typeof raw === "object" ? raw : {};
   const heroRaw = (source.hero as Partial<ServicesHeroContent> | undefined) || {};
   const ctaRaw = (source.cta as Partial<ServicesCtaContent> | undefined) || {};
-  const list = Array.isArray(source.services)
-    ? (source.services as Service[])
-    : defaults.services;
+  const rawList = Array.isArray(source.services) ? source.services : defaults.services;
+
+  const services = rawList
+    .map((item, idx) => normalizeServiceItem(item, idx, defaults.services))
+    .filter((s) => s.title.length > 0);
 
   return {
     hero: {
@@ -211,7 +288,7 @@ export function normalizeServicesCms(
       image: String(heroRaw.image || defaults.hero.image),
       imageAlt: String(heroRaw.imageAlt || defaults.hero.imageAlt),
     },
-    services: list.length > 0 ? list : defaults.services,
+    services: services.length > 0 ? services : defaults.services,
     cta: {
       eyebrow: String(ctaRaw.eyebrow || defaults.cta.eyebrow),
       heading: String(ctaRaw.heading || defaults.cta.heading),
