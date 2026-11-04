@@ -771,7 +771,7 @@ export function ApplyForm({
     return (
       <div
         ref={wizardTopRef}
-        className="relative rounded-3xl bg-gradient-to-br from-[#EFFBF8] via-white to-[#F0FDF4]/40 border-2 border-[#C8EFE6] p-5 sm:p-7 lg:p-9 shadow-xl overflow-hidden"
+        className="relative rounded-3xl bg-gradient-to-br from-[#EFFBF8] via-white to-[#F0FDF4]/40 border-2 border-[#C8EFE6] p-3 sm:p-7 lg:p-9 shadow-xl overflow-hidden"
       >
         {/* Top Signature Line */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#102E4D] via-[#FF7900] to-[#FFC400] rounded-t-3xl pointer-events-none z-10" />
@@ -786,26 +786,26 @@ export function ApplyForm({
           initial={{ opacity: 0, y: 16, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-          className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch transform-gpu"
+          className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-stretch transform-gpu"
         >
           {/* Left Landscape Column: Professional Success Crest + Thanks Message + Actions */}
-          <div className="lg:col-span-6 flex flex-col justify-between p-5 sm:p-6 lg:p-7 rounded-2xl bg-white/85 border-2 border-[#C8EFE6] shadow-sm backdrop-blur-xs text-center lg:text-left space-y-4">
+          <div className="lg:col-span-6 flex flex-col justify-between p-4 sm:p-6 lg:p-7 rounded-2xl bg-white/85 border-2 border-[#C8EFE6] shadow-sm backdrop-blur-xs text-center lg:text-left space-y-4">
             <div className="space-y-3.5">
               {/* Professional Success Setting (Clean Static Check + Proper Icon Styled Text) */}
-              <div className="flex items-center justify-center lg:justify-start gap-3.5">
+              <div className="flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5">
                 <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white flex items-center justify-center shadow-md shadow-[#16A34A]/20 ring-4 ring-[#EFFBF8] border border-white shrink-0">
                   <Check className="w-6 h-6 stroke-[3] text-white" />
                 </div>
 
                 <div className="space-y-0.5 text-left">
                   {/* Fully Styled Text (Not a badge) with Proper Icon & Increased Font Size */}
-                  <div className="flex items-center gap-2 text-sm sm:text-base font-black uppercase tracking-wider text-[#15803D]">
+                  <div className="flex items-start gap-2 text-xs sm:text-base font-black uppercase tracking-wider text-[#15803D]">
                     {isSecured ? (
                       <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
                     ) : (
                       <CalendarCheck2 className="w-5 h-5 text-[#16A34A] shrink-0" />
                     )}
-                    <span>
+                    <span className="min-w-0">
                       {isSecured ? "Priority Seat Secured" : "Reservation Confirmed"}
                     </span>
                   </div>
@@ -866,7 +866,7 @@ export function ApplyForm({
             </div>
 
             {/* Post-Completion Actions: Compact, Crisp Left/Right Aligned Buttons */}
-            <div className="pt-3 border-t border-[#D7F5EF] flex flex-col xs:flex-row sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
+            <div className="pt-3 border-t border-[#D7F5EF] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 w-full">
               <a
                 href={`https://wa.me/923192091249?text=${encodeURIComponent(
                   `Assalam-o-Alaikum! I have completed my ${
@@ -877,7 +877,7 @@ export function ApplyForm({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-9 px-3.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-[11.5px] sm:text-xs tracking-wide shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-98"
+                className="min-h-10 w-full sm:w-auto h-9 px-3.5 rounded-lg bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-[11.5px] sm:text-xs tracking-wide shadow-xs hover:shadow-sm transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-normal cursor-pointer active:scale-98"
               >
                 <FaWhatsapp className="w-3.5 h-3.5 text-white shrink-0" />
                 <span>Connect on WhatsApp</span>
@@ -886,7 +886,7 @@ export function ApplyForm({
               <button
                 type="button"
                 onClick={resetWizard}
-                className="h-9 px-3.5 rounded-lg border border-[#102E4D]/25 hover:border-[#102E4D] bg-white hover:bg-[#EFFBF8] text-[#102E4D] font-bold text-[11.5px] sm:text-xs tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer active:scale-98 sm:ml-auto"
+                className="min-h-10 w-full sm:w-auto h-9 px-3.5 rounded-lg border border-[#102E4D]/25 hover:border-[#102E4D] bg-white hover:bg-[#EFFBF8] text-[#102E4D] font-bold text-[11.5px] sm:text-xs tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 shrink-0 whitespace-normal cursor-pointer active:scale-98 sm:ml-auto"
               >
                 <span>Submit Another Application</span>
               </button>
@@ -899,7 +899,7 @@ export function ApplyForm({
               <div>
                 {/* Top Website Colorful Accent Strip + Midnight Navy Header */}
                 <div className="h-1.5 w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
-                <div className="bg-gradient-to-r from-[#001B33] via-[#102E4D] to-[#001B33] text-white px-5 py-4 flex items-center justify-between gap-3">
+                <div className="bg-gradient-to-r from-[#001B33] via-[#102E4D] to-[#001B33] text-white px-3 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-[#FFC400]/70 p-1 shrink-0 flex items-center justify-center shadow-sm">
                       <img
@@ -918,31 +918,31 @@ export function ApplyForm({
                     </div>
                   </div>
 
-                  <div className="text-center shrink-0 bg-[#FFC400]/10 border border-[#FFC400]/50 rounded-xl px-3.5 py-2 shadow-2xs">
+                  <div className="w-full sm:w-auto text-center shrink-0 bg-[#FFC400]/10 border border-[#FFC400]/50 rounded-xl px-3.5 py-2 shadow-2xs">
                     <span className="text-[9px] font-bold uppercase tracking-wider text-[#D7F5EF] block">
                       Booking Ref
                     </span>
-                    <span className="font-num text-xs sm:text-[13px] font-extrabold text-[#FFC400] whitespace-nowrap block mt-0.5">
+                    <span className="font-num text-xs sm:text-[13px] font-extrabold text-[#FFC400] break-all block mt-0.5">
                       #{displayRef}
                     </span>
                   </div>
                 </div>
 
                 {/* Website Mint Status & Issued Sub-Bar */}
-                <div className="bg-gradient-to-r from-[#EFFBF8] via-[#EBF9F4] to-[#DDEFF7]/80 border-b border-[#C8EFE6] px-5 py-2.5 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#DCFCE7] border border-[#86EFAC] text-[#15803D] text-[10.5px] font-extrabold uppercase tracking-wide">
+                <div className="bg-gradient-to-r from-[#EFFBF8] via-[#EBF9F4] to-[#DDEFF7]/80 border-b border-[#C8EFE6] px-3 sm:px-5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="max-w-full inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] border border-[#86EFAC] text-[#15803D] text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wide">
                     <span className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0" />
                     <span>
                       {isSecured ? "Seat Secured • UBL" : "Provisional Reserved"}
                     </span>
                   </span>
-                  <span className="font-num text-[11px] font-semibold text-slate-500">
+                  <span className="font-num text-[11px] font-semibold text-slate-500 break-words">
                     {receiptPayload.issuedAt}
                   </span>
                 </div>
 
                 {/* Concise Essential Summary Body (Full Details Exported in Download & Print) */}
-                <div className="p-5 space-y-3.5 text-xs sm:text-[13px]">
+                <div className="p-3 sm:p-5 space-y-3.5 text-xs sm:text-[13px]">
                   {selectedEvent && (
                     <div className="rounded-xl bg-gradient-to-r from-[#EFFBF8] to-[#DDEFF7]/60 border border-[#C8EFE6] px-4 py-3 space-y-1">
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#FF7900] block">
@@ -951,9 +951,9 @@ export function ApplyForm({
                       <div className="font-bold text-sm sm:text-[15px] text-[#102E4D] leading-snug">
                         {selectedEvent.title}
                       </div>
-                      <div className="font-num text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                      <div className="font-num text-xs font-semibold text-slate-600 flex items-start gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-[#102E4D]/70 shrink-0" />
-                        <span>
+                        <span className="min-w-0 break-words">
                           {formattedEventDate} • {selectedEvent.city}
                         </span>
                       </div>
@@ -961,20 +961,20 @@ export function ApplyForm({
                   )}
 
                   <div className="divide-y divide-slate-100 px-0.5">
-                    <div className="flex items-center justify-between gap-3 py-2">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 py-2">
                       <span className="text-slate-500 font-medium shrink-0">
                         Participant
                       </span>
-                      <span className="font-bold text-[#102E4D] text-right truncate">
+                      <span className="w-full sm:w-auto font-bold text-[#102E4D] text-left sm:text-right break-words">
                         {formData.full_name}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 py-2">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 py-2">
                       <span className="text-slate-500 font-medium shrink-0">
                         Booking Option
                       </span>
-                      <span className="font-bold text-[#102E4D] inline-flex items-center gap-1.5 text-right">
+                      <span className="w-full sm:w-auto font-bold text-[#102E4D] inline-flex items-center gap-1.5 text-left sm:text-right break-words">
                         {isSecured && (
                           <span className="w-4.5 h-4.5 rounded bg-white border border-slate-200 p-0.5 inline-flex items-center justify-center shrink-0">
                             <img
@@ -1015,12 +1015,12 @@ export function ApplyForm({
               </div>
 
               {/* Receipt Footer Toolbar: Professional Compact Download • Print • Share Buttons */}
-              <div className="px-5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/60 border-t-2 border-[#C8EFE6] space-y-2">
-                <div className="grid grid-cols-3 gap-2.5">
+              <div className="px-3 sm:px-5 py-3.5 bg-gradient-to-r from-[#EFFBF8] via-white to-[#DDEFF7]/60 border-t-2 border-[#C8EFE6] space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <button
                     type="button"
                     onClick={handleDownloadReceipt}
-                    className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#102E4D] to-[#001B33] hover:from-[#001B33] hover:to-[#001426] text-white text-[11.5px] sm:text-xs font-bold tracking-wide shadow-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 border border-white/10"
+                    className="min-h-11 w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#102E4D] to-[#001B33] hover:from-[#001B33] hover:to-[#001426] text-white text-[11.5px] sm:text-xs font-bold tracking-wide shadow-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 border border-white/10"
                   >
                     {receiptFeedback === "downloaded" ? (
                       <>
@@ -1038,7 +1038,7 @@ export function ApplyForm({
                   <button
                     type="button"
                     onClick={handlePrintReceipt}
-                    className="py-2.5 px-3 rounded-xl bg-white hover:bg-[#EFFBF8] text-[#102E4D] border-2 border-[#102E4D]/20 hover:border-[#FF7900] text-[11.5px] sm:text-xs font-bold tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                    className="min-h-11 w-full py-2.5 px-3 rounded-xl bg-white hover:bg-[#EFFBF8] text-[#102E4D] border-2 border-[#102E4D]/20 hover:border-[#FF7900] text-[11.5px] sm:text-xs font-bold tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
                   >
                     <Printer className="w-3.5 h-3.5 text-[#FF7900]" />
                     <span>Print</span>
@@ -1047,7 +1047,7 @@ export function ApplyForm({
                   <button
                     type="button"
                     onClick={handleShareReceipt}
-                    className="py-2.5 px-3 rounded-xl bg-white hover:bg-[#EFFBF8] text-[#102E4D] border-2 border-[#102E4D]/20 hover:border-[#102E4D] text-[11.5px] sm:text-xs font-bold tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                    className="min-h-11 w-full py-2.5 px-3 rounded-xl bg-white hover:bg-[#EFFBF8] text-[#102E4D] border-2 border-[#102E4D]/20 hover:border-[#102E4D] text-[11.5px] sm:text-xs font-bold tracking-wide shadow-2xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
                   >
                     {receiptFeedback === "shared" ||
                     receiptFeedback === "copied" ? (
