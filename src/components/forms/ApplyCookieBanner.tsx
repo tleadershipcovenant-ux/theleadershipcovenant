@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Cookie, Check, X, ShieldCheck } from "lucide-react";
+import { Cookie, Check, ShieldCheck } from "lucide-react";
 import {
   getCookieConsent,
   setCookieConsent,
@@ -17,7 +17,6 @@ export default function ApplyCookieBanner({
 }: ApplyCookieBannerProps) {
   const [consentStatus, setConsentStatus] = useState<CookieConsentStatus>("undecided");
   const [mounted, setMounted] = useState(false);
-  const [manuallyOpened, setManuallyOpened] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export default function ApplyCookieBanner({
   const handleAccept = () => {
     setCookieConsent("accepted");
     setConsentStatus("accepted");
-    setManuallyOpened(false);
     onConsentChange?.("accepted");
     showToast("Cookies accepted · Form draft will be saved.");
   };
@@ -37,7 +35,6 @@ export default function ApplyCookieBanner({
   const handleReject = () => {
     setCookieConsent("rejected");
     setConsentStatus("rejected");
-    setManuallyOpened(false);
     onConsentChange?.("rejected");
     showToast("Cookies declined · Form draft saving disabled.");
   };
@@ -51,114 +48,77 @@ export default function ApplyCookieBanner({
 
   if (!mounted) return null;
 
-  const showBanner = consentStatus === "undecided" || manuallyOpened;
+  // Only render when the user has not yet decided
+  if (consentStatus !== "undecided") {
+    // If a temporary confirmation toast is active, show only the toast
+    if (toastMessage) {
+      return (
+        <div className="fixed top-20 right-4 z-50 bg-[#001B33] text-white border border-[#FFC400]/40 shadow-2xl px-3.5 py-2 rounded-xl text-xs font-semibold inline-flex items-center gap-2 animate-in fade-in slide-in-from-top-3 duration-200">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+          <span>{toastMessage}</span>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
     <>
       {/* ─── COMPACT LANDSCAPE BOTTOM COOKIE BANNER ─── */}
-      {showBanner && (
-        <aside
-          role="region"
-          aria-label="Cookie preferences"
-          className="fixed bottom-0 inset-x-0 z-50 p-2 sm:p-3 pointer-events-none pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
-        >
-          <div className="pointer-events-auto max-w-5xl mx-auto w-full relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#001B33]/95 backdrop-blur-xl text-white border border-white/15 shadow-[0_14px_40px_rgba(0,15,30,0.6)] px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
-            {/* Top signature gradient accent line */}
-            <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
+      <aside
+        role="region"
+        aria-label="Cookie preferences"
+        className="fixed bottom-0 inset-x-0 z-50 p-2 sm:p-3 pointer-events-none pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
+      >
+        <div className="pointer-events-auto max-w-5xl mx-auto w-full relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#001B33]/95 backdrop-blur-xl text-white border border-white/15 shadow-[0_14px_40px_rgba(0,15,30,0.6)] px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
+          {/* Top signature gradient accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3.5">
-              {/* Left / Info Section */}
-              <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#FF7900]/20 text-[#FFC400] border border-[#FFC400]/30 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-                  <Cookie className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
-                    <span className="font-semibold text-xs sm:text-[13px] text-white">
-                      Cookie Notice
-                    </span>
-                    <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#FFC400] bg-[#FFC400]/15 border border-[#FFC400]/25 px-1.5 py-0.2 rounded">
-                      Draft Saving
-                    </span>
-                  </div>
-
-                  <p className="text-[11.5px] sm:text-xs text-slate-300 leading-snug">
-                    We use cookies to save your application draft (contact info &amp; selected cohort) so your progress is preserved if you refresh.
-                  </p>
-                </div>
-
-                {manuallyOpened && (
-                  <button
-                    type="button"
-                    onClick={() => setManuallyOpened(false)}
-                    className="p-1 -mr-1 text-slate-400 hover:text-white rounded transition-colors cursor-pointer shrink-0 md:hidden"
-                    title="Close banner"
-                    aria-label="Close"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-3.5">
+            {/* Left / Info Section */}
+            <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#FF7900]/20 text-[#FFC400] border border-[#FFC400]/30 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                <Cookie className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
 
-              {/* Right / Actions Section */}
-              <div className="flex items-center gap-2 shrink-0 pt-1.5 md:pt-0 border-t border-white/10 md:border-t-0">
-                <button
-                  type="button"
-                  onClick={handleReject}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-white/8 hover:bg-white/15 text-slate-200 hover:text-white text-xs font-semibold border border-white/15 transition-all cursor-pointer active:scale-95 text-center min-w-[78px] sm:min-w-[85px]"
-                >
-                  Reject
-                </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                  <span className="font-semibold text-xs sm:text-[13px] text-white">
+                    Cookie Notice
+                  </span>
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#FFC400] bg-[#FFC400]/15 border border-[#FFC400]/25 px-1.5 py-0.2 rounded">
+                    Draft Saving
+                  </span>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={handleAccept}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs font-bold tracking-wide border border-[#FFC400]/40 shadow-md shadow-[#FF7900]/20 transition-all cursor-pointer active:scale-95 inline-flex items-center justify-center gap-1.5 min-w-[125px] sm:min-w-[135px]"
-                >
-                  <Check className="w-3.5 h-3.5 text-white" />
-                  <span>Accept Cookies</span>
-                </button>
-
-                {manuallyOpened && (
-                  <button
-                    type="button"
-                    onClick={() => setManuallyOpened(false)}
-                    className="hidden md:inline-flex p-1.5 text-slate-400 hover:text-white rounded transition-colors cursor-pointer shrink-0 ml-0.5"
-                    title="Close banner"
-                    aria-label="Close"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                <p className="text-[11.5px] sm:text-xs text-slate-300 leading-snug">
+                  We use cookies to save your application draft (contact info &amp; selected cohort) so your progress is preserved if you refresh.
+                </p>
               </div>
             </div>
-          </div>
-        </aside>
-      )}
 
-      {/* ─── COMPACT RE-OPEN BADGE / STATUS TRIGGER (WHEN BANNER IS CLOSED) ─── */}
-      {!showBanner && (
-        <div className="fixed bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 z-40 animate-in fade-in duration-200 pb-[env(safe-area-inset-bottom,0px)]">
-          <button
-            type="button"
-            onClick={() => setManuallyOpened(true)}
-            className="px-3 py-1 rounded-full bg-[#001B33]/90 hover:bg-[#001B33] text-white backdrop-blur-md border border-white/20 shadow-lg text-[10px] sm:text-[10.5px] font-semibold inline-flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer group"
-            title="Click to view or change cookie preferences"
-          >
-            <Cookie className="w-3 h-3 text-[#FFC400] group-hover:rotate-12 transition-transform" />
-            <span className="text-slate-300">Cookies:</span>
-            <span
-              className={`font-bold uppercase ${
-                consentStatus === "accepted" ? "text-emerald-400" : "text-amber-400"
-              }`}
-            >
-              {consentStatus === "accepted" ? "Accepted" : "Rejected"}
-            </span>
-            <span className="text-white/40 font-normal">· Change</span>
-          </button>
+            {/* Right / Actions Section */}
+            <div className="flex items-center gap-2 shrink-0 pt-1.5 md:pt-0 border-t border-white/10 md:border-t-0">
+              <button
+                type="button"
+                onClick={handleReject}
+                className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-white/8 hover:bg-white/15 text-slate-200 hover:text-white text-xs font-semibold border border-white/15 transition-all cursor-pointer active:scale-95 text-center min-w-[78px] sm:min-w-[85px]"
+              >
+                Reject
+              </button>
+
+              <button
+                type="button"
+                onClick={handleAccept}
+                className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs font-bold tracking-wide border border-[#FFC400]/40 shadow-md shadow-[#FF7900]/20 transition-all cursor-pointer active:scale-95 inline-flex items-center justify-center gap-1.5 min-w-[125px] sm:min-w-[135px]"
+              >
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Accept Cookies</span>
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+      </aside>
 
       {/* ─── TEMPORARY CONFIRMATION TOAST ─── */}
       {toastMessage && (
