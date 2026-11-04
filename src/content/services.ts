@@ -144,6 +144,94 @@ export const SERVICES: Service[] = [
   },
 ];
 
+export interface ServicesHeroContent {
+  heading: string;
+  headingHighlight: string;
+  body: string;
+  image: string;
+  imageAlt: string;
+}
+
+export interface ServicesCtaContent {
+  eyebrow: string;
+  heading: string;
+  bodyBefore: string;
+  minutes: string;
+  bodyAfter: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta: { label: string; href: string };
+}
+
+export interface ServicesPageContent {
+  hero: ServicesHeroContent;
+  services: Service[];
+  cta: ServicesCtaContent;
+}
+
+export const SERVICES_PAGE: ServicesPageContent = {
+  hero: {
+    heading: "Six ways we help you build a",
+    headingHighlight: "culture of leadership.",
+    body: "Every program shares one belief: everyone has the potential to lead. Below is how we bring that belief to life for schools, students, educators, and families.",
+    image: "/Services/Hero%20Section.png",
+    imageAlt:
+      "Six ways we help you build a culture of leadership - The Leadership Covenant",
+  },
+  services: SERVICES,
+  cta: {
+    eyebrow: "Advisory & Consultation",
+    heading: "Not sure which program fits?",
+    bodyBefore: "Book a",
+    minutes: "20",
+    bodyAfter:
+      "minute discovery call and we'll design a leadership pathway around your school's goals.",
+    primaryCta: { label: "Book a discovery call", href: "/contact#enquiry-form" },
+    secondaryCta: { label: "Upcoming activities", href: "/activities" },
+  },
+};
+
+export function normalizeServicesCms(
+  raw: Record<string, unknown> | null | undefined
+): ServicesPageContent {
+  const defaults = SERVICES_PAGE;
+  const source = raw && typeof raw === "object" ? raw : {};
+  const heroRaw = (source.hero as Partial<ServicesHeroContent> | undefined) || {};
+  const ctaRaw = (source.cta as Partial<ServicesCtaContent> | undefined) || {};
+  const list = Array.isArray(source.services)
+    ? (source.services as Service[])
+    : defaults.services;
+
+  return {
+    hero: {
+      heading: String(heroRaw.heading || defaults.hero.heading),
+      headingHighlight: String(
+        heroRaw.headingHighlight || defaults.hero.headingHighlight
+      ),
+      body: String(heroRaw.body || defaults.hero.body),
+      image: String(heroRaw.image || defaults.hero.image),
+      imageAlt: String(heroRaw.imageAlt || defaults.hero.imageAlt),
+    },
+    services: list.length > 0 ? list : defaults.services,
+    cta: {
+      eyebrow: String(ctaRaw.eyebrow || defaults.cta.eyebrow),
+      heading: String(ctaRaw.heading || defaults.cta.heading),
+      bodyBefore: String(ctaRaw.bodyBefore || defaults.cta.bodyBefore),
+      minutes: String(ctaRaw.minutes || defaults.cta.minutes),
+      bodyAfter: String(ctaRaw.bodyAfter || defaults.cta.bodyAfter),
+      primaryCta: {
+        label: String(ctaRaw.primaryCta?.label || defaults.cta.primaryCta.label),
+        href: String(ctaRaw.primaryCta?.href || defaults.cta.primaryCta.href),
+      },
+      secondaryCta: {
+        label: String(
+          ctaRaw.secondaryCta?.label || defaults.cta.secondaryCta.label
+        ),
+        href: String(ctaRaw.secondaryCta?.href || defaults.cta.secondaryCta.href),
+      },
+    },
+  };
+}
+
 /** Home page "What we do" cards. Source: docs/content/01-home.md §4 */
 export const HOME_SERVICES = [
   {
