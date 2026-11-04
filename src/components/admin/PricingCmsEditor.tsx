@@ -44,6 +44,84 @@ import {
 import { getActivityPricing } from "@/content/pricing";
 import { cmsInputClass } from "@/components/admin/cms-fields";
 
+/* ─── Date Picker Conversion & Formatting Helpers ─── */
+function toDatetimeLocal(value?: string): string {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(trimmed)) {
+    return trimmed.slice(0, 16);
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return `${trimmed}T00:00`;
+  }
+  try {
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+  } catch {
+    // Ignore fallback
+  }
+  return trimmed.slice(0, 16);
+}
+
+function fromDatetimeLocal(value: string, isEndOfDay = false): string {
+  if (!value) return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const seconds = isEndOfDay ? "59" : "00";
+  return `${trimmed}:${seconds}+05:00`;
+}
+
+function formatPrettyDate(isoStr?: string): string {
+  if (!isoStr) return "";
+  try {
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return isoStr;
+    return d.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Karachi",
+    });
+  } catch {
+    return isoStr;
+  }
+}
+
+function getPresetDate(daysAhead: number, isEndOfDay = true): string {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const y = d.getFullYear();
+  const m = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  const time = isEndOfDay ? "23:59:59" : "00:00:00";
+  return `${y}-${m}-${day}T${time}+05:00`;
+}
+
+function getEndOfCurrentMonth(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const lastDay = new Date(y, m, 0).getDate();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${y}-${pad(m)}-${pad(lastDay)}T23:59:59+05:00`;
+}
+
+function getStartOfCurrentMonth(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${y}-${pad(m)}-01T00:00:00+05:00`;
+}
+
 export default function PricingCmsEditor() {
   const [events, setEvents] = useState<LeadershipEvent[]>(EVENTS);
   const [original, setOriginal] = useState<string>(
@@ -1187,75 +1265,287 @@ export default function PricingCmsEditor() {
                         </div>
                       </div>
 
-                      {/* Offer Label & Deadlines */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-                            Offer Banner Label
-                          </label>
-                          <input
-                            type="text"
-                            className={cmsInputClass}
-                            value={currentlyEditingEvent.offerLabel || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEvents((prev) => {
-                                const next = [...prev];
-                                next[editingIndex] = {
-                                  ...next[editingIndex],
-                                  offerLabel: val,
-                                };
-                                return next;
-                              });
-                            }}
-                            placeholder="Early Bird 20% OFF"
-                          />
+                      {/* Offer Label Input */}
+                      <div>
+                        <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                          Offer Banner Label
+                        </label>
+                        <input
+                          type="text"
+                          className={cmsInputClass}
+                          value={currentlyEditingEvent.offerLabel || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEvents((prev) => {
+                              const next = [...prev];
+                              next[editingIndex] = {
+                                ...next[editingIndex],
+                                offerLabel: val,
+                              };
+                              return next;
+                            });
+                          }}
+                          placeholder="e.g. Early Bird 20% OFF or Special Ramadan Offer"
+                        />
+                      </div>
+
+                      {/* Interactive Calendar Date Pickers Grid: Offer Start Date & Offer End Date (Deadline) */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                        {/* 01. Offer Start Date Card */}
+                        <div className="p-4 rounded-2xl border-2 border-emerald-200/90 bg-emerald-50/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4 text-emerald-600" />
+                              <span>Offer Start Date &amp; Time</span>
+                            </label>
+                            {currentlyEditingEvent.offerStartDate ? (
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                                Active from Start
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                Not Scheduled
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Interactive Calendar Input with Direct Picker Trigger */}
+                          <div className="relative flex items-center">
+                            <input
+                              type="datetime-local"
+                              className="w-full pl-3 pr-10 py-2.5 text-xs font-semibold rounded-xl border-2 border-emerald-300 bg-white text-[#102E4D] focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 shadow-xs cursor-pointer"
+                              value={toDatetimeLocal(currentlyEditingEvent.offerStartDate)}
+                              onChange={(e) => {
+                                const val = fromDatetimeLocal(e.target.value, false);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = {
+                                    ...next[editingIndex],
+                                    offerStartDate: val,
+                                  };
+                                  return next;
+                                });
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement?.querySelector("input") as HTMLInputElement | null;
+                                input?.showPicker?.();
+                              }}
+                              className="absolute right-2.5 p-1 text-emerald-600 hover:text-emerald-800 transition-colors cursor-pointer"
+                              title="Click to open interactive calendar picker"
+                            >
+                              <Calendar className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Pretty Formatted Date Preview */}
+                          <div className="text-[11px] text-slate-600 flex items-center justify-between pt-0.5">
+                            <span className="truncate">
+                              {currentlyEditingEvent.offerStartDate ? (
+                                <>
+                                  📅 <strong>Starts:</strong> {formatPrettyDate(currentlyEditingEvent.offerStartDate)}
+                                </>
+                              ) : (
+                                <span className="text-slate-400 italic">No start date set (offer starts immediately)</span>
+                              )}
+                            </span>
+                            {currentlyEditingEvent.offerStartDate && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEvents((prev) => {
+                                    const next = [...prev];
+                                    next[editingIndex] = {
+                                      ...next[editingIndex],
+                                      offerStartDate: "",
+                                    };
+                                    return next;
+                                  });
+                                }}
+                                className="text-[10.5px] font-bold text-rose-600 hover:underline cursor-pointer shrink-0 ml-2"
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Quick Presets */}
+                          <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-emerald-200/60">
+                            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider">Presets:</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const nowStr = new Date().toISOString().slice(0, 16);
+                                const val = fromDatetimeLocal(nowStr, false);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerStartDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              Today
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = getStartOfCurrentMonth();
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerStartDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              1st of Month
+                            </button>
+                          </div>
                         </div>
 
-                        <div>
-                          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-                            Offer Start Date
-                          </label>
-                          <input
-                            type="text"
-                            className={cmsInputClass}
-                            value={currentlyEditingEvent.offerStartDate || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEvents((prev) => {
-                                const next = [...prev];
-                                next[editingIndex] = {
-                                  ...next[editingIndex],
-                                  offerStartDate: val,
-                                };
-                                return next;
-                              });
-                            }}
-                            placeholder="2026-09-01T00:00:00+05:00"
-                          />
-                        </div>
+                        {/* 02. Offer End Date (Deadline) Card */}
+                        <div className="p-4 rounded-2xl border-2 border-emerald-200/90 bg-emerald-50/40 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                              <Clock className="w-4 h-4 text-emerald-600" />
+                              <span>Offer End Date (Deadline)</span>
+                            </label>
+                            {currentlyEditingEvent.offerEndDate ? (
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                                Countdown Enforced
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                                Ongoing Offer
+                              </span>
+                            )}
+                          </div>
 
-                        <div>
-                          <label className="block text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-                            Offer End Date (Deadline)
-                          </label>
-                          <input
-                            type="text"
-                            className={cmsInputClass}
-                            value={currentlyEditingEvent.offerEndDate || ""}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setEvents((prev) => {
-                                const next = [...prev];
-                                next[editingIndex] = {
-                                  ...next[editingIndex],
-                                  offerEndDate: val,
-                                };
-                                return next;
-                              });
-                            }}
-                            placeholder="2026-11-07T23:59:59+05:00"
-                          />
+                          {/* Interactive Calendar Input with Direct Picker Trigger */}
+                          <div className="relative flex items-center">
+                            <input
+                              type="datetime-local"
+                              className="w-full pl-3 pr-10 py-2.5 text-xs font-semibold rounded-xl border-2 border-emerald-300 bg-white text-[#102E4D] focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 shadow-xs cursor-pointer"
+                              value={toDatetimeLocal(currentlyEditingEvent.offerEndDate)}
+                              onChange={(e) => {
+                                const val = fromDatetimeLocal(e.target.value, true);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = {
+                                    ...next[editingIndex],
+                                    offerEndDate: val,
+                                  };
+                                  return next;
+                                });
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                const input = e.currentTarget.parentElement?.querySelector("input") as HTMLInputElement | null;
+                                input?.showPicker?.();
+                              }}
+                              className="absolute right-2.5 p-1 text-emerald-600 hover:text-emerald-800 transition-colors cursor-pointer"
+                              title="Click to open interactive calendar picker"
+                            >
+                              <Calendar className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Pretty Formatted Date Preview */}
+                          <div className="text-[11px] text-slate-600 flex items-center justify-between pt-0.5">
+                            <span className="truncate">
+                              {currentlyEditingEvent.offerEndDate ? (
+                                <>
+                                  ⏰ <strong>Expires:</strong> {formatPrettyDate(currentlyEditingEvent.offerEndDate)}
+                                </>
+                              ) : (
+                                <span className="text-slate-400 italic">No deadline set (offer never expires)</span>
+                              )}
+                            </span>
+                            {currentlyEditingEvent.offerEndDate && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEvents((prev) => {
+                                    const next = [...prev];
+                                    next[editingIndex] = {
+                                      ...next[editingIndex],
+                                      offerEndDate: "",
+                                    };
+                                    return next;
+                                  });
+                                }}
+                                className="text-[10.5px] font-bold text-rose-600 hover:underline cursor-pointer shrink-0 ml-2"
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Quick Presets */}
+                          <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-emerald-200/60">
+                            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider">Presets:</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = getPresetDate(7, true);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerEndDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              +7 Days
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = getPresetDate(14, true);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerEndDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              +14 Days
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = getPresetDate(30, true);
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerEndDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              +30 Days
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const val = getEndOfCurrentMonth();
+                                setEvents((prev) => {
+                                  const next = [...prev];
+                                  next[editingIndex] = { ...next[editingIndex], offerEndDate: val };
+                                  return next;
+                                });
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white border border-emerald-200 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            >
+                              End of Month
+                            </button>
+                          </div>
                         </div>
                       </div>
 
