@@ -13,6 +13,11 @@ import {
   normalizeApplyCms,
   type ApplyPageContent,
 } from "@/content/forms";
+import {
+  SUMMIT_CONTENT,
+  normalizeSummitCms,
+  type SummitPageContent,
+} from "@/content/summit";
 
 /**
  * React hook for consuming CMS page content on client components.
@@ -85,5 +90,13 @@ export function useApplyPageContent(): ApplyPageContent {
     APPLY_PAGE as unknown as Record<string, unknown>
   );
   return useMemo(() => normalizeApplyCms(content), [content]);
+}
+
+export function useSummitPageContent(): SummitPageContent {
+  const { content } = useCmsContent(
+    "summit",
+    SUMMIT_CONTENT as unknown as Record<string, unknown>
+  );
+  return useMemo(() => normalizeSummitCms(content), [content]);
 }
 

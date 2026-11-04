@@ -48,11 +48,16 @@ export const SUMMIT_VIDEOS: SummitVideoItem[] = [
   },
 ];
 
-export default function SummitVideoSlider() {
+export default function SummitVideoSlider({
+  videos,
+}: {
+  videos?: SummitVideoItem[];
+} = {}) {
+  const slides = videos && videos.length > 0 ? videos : SUMMIT_VIDEOS;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const total = SUMMIT_VIDEOS.length;
+  const total = slides.length;
 
   const handlePrev = useCallback(() => {
     setIsPlaying(false);
@@ -119,7 +124,7 @@ export default function SummitVideoSlider() {
         </button>
 
         {/* Slide Cards */}
-        {SUMMIT_VIDEOS.map((video, idx) => {
+        {slides.map((video, idx) => {
           const role = getSlideRole(idx);
           const isActive = role === "active";
           const isPrev = role === "prev";
@@ -201,23 +206,23 @@ export default function SummitVideoSlider() {
       {/* Pagination Dots Indicator                                  */}
       {/* ────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-center gap-2 mt-5 sm:mt-6">
-          {SUMMIT_VIDEOS.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => {
-                setIsPlaying(false);
-                setCurrentIndex(i);
-              }}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === currentIndex
-                  ? "w-7 bg-[#FF7900]"
-                  : "w-2 bg-slate-300 hover:bg-slate-400"
-              }`}
-            />
-          ))}
-        </div>
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => {
+              setIsPlaying(false);
+              setCurrentIndex(i);
+            }}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === currentIndex
+                ? "w-7 bg-[#FF7900]"
+                : "w-2 bg-slate-300 hover:bg-slate-400"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

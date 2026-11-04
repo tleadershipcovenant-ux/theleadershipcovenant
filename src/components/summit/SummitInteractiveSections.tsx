@@ -3,33 +3,30 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { SUMMIT_CONTENT } from "@/content/summit";
+import {
+  SUMMIT_CONTENT,
+  type SummitSpeakersContent,
+  type SummitVideosContent,
+  type SummitCtaContent,
+} from "@/content/summit";
 import SummitVideoSlider from "@/components/summit/SummitVideoSlider";
 import { MdArrowForward } from "react-icons/md";
 
-const SUMMIT_SPEAKERS = [
-  {
-    name: "Mr. Fazal Niazi",
-    role: "Lead Facilitator",
-    title: "Practice Lead, FranklinCovey Education Pakistan, Türkiye & Azerbaijan",
-    bio: "Leads strategic growth across Pakistan, Azerbaijan, and Turkey, driving teacher training, project management, and customer service initiatives. Also serves as Director of ARQAM Public School System and Founder of The Learning Space Official, advancing educational excellence and sustainable institutional growth.",
-    image: "/Submit/fazal.jpeg",
-    badgeColor: "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30",
-    topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
-  },
-  {
-    name: "Mr. Ubaid ur Rehman",
-    role: "Event Facilitator",
-    title: "Regional Manager, FranklinCovey Education North Region",
-    bio: "An education leader, leadership coach, and organizational development consultant with 10+ years of experience. Leads school transformation and leadership development across Northern Pakistan, while serving as a Visiting Lecturer at NUST and previously teaching at IMSciences, Peshawar.",
-    image: "/images/ubaid.jpg",
-    badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
-    topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
-  },
-];
+interface SummitInteractiveSectionsProps {
+  speakers?: SummitSpeakersContent;
+  videos?: SummitVideosContent;
+  registration?: SummitCtaContent;
+}
 
-export default function SummitInteractiveSections() {
-  const { speakers, videos } = SUMMIT_CONTENT;
+export default function SummitInteractiveSections({
+  speakers: propSpeakers,
+  videos: propVideos,
+  registration: propRegistration,
+}: SummitInteractiveSectionsProps = {}) {
+  const speakers = propSpeakers || SUMMIT_CONTENT.speakers;
+  const videos = propVideos || SUMMIT_CONTENT.videos;
+  const registration = propRegistration || SUMMIT_CONTENT.registration;
+  const speakerList = speakers.items && speakers.items.length > 0 ? speakers.items : SUMMIT_CONTENT.speakers.items;
 
   return (
     <>
@@ -66,9 +63,9 @@ export default function SummitInteractiveSections() {
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 max-w-6xl mx-auto items-stretch">
-            {SUMMIT_SPEAKERS.map((spk, idx) => (
+            {speakerList.map((spk, idx) => (
               <motion.div
-                key={spk.name}
+                key={spk.name || `speaker-${idx}`}
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-30px" }}
@@ -81,13 +78,19 @@ export default function SummitInteractiveSections() {
                 className="rounded-3xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] shadow-md hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group transform-gpu cursor-default"
               >
                 {/* Top Colored Accent Stripe */}
-                <div className={`h-1.5 w-full bg-gradient-to-r ${spk.topAccent}`} />
+                <div
+                  className={`h-1.5 w-full bg-gradient-to-r ${spk.topAccent ||
+                    (idx % 2 === 0
+                      ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+                      : "from-[#FF7900] via-[#E56D00] to-[#FFC400]")
+                    }`}
+                />
 
                 <div className="flex flex-col sm:flex-row flex-1">
                   {/* Speaker Image Presentation Area */}
                   <div className="w-full h-64 sm:h-auto sm:w-[38%] lg:w-[36%] relative overflow-hidden bg-[#E8F7F1] border-b sm:border-b-0 sm:border-r border-[#D7F5EF] flex items-center justify-center shrink-0">
                     <img
-                      src={spk.image}
+                      src={spk.image || "/Submit/fazal.jpeg"}
                       alt={spk.name}
                       className="w-full h-full object-cover object-center select-none transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
@@ -99,7 +102,11 @@ export default function SummitInteractiveSections() {
                     <div>
                       {/* Speaker Badge */}
                       <span
-                        className={`text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${spk.badgeColor} inline-block mb-2.5`}
+                        className={`text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${spk.badgeColor ||
+                          (idx % 2 === 0
+                            ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+                            : "bg-[#FF7900] text-white border-[#FF7900]/30")
+                          } inline-block mb-2.5`}
                       >
                         {spk.role}
                       </span>
@@ -151,11 +158,11 @@ export default function SummitInteractiveSections() {
               {videos.heading}
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
-            
+
           </motion.div>
 
           {/* Interactive 3D Video Slider (Reference Matching) */}
-          <SummitVideoSlider />
+          <SummitVideoSlider videos={videos.items} />
         </div>
       </section>
 
@@ -183,29 +190,29 @@ export default function SummitInteractiveSections() {
 
             <div className="max-w-2xl mx-auto text-center relative z-10">
               <p className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-[#FFC400] mb-2 sm:mb-2.5">
-                The School Impact Summit 2026
+                {registration.eyebrow}
               </p>
               <h2 className="font-serif font-extrabold text-2xl sm:text-3xl lg:text-[34px] text-white tracking-tight leading-snug">
-                Reserve your seat
+                {registration.heading}
               </h2>
               <div className="w-16 h-1 bg-[#FFC400] mx-auto mt-2.5 rounded-full" />
               <p className="text-xs sm:text-sm text-slate-300 mt-2.5 max-w-md mx-auto leading-relaxed font-medium">
-                Join school leaders on 28 November 2026 in Islamabad. Secure your seat today.
+                {registration.subtext}
               </p>
 
               <div className="pt-6 sm:pt-7 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-3.5">
                 <Link
-                  href="/apply?activity=school-impact-summit-2026#apply-form"
+                  href={registration.primaryCtaHref}
                   className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer w-full sm:w-auto"
                 >
-                  <span>Apply Now</span>
+                  <span>{registration.primaryCtaLabel}</span>
                   <MdArrowForward className="text-base" />
                 </Link>
                 <Link
-                  href="/contact#contact"
+                  href={registration.secondaryCtaHref}
                   className="h-11 px-6 inline-flex items-center justify-center gap-2 rounded-xl border border-white/20 hover:border-[#FFC400] bg-white/5 hover:bg-white/10 text-white font-semibold text-xs uppercase tracking-wider transition-all active:scale-98 w-full sm:w-auto"
                 >
-                  <span>Contact Us</span>
+                  <span>{registration.secondaryCtaLabel}</span>
                 </Link>
               </div>
             </div>

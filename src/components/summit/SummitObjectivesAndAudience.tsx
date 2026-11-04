@@ -16,7 +16,11 @@ import {
   MessageSquareText,
   TrendingUp,
 } from "lucide-react";
-import { SUMMIT_CONTENT } from "@/content/summit";
+import {
+  SUMMIT_CONTENT,
+  type SummitObjectivesContent,
+  type SummitAudienceContent,
+} from "@/content/summit";
 
 const OBJECTIVE_ICONS = [Compass, MessageSquareText, TrendingUp];
 
@@ -79,8 +83,25 @@ const AUDIENCE_ROLES = [
   },
 ];
 
-export default function SummitObjectivesAndAudience() {
-  const { objectives, audience } = SUMMIT_CONTENT;
+interface SummitObjectivesAndAudienceProps {
+  objectives?: SummitObjectivesContent;
+  audience?: SummitAudienceContent;
+}
+
+const AUDIENCE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  building: Building2,
+  graduation: GraduationCap,
+  book: BookOpen,
+  heart: HeartHandshake,
+  compass: Compass,
+};
+
+export default function SummitObjectivesAndAudience({
+  objectives: propObjectives,
+  audience: propAudience,
+}: SummitObjectivesAndAudienceProps = {}) {
+  const objectives = propObjectives || SUMMIT_CONTENT.objectives;
+  const audience = propAudience || SUMMIT_CONTENT.audience;
 
   return (
     <>
@@ -121,7 +142,7 @@ export default function SummitObjectivesAndAudience() {
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 mb-5 sm:mb-6 rounded-full" />
 
             <p className="text-xs sm:text-[15px] text-slate-600 leading-relaxed font-normal max-w-3xl mx-auto">
-              The School Impact Summit 2026 brings together educational leaders and schools to discover meaningful practices, give voice to their journeys, and showcase the impact they are creating in their school communities. It is a platform to celebrate progress, exchange ideas, learn from shared experiences, and inspire a greater commitment to leadership and continuous improvement in education.
+              {objectives.body}
             </p>
           </motion.div>
 
@@ -223,14 +244,16 @@ export default function SummitObjectivesAndAudience() {
             </div>
           </motion.div>
 
-          {/* 5 Compact, Balanced Audience Role Cards (Icon + Title Only) */}
+          {/* Compact, Balanced Audience Role Cards (Icon + Title Only) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 items-stretch max-w-6xl mx-auto">
-            {AUDIENCE_ROLES.map((item, idx) => {
-              const RoleIcon = item.icon;
+            {audience.items.map((item, idx) => {
+              const defaultStyle = AUDIENCE_ROLES[idx % AUDIENCE_ROLES.length];
+              const RoleIcon = AUDIENCE_ICON_MAP[item.icon] || defaultStyle.icon;
+              const topGradient = item.topGradient || defaultStyle.topGradient;
 
               return (
                 <motion.div
-                  key={item.role}
+                  key={`${item.role}-${idx}`}
                   initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-30px" }}
@@ -246,12 +269,12 @@ export default function SummitObjectivesAndAudience() {
                 >
                   {/* Colorful Top Accent Stripe */}
                   <div
-                    className={`h-1 w-full absolute top-0 left-0 right-0 bg-gradient-to-r ${item.topGradient}`}
+                    className={`h-1 w-full absolute top-0 left-0 right-0 bg-gradient-to-r ${topGradient}`}
                   />
 
                   {/* Icon */}
                   <div
-                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${item.iconBg} ${item.iconColor} group-hover:scale-110 transition-transform duration-200 shadow-2xs mb-3.5`}
+                    className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${defaultStyle.iconBg} ${defaultStyle.iconColor} group-hover:scale-110 transition-transform duration-200 shadow-2xs mb-3.5`}
                   >
                     <RoleIcon className="w-6 h-6" />
                   </div>
