@@ -96,7 +96,7 @@ export function ApplyForm({
     email: "",
     phone: "",
     role: "",
-    activity_slug: initialActivity,
+    activity_slug: initialActivity || "",
     transaction_ref: "",
     message: "",
     website: "", // honeypot
@@ -192,13 +192,33 @@ export function ApplyForm({
     };
   }, [activityDropdownOpen]);
 
+  const selectedEvent = useMemo(() => {
+    if (!formData.activity_slug) return undefined;
+    const target = formData.activity_slug.trim().toLowerCase();
+    return (
+      activeEvents.find((e) => (e.slug || "").trim().toLowerCase() === target) ||
+      allEvents.find((e) => (e.slug || "").trim().toLowerCase() === target)
+    );
+  }, [formData.activity_slug, activeEvents, allEvents]);
+
   const selectableEvents = useMemo(() => {
-    return [...activeEvents]
+    const list = [...activeEvents];
+    // If an activity is selected in formData but is hidden or not in activeEvents (e.g. newly published or testing), ensure it is present in selectable list
+    if (
+      selectedEvent &&
+      !list.some(
+        (e) => (e.slug || "").trim().toLowerCase() === (selectedEvent.slug || "").trim().toLowerCase()
+      )
+    ) {
+      list.unshift(selectedEvent);
+    }
+
+    return list
       .filter((event) => {
         // Always include currently selected activity even if lifecycle is previous
         if (
           formData.activity_slug &&
-          event.slug.trim().toLowerCase() ===
+          (event.slug || "").trim().toLowerCase() ===
             formData.activity_slug.trim().toLowerCase()
         ) {
           return true;
@@ -211,25 +231,17 @@ export function ApplyForm({
           upcoming: 1,
           previous: 2,
         };
+        const aLife = getEventLifecycle(a, todayIsoDate);
+        const bLife = getEventLifecycle(b, todayIsoDate);
         const lifecycleDifference =
-          lifecycleOrder[getEventLifecycle(a, todayIsoDate)] -
-          lifecycleOrder[getEventLifecycle(b, todayIsoDate)];
+          (lifecycleOrder[aLife] ?? 1) - (lifecycleOrder[bLife] ?? 1);
         return (
           lifecycleDifference ||
-          a.startDate.localeCompare(b.startDate) ||
-          a.title.localeCompare(b.title)
+          (a.startDate || "").localeCompare(b.startDate || "") ||
+          (a.title || "").localeCompare(b.title || "")
         );
       });
-  }, [activeEvents, formData.activity_slug, todayIsoDate]);
-
-  const selectedEvent = useMemo(() => {
-    if (!formData.activity_slug) return undefined;
-    const target = formData.activity_slug.trim().toLowerCase();
-    return (
-      activeEvents.find((e) => e.slug.trim().toLowerCase() === target) ||
-      allEvents.find((e) => e.slug.trim().toLowerCase() === target)
-    );
-  }, [formData.activity_slug, activeEvents, allEvents]);
+  }, [activeEvents, selectedEvent, formData.activity_slug, todayIsoDate]);
 
   const activityPricing = useMemo(() => {
     return getActivityPricing(
@@ -237,6 +249,32 @@ export function ApplyForm({
       selectedEvent
     );
   }, [selectedEvent, formData.activity_slug]);
+
+  // Selected event helper details for live preview, step navigation, and completion receipt
+  const selectedDateObj = useMemo(() => {
+    if (!selectedEvent?.startDate) return null;
+    const d = new Date(
+      selectedEvent.startDate.includes("T")
+        ? selectedEvent.startDate
+        : selectedEvent.startDate + "T00:00:00"
+    );
+    return isNaN(d.getTime()) ? null : d;
+  }, [selectedEvent?.startDate]);
+
+  const selectedMonthTheme = useMemo(() => {
+    if (!selectedDateObj) return getMonthTheme(new Date().getMonth());
+    return getMonthTheme(selectedDateObj.getMonth());
+  }, [selectedDateObj]);
+
+  const selectedIsOpen = useMemo(() => {
+    return selectedEvent ? isOpenEnrollmentEvent(selectedEvent) : false;
+  }, [selectedEvent]);
+
+  const selectedLifecycle = useMemo(() => {
+    return selectedEvent
+      ? getEventLifecycle(selectedEvent, todayIsoDate)
+      : null;
+  }, [selectedEvent, todayIsoDate]);
 
   const activePaymentAccount =
     PAYMENT_METHODS.find((m) => m.id === paymentMethod) ?? PAYMENT_METHODS[0];
@@ -1074,32 +1112,6 @@ export function ApplyForm({
 
   const activeStepNum: 1 | 2 | 3 = typeof step === "number" ? step : 1;
 
-  // Selected event helper details for Step 1 live landscape preview
-  const selectedDateObj = useMemo(() => {
-    if (!selectedEvent?.startDate) return null;
-    const d = new Date(
-      selectedEvent.startDate.includes("T")
-        ? selectedEvent.startDate
-        : selectedEvent.startDate + "T00:00:00"
-    );
-    return isNaN(d.getTime()) ? null : d;
-  }, [selectedEvent?.startDate]);
-
-  const selectedMonthTheme = useMemo(() => {
-    if (!selectedDateObj) return getMonthTheme(new Date().getMonth());
-    return getMonthTheme(selectedDateObj.getMonth());
-  }, [selectedDateObj]);
-
-  const selectedIsOpen = useMemo(() => {
-    return selectedEvent ? isOpenEnrollmentEvent(selectedEvent) : false;
-  }, [selectedEvent]);
-
-  const selectedLifecycle = useMemo(() => {
-    return selectedEvent
-      ? getEventLifecycle(selectedEvent, todayIsoDate)
-      : null;
-  }, [selectedEvent, todayIsoDate]);
-
   return (
     <div ref={wizardTopRef} className="space-y-6">
       {/* 1. Animated Step Tabs Bar + Contextual Upper Guidance */}
@@ -1527,8 +1539,8 @@ export function ApplyForm({
                               ? getMonthTheme(d.getMonth())
                               : getMonthTheme(0);
                             const isSelected =
-                              formData.activity_slug.trim().toLowerCase() ===
-                              event.slug.trim().toLowerCase();
+                              (formData.activity_slug || "").trim().toLowerCase() ===
+                              (event.slug || "").trim().toLowerCase();
                             const lifecycle = getEventLifecycle(
                               event,
                               todayIsoDate
@@ -1709,7 +1721,8 @@ export function ApplyForm({
                         <div className="min-w-0 flex-1">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-[#FFC400]">
                             {CATEGORY_LABELS[selectedEvent.category] ||
-                              selectedEvent.category}
+                              selectedEvent.category ||
+                              "Leadership Program"}
                           </p>
                           <h4 className="font-serif font-bold text-lg sm:text-xl text-white leading-snug mt-0.5">
                             {selectedEvent.title}
@@ -1723,9 +1736,11 @@ export function ApplyForm({
                                 : "text-[#38BDF8]"
                             }`}
                           >
-                            {EVENT_LIFECYCLE_LABELS[
-                              getEventLifecycle(selectedEvent, todayIsoDate)
-                            ].toUpperCase()}
+                            {(
+                              EVENT_LIFECYCLE_LABELS[
+                                getEventLifecycle(selectedEvent, todayIsoDate)
+                              ] || "Upcoming Event"
+                            ).toUpperCase()}
                           </p>
                         </div>
                       </div>

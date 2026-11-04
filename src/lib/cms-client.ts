@@ -24,9 +24,12 @@ export function useCmsContent<T extends Record<string, unknown>>(
 
     async function fetchLiveCms() {
       try {
-        const res = await fetch(`/api/cms?key=${encodeURIComponent(pageKey)}`, {
-          cache: "default",
-        });
+        const res = await fetch(
+          `/api/cms?key=${encodeURIComponent(pageKey)}&_t=${Date.now()}`,
+          {
+            cache: "no-store",
+          }
+        );
         if (!res.ok) return;
 
         const data = await res.json();

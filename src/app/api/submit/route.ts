@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
         ? (eventsPage.content.events as LeadershipEvent[])
         : EVENTS;
       const foundEvent = cmsEvents.find(
-        (e) => e.slug.trim().toLowerCase() === resolvedSlug.trim().toLowerCase()
+        (e) => (e.slug || "").trim().toLowerCase() === (resolvedSlug || "").trim().toLowerCase()
       );
       if (foundEvent) {
         pricing = getActivityPricing(resolvedSlug, foundEvent);

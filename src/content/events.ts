@@ -224,7 +224,7 @@ export function getEventLifecycle(
   const comparisonDate =
     todayIsoDate ?? new Date().toISOString().slice(0, 10);
 
-  if (event.endDate < comparisonDate) {
+  if (Boolean(event.endDate) && event.endDate.trim().length > 0 && event.endDate < comparisonDate) {
     return "previous";
   }
 

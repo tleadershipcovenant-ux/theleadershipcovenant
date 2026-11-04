@@ -10,7 +10,7 @@ import {
 export async function GET(req: NextRequest) {
   const keyParam = req.nextUrl.searchParams.get("key") as CmsPageKey | null;
   const cacheHeaders = {
-    "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=15, must-revalidate",
   };
 
   try {
