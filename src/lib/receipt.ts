@@ -1440,10 +1440,142 @@ export function printOfficialReceipt(data: ReceiptPayload): void {
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
+    @media (max-width: 640px) {
+      body {
+        padding: 10px 8px;
+      }
+      .toolbar {
+        justify-content: stretch;
+        margin-bottom: 10px;
+      }
+      .btn {
+        width: 100%;
+        min-height: 44px;
+      }
+      .voucher {
+        border-radius: 16px;
+      }
+      .header {
+        padding: 16px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+      }
+      .brand-wrap {
+        gap: 10px;
+      }
+      .logo-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+      }
+      .eyebrow {
+        font-size: 8px;
+        letter-spacing: 0.07em;
+      }
+      .brand {
+        font-size: 19px;
+      }
+      .sub {
+        font-size: 10px;
+        line-height: 1.35;
+      }
+      .ref-box {
+        width: 100%;
+        padding: 9px 12px;
+      }
+      .ref-code {
+        font-size: 17px;
+        overflow-wrap: anywhere;
+        white-space: normal;
+      }
+      .status-strip {
+        padding: 10px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
+      }
+      .status-pill {
+        justify-content: center;
+        text-align: center;
+        line-height: 1.3;
+      }
+      .issued {
+        text-align: center;
+      }
+      .body {
+        padding: 14px;
+      }
+      .cards-grid,
+      .summary-strip {
+        grid-template-columns: 1fr;
+      }
+      .summary-strip {
+        gap: 10px;
+        padding: 12px 14px;
+      }
+      .sum-col {
+        padding: 0 0 10px;
+        border-right: none;
+        border-bottom: 1px solid #CFEAE2;
+      }
+      .sum-col:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .ubl-voucher-head {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
+      }
+      .ubl-head-left {
+        line-height: 1.35;
+      }
+      .ubl-head-fee {
+        text-align: left;
+      }
+      .ubl-voucher-body {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 14px;
+      }
+      .ubl-brand-col {
+        flex-direction: row;
+        justify-content: flex-start;
+      }
+      .ubl-details-col {
+        width: 100%;
+      }
+      .ubl-meta-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .iban-val {
+        font-size: 12px;
+        overflow-wrap: anywhere;
+      }
+      .ubl-qr-col {
+        border-left: none;
+        border-top: 1.5px solid #C5E3F2;
+        padding: 14px 0 0;
+      }
+      .footer {
+        padding: 12px 14px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        text-align: center;
+        line-height: 1.4;
+      }
+      .verified-badge {
+        align-self: center;
+      }
+    }
     @media print {
       body { background: #FFFFFF; padding: 0; }
       .voucher { box-shadow: none; border: 1.5px solid #BCE8DF; }
       .toolbar { display: none !important; }
+      @page { size: auto; margin: 8mm; }
     }
   </style>
 </head>
