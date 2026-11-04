@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ABOUT_CONTENT } from "@/content/about";
+import { useAboutPageContent } from "@/lib/cms-client";
 import GovernanceSection from "@/components/GovernanceSection";
 import {
   MdCheckCircle,
@@ -32,7 +32,16 @@ const PROMISE_CARD_STYLES = [
 ];
 
 export default function AboutAnimatedView() {
-  const { visionMission, covenant, principles, closingCtas } = ABOUT_CONTENT;
+  const content = useAboutPageContent();
+  const {
+    hero,
+    visionMission,
+    covenant,
+    principles,
+    ceo,
+    closingBanner,
+    closingCtas,
+  } = content;
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
@@ -44,7 +53,7 @@ export default function AboutAnimatedView() {
         {/* Atmospheric Background Image */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <img
-            src="/Our%20story/S1.png"
+            src={hero.bgImage || "/Our%20story/S1.png"}
             alt="The Leadership Covenant - Our Story"
             fetchPriority="high"
             decoding="async"
@@ -62,12 +71,18 @@ export default function AboutAnimatedView() {
           className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center will-change-[transform,opacity] w-full"
         >
           <h1 className="font-serif font-extrabold text-3xl sm:text-5xl lg:text-[54px] text-white leading-[1.14] tracking-tight max-w-4xl mx-auto">
-            Everyone has the potential to lead. <br />
-            <span className="text-[#FFC400]">We help them discover and develop it.</span>
+            {hero.h1?.includes("discover and develop it") ? (
+              <>
+                Everyone has the potential to lead. <br />
+                <span className="text-[#FFC400]">We help them discover and develop it.</span>
+              </>
+            ) : (
+              hero.h1
+            )}
           </h1>
 
           <p className="text-sm sm:text-base lg:text-lg text-slate-200 mt-5 max-w-2xl mx-auto leading-relaxed font-normal">
-            {visionMission.mission.text}
+            {hero.subtext || visionMission.mission.text}
           </p>
         </motion.div>
       </section>
@@ -98,9 +113,11 @@ export default function AboutAnimatedView() {
                   </div>
                   <div>
                     <span className="text-xs font-bold uppercase tracking-widest text-[#FF7900] block">
-                      Purpose &amp; Direction
+                      {visionMission.vision.eyebrow || "Purpose & Direction"}
                     </span>
-                    <span className="text-[11px] font-semibold text-slate-400">Our Aspiration</span>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      {visionMission.vision.subtitle || "Our Aspiration"}
+                    </span>
                   </div>
                 </div>
                 <h2 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#102E4D] mb-3.5 tracking-tight leading-snug">
@@ -128,9 +145,11 @@ export default function AboutAnimatedView() {
                   </div>
                   <div>
                     <span className="text-xs font-bold uppercase tracking-widest text-[#FF7900] block">
-                      Institutional Mandate
+                      {visionMission.mission.eyebrow || "Institutional Mandate"}
                     </span>
-                    <span className="text-[11px] font-semibold text-slate-400">Our Action</span>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      {visionMission.mission.subtitle || "Our Action"}
+                    </span>
                   </div>
                 </div>
                 <h2 className="font-serif font-extrabold text-2xl sm:text-3xl text-[#102E4D] mb-3.5 tracking-tight leading-snug">
@@ -167,7 +186,7 @@ export default function AboutAnimatedView() {
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
             <p className="text-sm sm:text-base text-slate-600 mt-3.5 max-w-2xl mx-auto leading-relaxed font-medium">
-              Our solemn pledge to students, educators, and communities is reflected in four enduring commitments that guide everything we do.
+              {covenant.subtext}
             </p>
           </motion.div>
 
@@ -176,7 +195,7 @@ export default function AboutAnimatedView() {
               const cardStyle = PROMISE_CARD_STYLES[idx % PROMISE_CARD_STYLES.length];
               return (
                 <motion.div
-                  key={p.number}
+                  key={p.number || idx}
                   initial={{ opacity: 0, y: 22 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-30px" }}
@@ -234,14 +253,14 @@ export default function AboutAnimatedView() {
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
             <p className="text-sm sm:text-base text-slate-600 mt-3.5 max-w-2xl mx-auto leading-relaxed font-medium">
-              Timeless principles grounded in frameworks that shape character and institutional culture.
+              {principles.subtext}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {principles.items.map((principle, idx) => (
               <motion.div
-                key={principle.title}
+                key={principle.title || idx}
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-30px" }}
@@ -271,7 +290,7 @@ export default function AboutAnimatedView() {
       </section>
 
       {/* 5. CEO Message & Leadership — Guidance & Governance */}
-      <GovernanceSection />
+      <GovernanceSection ceo={ceo} />
 
       {/* 6. Closing Call to Action — Styled Floating Rounded Card */}
       <section className="w-full py-12 sm:py-16 lg:py-20 relative overflow-hidden" id="cta-journey">
@@ -292,29 +311,46 @@ export default function AboutAnimatedView() {
 
             <div className="max-w-2xl mx-auto relative z-10">
               <p className="text-xs font-bold uppercase tracking-widest text-[#FFC400] mb-2 sm:mb-2.5">
-                Start Your Transformation
+                {closingBanner?.eyebrow || "Start Your Transformation"}
               </p>
               <h2 className="font-serif font-extrabold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight leading-snug">
-                Ready to Begin the Journey?
+                {closingBanner?.heading || "Ready to Begin the Journey?"}
               </h2>
               <div className="w-16 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
               <p className="text-xs sm:text-sm text-slate-300 mt-3 max-w-xl mx-auto leading-relaxed font-medium">
-                Join hundreds of visionary educators and institutions transforming lives through the power of principled leadership.
+                {closingBanner?.subtext ||
+                  "Join hundreds of visionary educators and institutions transforming lives through the power of principled leadership."}
               </p>
 
               <div className="pt-7 flex flex-wrap items-center justify-center gap-3.5">
                 <Link
-                  href={closingCtas[0].href}
+                  href={
+                    closingBanner?.primaryButton?.href ||
+                    closingCtas?.[0]?.href ||
+                    "/services"
+                  }
                   className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white font-bold text-xs sm:text-sm uppercase tracking-wider shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2 group active:scale-98 cursor-pointer"
                 >
-                  <span>{closingCtas[0].label}</span>
+                  <span>
+                    {closingBanner?.primaryButton?.label ||
+                      closingCtas?.[0]?.label ||
+                      "Explore our services"}
+                  </span>
                   <MdArrowForward className="text-base group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
-                  href={closingCtas[1].href}
+                  href={
+                    closingBanner?.secondaryButton?.href ||
+                    closingCtas?.[1]?.href ||
+                    "/contact#enquiry-form"
+                  }
                   className="px-6 py-3.5 rounded-xl border border-white/25 hover:border-[#FFC400] bg-white/5 hover:bg-white/10 text-white font-semibold text-xs sm:text-sm uppercase tracking-wider transition-all active:scale-98"
                 >
-                  <span>{closingCtas[1].label}</span>
+                  <span>
+                    {closingBanner?.secondaryButton?.label ||
+                      closingCtas?.[1]?.label ||
+                      "Get in touch"}
+                  </span>
                 </Link>
               </div>
             </div>

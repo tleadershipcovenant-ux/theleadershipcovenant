@@ -22,6 +22,7 @@ import {
   Phone,
   Home,
   FileText,
+  BookOpen,
 } from "lucide-react";
 
 interface QuickBadges {
@@ -34,12 +35,10 @@ const CMS_PAGES_SUBMENU = [
   { label: "Overview Hub", pageKey: "hub", path: "/AD_Admin/cms", icon: Layers, iconColor: "text-[#FB7185]" },
   { label: "Activities Page", pageKey: "events", path: "/AD_Admin/cms/events", icon: Calendar, iconColor: "text-[#818CF8]" },
   { label: "Home Page", pageKey: "home", path: "/AD_Admin/cms/home", icon: Home, iconColor: "text-[#60A5FA]" },
+  { label: "Our Story Page", pageKey: "about", path: "/AD_Admin/cms/about", icon: BookOpen, iconColor: "text-[#F59E0B]" },
   { label: "Pricing & Early Bird", pageKey: "pricing", path: "/AD_Admin/cms/pricing", icon: DollarSign, iconColor: "text-[#4ADE80]" },
   { label: "Services & Programs", pageKey: "services", path: "/AD_Admin/cms/services", icon: Briefcase, iconColor: "text-[#10B981]" },
   { label: "Summit 2026", pageKey: "summit", path: "/AD_Admin/cms/summit", icon: Calendar, iconColor: "text-[#FF7900]" },
-  { label: "Payment Accounts", pageKey: "payment", path: "/AD_Admin/cms/payment", icon: CreditCard, iconColor: "text-[#34D399]" },
-  { label: "Submit / Apply Page", pageKey: "forms", path: "/AD_Admin/cms/forms", icon: FileText, iconColor: "text-[#A78BFA]" },
-  { label: "Contact Us Page", pageKey: "contact", path: "/AD_Admin/cms/contact", icon: Phone, iconColor: "text-[#38BDF8]" },
 ];
 
 export default function AdminShell({

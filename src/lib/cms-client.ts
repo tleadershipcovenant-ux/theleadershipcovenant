@@ -18,6 +18,11 @@ import {
   normalizeSummitCms,
   type SummitPageContent,
 } from "@/content/summit";
+import {
+  ABOUT_CONTENT,
+  normalizeAboutCms,
+  type AboutPageContent,
+} from "@/content/about";
 
 /**
  * React hook for consuming CMS page content on client components.
@@ -99,4 +104,13 @@ export function useSummitPageContent(): SummitPageContent {
   );
   return useMemo(() => normalizeSummitCms(content), [content]);
 }
+
+export function useAboutPageContent(): AboutPageContent {
+  const { content } = useCmsContent(
+    "about",
+    ABOUT_CONTENT as unknown as Record<string, unknown>
+  );
+  return useMemo(() => normalizeAboutCms(content), [content]);
+}
+
 
