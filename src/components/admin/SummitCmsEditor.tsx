@@ -496,92 +496,99 @@ export default function SummitCmsEditor() {
       {/* ─────────────────────────────────────────────────────────────────── */}
       {/* STICKY TOP EXECUTIVE BAR                                            */}
       {/* ─────────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 bg-[#001B33] text-white border-b border-white/10 shadow-lg backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left: Breadcrumbs & Status */}
-            <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 bg-[#001B33]/95 text-white border-b border-white/10 shadow-xl backdrop-blur-md">
+        {/* Signature Brand Accent Stripe */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#FFC400]" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-4">
+            {/* Left: Breadcrumbs, Title & Unsaved Changes */}
+            <div className="flex items-center gap-2.5 min-w-0">
               <Link
                 href="/AD_Admin/cms"
-                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors shrink-0"
                 title="Back to CMS Hub"
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFC400]">
-                    Featured Event CMS
-                  </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[#FFC400]">
+                  <span>Featured Event CMS</span>
                   <span className="text-white/30">•</span>
-                  <span className="text-[11px] text-slate-300">
-                    The School Impact Summit 2026
+                  <span className="text-slate-300 normal-case tracking-normal font-medium truncate">
+                    School Impact Summit 2026
                   </span>
                 </div>
-                <h1 className="text-lg sm:text-xl font-serif font-black text-white tracking-tight leading-tight flex items-center gap-2">
-                  <span>School Impact Summit Editor</span>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base sm:text-lg font-serif font-black text-white tracking-tight leading-tight truncate">
+                    School Impact Summit Editor
+                  </h1>
                   {hasUnsavedChanges && (
-                    <span className="text-[10px] font-sans font-bold bg-[#FF7900] text-white px-2 py-0.5 rounded-full shadow-xs">
+                    <span className="text-[10px] font-sans font-bold bg-[#FF7900] text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse shrink-0">
                       Unsaved Changes
                     </span>
                   )}
-                </h1>
+                </div>
               </div>
             </div>
 
             {/* Right: Actions & Save */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap shrink-0">
+              {/* Page Live / Draft Status */}
               <button
                 type="button"
                 onClick={() => setVisible(!visible)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${visible
-                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
-                    : "bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30"
-                  }`}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                  visible
+                    ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25"
+                    : "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                }`}
+                title={visible ? "Summit page is publicly Live" : "Summit page is in Draft"}
               >
-                {visible ? (
-                  <>
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Live</span>
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-3.5 h-3.5" />
-                    <span>Draft</span>
-                  </>
-                )}
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    visible ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                  }`}
+                />
+                <span>{visible ? "Live" : "Draft"}</span>
               </button>
 
+              {/* Public Page Preview */}
               <Link
                 href="/summit"
                 target="_blank"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-white text-xs font-bold border border-white/10 hover:border-white/20 transition-all"
+                title="Open public /summit in a new tab"
               >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Preview /summit</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
+                <span className="hidden sm:inline">Preview /summit</span>
+                <span className="sm:hidden">Preview</span>
               </Link>
 
+              {/* Reset Defaults */}
               <button
                 type="button"
                 disabled={resetting || saving}
                 onClick={handleReset}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-300 hover:text-rose-200 text-xs font-bold border border-white/10 transition-all disabled:opacity-50"
-                title="Restore default content"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-300 hover:text-rose-200 text-xs font-bold border border-white/10 transition-all disabled:opacity-50 cursor-pointer"
+                title="Restore default authentic content"
               >
                 <RotateCcw
                   className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`}
                 />
-                <span>Reset</span>
+                <span className="hidden md:inline">Reset</span>
               </button>
 
+              {/* Publish Button */}
               <button
                 type="button"
                 disabled={saving || !hasUnsavedChanges}
                 onClick={handleSave}
-                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-lg transition-all ${hasUnsavedChanges
-                    ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white cursor-pointer active:scale-95 ring-2 ring-[#FFC400]/40"
+                className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-lg transition-all ${
+                  hasUnsavedChanges
+                    ? "bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white cursor-pointer active:scale-95 ring-2 ring-[#FFC400]/40 shadow-orange-950/20"
                     : "bg-white/10 text-white/40 cursor-not-allowed"
-                  }`}
+                }`}
               >
                 {saving ? (
                   <>
@@ -591,15 +598,22 @@ export default function SummitCmsEditor() {
                 ) : (
                   <>
                     <Save className="w-4 h-4" />
-                    <span>Publish Changes (Ctrl+S)</span>
+                    <span>{hasUnsavedChanges ? "Publish (Ctrl+S)" : "Published"}</span>
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* Section Navigation Pills */}
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10 overflow-x-auto pb-1 text-xs">
+          {/* Section Navigation Tabs with Sleek Compact Scrollbar */}
+          <div
+            className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-white/10 overflow-x-auto scroll-smooth py-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-white/5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#FFC400]/60"
+            onWheel={(e) => {
+              if (e.deltaY !== 0) {
+                e.currentTarget.scrollLeft += e.deltaY;
+              }
+            }}
+          >
             {[
               { id: "hero", label: "01 Hero Photographic Banner", icon: ImageIcon },
               { id: "objectives", label: "02 Summit Objectives", icon: Target },
@@ -615,12 +629,13 @@ export default function SummitCmsEditor() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold whitespace-nowrap transition-all ${isActive
-                      ? "bg-[#FFC400] text-[#001B33] shadow-md font-extrabold"
-                      : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-                    }`}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11.5px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#FFC400] text-[#001B33] shadow-md font-extrabold ring-1 ring-[#FFC400]"
+                      : "bg-white/5 text-slate-300 hover:bg-white/15 hover:text-white border border-white/5"
+                  }`}
                 >
-                  <TabIcon className="w-3.5 h-3.5" />
+                  <TabIcon className={`w-3.5 h-3.5 ${isActive ? "text-[#001B33]" : "text-slate-400"}`} />
                   <span>{tab.label}</span>
                 </button>
               );
