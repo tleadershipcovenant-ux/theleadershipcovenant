@@ -30,6 +30,7 @@ import {
   Phone,
   Loader2,
   Building2,
+  Briefcase,
   User,
   Tag,
   Copy,
@@ -1993,42 +1994,46 @@ function RegistrationsCrmInner() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Name & Role */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                  {/* Name & Reference */}
                   <div className="space-y-1">
                     <div className="text-[10px] sm:text-[10.5px] uppercase font-bold text-slate-400">
-                      Participant Name & Role
+                      Participant Full Name
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <div
-                        className={`w-8 h-8 rounded-lg border ${getAvatarColor(selected.full_name)} flex items-center justify-center font-bold text-xs shrink-0`}
+                        className={`w-10 h-10 rounded-xl border ${getAvatarColor(selected.full_name)} flex items-center justify-center font-black text-sm shrink-0 shadow-2xs`}
                       >
                         {getInitials(selected.full_name)}
                       </div>
-                      <div className="font-bold text-sm sm:text-base text-[#102E4D] leading-tight break-words">
-                        {selected.full_name}
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-base sm:text-lg text-[#102E4D] leading-tight break-words">
+                          {selected.full_name}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-extrabold text-[10px] border border-[#C8EFE6] font-num">
+                            Ref: #{selected.reference_code}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                              selected.booking_mode === "secure_seat"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                            }`}
+                          >
+                            {selected.booking_mode === "secure_seat"
+                              ? "Priority Seat"
+                              : "Provisional Reservation"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="break-words">
-                        {selected.role} • {selected.school_name || selected.organization || "Independent"}
-                      </span>
-                    </div>
-                    {selected.address_with_city && (
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="break-words">
-                          {selected.address_with_city}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Direct Contact Buttons */}
                   <div className="space-y-2">
                     {/* Email Box */}
-                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0">
+                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <Mail className="w-3.5 h-3.5 text-[#005696] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800 truncate block">
@@ -2060,7 +2065,7 @@ function RegistrationsCrmInner() {
                     </div>
 
                     {/* WhatsApp Box */}
-                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0">
+                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
                         <Phone className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800 truncate font-num block">
@@ -2092,6 +2097,54 @@ function RegistrationsCrmInner() {
                           <span>WhatsApp</span>
                         </a>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DEDICATED COLORFUL PARTICIPANT DETAILS CARDS: School Name, Role, Address */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
+                  {/* 1. School Name Card */}
+                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white border-2 border-[#BFDBFE] shadow-2xs flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#005696] to-[#003A66] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#005696] block">
+                        School Name
+                      </span>
+                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                        {selected.school_name || selected.organization || "Independent / Individual"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2. Role Card */}
+                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#FFF7ED] via-[#F8FAFC] to-white border-2 border-[#FED7AA] shadow-2xs flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <Briefcase className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#EA580C] block">
+                        Role / Designation
+                      </span>
+                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                        {selected.role || "Participant"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3. Address Card */}
+                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] via-[#F8FAFC] to-white border-2 border-[#A7F3D0] shadow-2xs flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-[#059669] block">
+                        Address with City
+                      </span>
+                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                        {selected.address_with_city || "Not Specified"}
+                      </p>
                     </div>
                   </div>
                 </div>
