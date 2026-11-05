@@ -57,13 +57,19 @@ export default function AboutSection() {
             className="lg:col-span-6 relative w-full h-full"
           >
             <div className="relative rounded-2xl overflow-hidden shadow-xl border border-[#D7F5EF] bg-white aspect-[4/3] sm:aspect-[16/11] lg:h-[480px] w-full group">
-              <img
-                src={story.image}
-                alt={story.imageAlt}
-                loading="lazy"
-                decoding="async"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
+              <picture className="w-full h-full">
+                <source
+                  srcSet={story.image.replace(/\.(jpg|png)$/i, ".webp")}
+                  type="image/webp"
+                />
+                <img
+                  src={story.image}
+                  alt={story.imageAlt}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </picture>
             </div>
           </motion.div>
 

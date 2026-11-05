@@ -297,13 +297,19 @@ export default function HomeServicesSection() {
 
                   {/* Card Background Image Frame */}
                   <div className="relative w-full h-full overflow-hidden group">
-                    <img
-                      src={slide.image}
-                      alt={slide.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
-                    />
+                    <picture className="w-full h-full">
+                      <source
+                        srcSet={slide.image.replace(/\.(jpg|png)$/i, ".webp")}
+                        type="image/webp"
+                      />
+                      <img
+                        src={slide.image}
+                        alt={slide.title}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                    </picture>
 
                     {/* Ambient Gradients Tailored for Text Visibility per Side */}
                     {isCenter && (

@@ -378,11 +378,16 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
+const normalizedHomeCache = new WeakMap<Record<string, unknown>, HomePageContent>();
+
 export function normalizeHomeCms(
   raw: Record<string, unknown> | null | undefined
 ): HomePageContent {
   const d = HOME_PAGE;
   const source = asRecord(raw);
+  if (source && normalizedHomeCache.has(source)) {
+    return normalizedHomeCache.get(source)!;
+  }
   const heroRaw = asRecord(source.hero);
   const statsRaw = asRecord(source.stats);
   const upcomingRaw = asRecord(source.upcoming);
@@ -435,7 +440,7 @@ export function normalizeHomeCms(
   const storyPrimary = asRecord(storyRaw.primaryCta);
   const storySecondary = asRecord(storyRaw.secondaryCta);
 
-  return {
+  const result: HomePageContent = {
     meta: {
       ...d.meta,
       ...asRecord(source.meta),
@@ -523,4 +528,9 @@ export function normalizeHomeCms(
       },
     },
   };
+
+  if (source) {
+    normalizedHomeCache.set(source, result);
+  }
+  return result;
 }

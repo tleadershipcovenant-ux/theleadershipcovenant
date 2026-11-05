@@ -42,10 +42,6 @@ export default function Home() {
     type: "image/webp",
     fetchPriority: "high",
   });
-  ReactDOM.preload("/Hero%20Section/H1.png", {
-    as: "image",
-    fetchPriority: "high",
-  });
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">

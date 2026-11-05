@@ -86,7 +86,7 @@ export default function HomeUpcomingSection() {
       {/* CONTINUOUS MOVING MARQUEE SLIDER */}
       <div className="relative w-full overflow-hidden mask-fade-x py-6 sm:py-7">
         <div
-          className="flex items-center gap-5 sm:gap-6.5 w-max animate-marquee hover:[animation-play-state:paused] px-4"
+          className="flex items-center gap-5 sm:gap-6.5 w-max animate-marquee hover:[animation-play-state:paused] px-4 transform-gpu will-change-transform"
           style={
             {
               "--marquee-duration": "48s",

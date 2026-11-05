@@ -199,7 +199,7 @@ async function writeLocalCmsCache(data: Record<string, CmsPageRecord>): Promise<
  * Tier 4: Built-in code defaults
  */
 export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
-  // 0. Super-fast in-memory cache if hit within 5 seconds
+  // 0. Super-fast in-memory cache if hit within 30 seconds
   if (memoryCmsCache?.[key] && (memoryCmsCacheExpiry[key] ?? 0) > Date.now()) {
     return memoryCmsCache[key];
   }
@@ -210,7 +210,7 @@ export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
     if (doc?.content) {
       if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
       memoryCmsCache[key] = doc;
-      memoryCmsCacheExpiry[key] = Date.now() + 5000;
+      memoryCmsCacheExpiry[key] = Date.now() + 30000;
       return doc;
     }
   } catch (err) {

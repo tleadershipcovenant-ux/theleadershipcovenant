@@ -34,7 +34,9 @@ export default function HeroSlider() {
       {/* Background Image & Executive Overlays */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {backgrounds.map((background, index) => {
-          const isH1 = background.src.includes("H1.png");
+          const webpSrc = background.src.includes("H1.png")
+            ? "/Hero%20Section/H1.webp"
+            : background.src.replace(/\.(png|jpg|jpeg)$/i, ".webp");
           return (
             <picture
               key={background.src}
@@ -42,11 +44,12 @@ export default function HeroSlider() {
                 activeBackground === index ? "opacity-100" : "opacity-0"
               }`}
             >
-              {isH1 && <source srcSet="/Hero%20Section/H1.webp" type="image/webp" />}
+              <source srcSet={webpSrc} type="image/webp" />
               <img
                 src={background.src}
                 alt={background.alt}
                 fetchPriority={index === 0 ? "high" : "auto"}
+                loading={index === 0 ? "eager" : "lazy"}
                 decoding="async"
                 className="w-full h-full object-cover object-center scale-105"
               />
