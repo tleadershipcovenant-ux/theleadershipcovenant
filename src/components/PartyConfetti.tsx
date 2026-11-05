@@ -78,40 +78,44 @@ function drawFourPointStar(ctx: CanvasRenderingContext2D, size: number) {
  * Smoothly fades out and unmounts after ~4.2 seconds.
  */
 export default function PartyConfetti() {
-  const [mounted, setMounted] = useState(false);
+  const [canRender, setCanRender] = useState(false);
   const [visible, setVisible] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    setCanRender(true);
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    const canvas = canvasRef.current;
+  const initAnimation = (canvas: HTMLCanvasElement | null) => {
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    canvasRef.current = canvas;
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
+    const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
+
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      if (!canvas) return;
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
     };
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", resize, { passive: true });
 
     const particles: Particle[] = [];
     const shapes: ParticleShape[] = ["drop", "ribbon", "star", "disc"];
 
     // 1. Top-to-bottom falling celebration drops, ribbons & sparkles across the full width
-    const topDropCount = 58;
+    const topDropCount = 54;
     for (let i = 0; i < topDropCount; i++) {
       const shape = shapes[i % shapes.length];
       particles.push({
         x: Math.random() * window.innerWidth,
-        y: -15 - Math.random() * (window.innerHeight * 0.55),
-        vx: (Math.random() - 0.5) * 0.9,
-        vy: 1.8 + Math.random() * 2.6,
+        y: -15 - Math.random() * (window.innerHeight * 0.5),
+        vx: (Math.random() - 0.5) * 0.85,
+        vy: 2.0 + Math.random() * 2.8,
         w: shape === "ribbon" ? 8 + Math.random() * 5 : 4.5 + Math.random() * 3,
         h: shape === "ribbon" ? 4 + Math.random() * 2.5 : 4.5 + Math.random() * 3,
         color: CELEBRATION_PALETTE[i % CELEBRATION_PALETTE.length],
@@ -120,17 +124,17 @@ export default function PartyConfetti() {
           shape === "drop"
             ? (Math.random() - 0.5) * 0.02
             : (Math.random() - 0.5) * 0.09,
-        opacity: 0.72 + Math.random() * 0.2,
+        opacity: 0.75 + Math.random() * 0.22,
         shape,
-        swayAmp: 0.45 + Math.random() * 0.85,
+        swayAmp: 0.45 + Math.random() * 0.8,
         swaySpeed: 0.0022 + Math.random() * 0.0025,
         phase: Math.random() * Math.PI * 2,
-        gravity: 0.022,
+        gravity: 0.024,
       });
     }
 
     // 2. Dual-side celebratory popper burst
-    const popperCount = 30;
+    const popperCount = 28;
     for (let i = 0; i < popperCount; i++) {
       const fromLeft = i % 2 === 0;
       const originX = fromLeft
@@ -140,7 +144,7 @@ export default function PartyConfetti() {
       const angle = fromLeft
         ? -Math.PI / 3 + (Math.random() - 0.5) * 0.85
         : -(2 * Math.PI) / 3 + (Math.random() - 0.5) * 0.85;
-      const speed = 4 + Math.random() * 5.8;
+      const speed = 4.2 + Math.random() * 5.6;
       const shape: ParticleShape = i % 3 === 0 ? "star" : "ribbon";
 
       particles.push({
@@ -153,7 +157,7 @@ export default function PartyConfetti() {
         color: CELEBRATION_PALETTE[(i + 2) % CELEBRATION_PALETTE.length],
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.13,
-        opacity: 0.82,
+        opacity: 0.85,
         shape,
         swayAmp: 0.3,
         swaySpeed: 0.003,
@@ -168,7 +172,8 @@ export default function PartyConfetti() {
 
     const render = (now: number) => {
       const elapsed = now - startTime;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       if (elapsed >= durationMs) {
         setVisible(false);
@@ -185,7 +190,7 @@ export default function PartyConfetti() {
         p.vx *= 0.992;
         p.rotation += p.vRot;
 
-        if (p.y > canvas.height + 30) continue;
+        if (p.y > window.innerHeight + 30) continue;
 
         const alpha = Math.max(0, p.opacity * fadeProgress);
         if (alpha <= 0.01) continue;
@@ -220,22 +225,28 @@ export default function PartyConfetti() {
 
     const unmountTimer = window.setTimeout(() => {
       setVisible(false);
-    }, durationMs + 150);
+    }, durationMs + 100);
 
     return () => {
       window.removeEventListener("resize", resize);
       window.clearTimeout(unmountTimer);
       cancelAnimationFrame(animId);
     };
-  }, [mounted]);
+  };
 
-  if (!mounted || !visible) return null;
+  useEffect(() => {
+    if (!canRender) return;
+    const cleanup = initAnimation(canvasRef.current);
+    return cleanup;
+  }, [canRender]);
+
+  if (!canRender || !visible || typeof document === "undefined") return null;
 
   return createPortal(
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 w-screen h-screen z-[95]"
+      className="pointer-events-none fixed inset-0 w-screen h-screen z-[95] transform-gpu will-change-transform"
     />,
     document.body
   );

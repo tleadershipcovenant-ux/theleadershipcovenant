@@ -32,14 +32,8 @@ import {
   saveApplyFormDraft,
   clearApplyFormDraft,
 } from "@/lib/apply-cookies";
-
-const PartyConfetti = dynamic(() => import("@/components/PartyConfetti"), {
-  ssr: false,
-});
-const ContinuousCelebration = dynamic(
-  () => import("@/components/ContinuousCelebration"),
-  { ssr: false }
-);
+import PartyConfetti from "@/components/PartyConfetti";
+import ContinuousCelebration from "@/components/ContinuousCelebration";
 import {
   CheckCircle2,
   AlertCircle,
@@ -705,7 +699,13 @@ export function ApplyForm({
       setStep("complete");
       clearApplyFormDraft();
       setIsServerBusy(false);
-      scrollWizardIntoView();
+      if (typeof window !== "undefined") {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            scrollWizardIntoView();
+          });
+        });
+      }
     } catch (err: unknown) {
       setIsServerBusy(true);
       setError(
@@ -846,7 +846,7 @@ export function ApplyForm({
     return (
       <div
         ref={wizardTopRef}
-        className="relative rounded-3xl bg-gradient-to-br from-[#EFFBF8] via-white to-[#F0FDF4]/40 border-2 border-[#C8EFE6] p-3 sm:p-7 lg:p-9 shadow-xl overflow-hidden"
+        className="relative rounded-3xl bg-gradient-to-br from-[#EFFBF8] via-white to-[#F0FDF4]/40 border-2 border-[#C8EFE6] p-3 sm:p-7 lg:p-9 shadow-xl overflow-hidden transform-gpu will-change-transform"
       >
         {/* Top Signature Line */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#102E4D] via-[#FF7900] to-[#FFC400] rounded-t-3xl pointer-events-none z-10" />
@@ -858,19 +858,24 @@ export function ApplyForm({
         <PartyConfetti />
 
         <motion.div
-          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          initial={{ opacity: 0, y: 14, scale: 0.985 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+          transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
           className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-stretch transform-gpu"
         >
           {/* Left Landscape Column: Professional Success Crest + Thanks Message + Actions */}
-          <div className="lg:col-span-6 flex flex-col justify-between p-4 sm:p-6 lg:p-7 rounded-2xl bg-white/85 border-2 border-[#C8EFE6] shadow-sm backdrop-blur-xs text-center lg:text-left space-y-4">
+          <div className="lg:col-span-6 flex flex-col justify-between p-4 sm:p-6 lg:p-7 rounded-2xl bg-white/85 border-2 border-[#C8EFE6] shadow-sm backdrop-blur-xs text-center lg:text-left space-y-4 transform-gpu">
             <div className="space-y-3.5">
               {/* Professional Success Setting (Clean Static Check + Proper Icon Styled Text) */}
               <div className="flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3.5">
-                <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white flex items-center justify-center shadow-md shadow-[#16A34A]/20 ring-4 ring-[#EFFBF8] border border-white shrink-0">
+                <motion.div
+                  initial={{ scale: 0.72, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.08, type: "spring", stiffness: 400, damping: 22 }}
+                  className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br from-[#16A34A] to-[#15803D] text-white flex items-center justify-center shadow-md shadow-[#16A34A]/25 ring-4 ring-[#EFFBF8] border border-white shrink-0 transform-gpu"
+                >
                   <Check className="w-6 h-6 stroke-[3] text-white" />
-                </div>
+                </motion.div>
 
                 <div className="space-y-0.5 text-left">
                   {/* Fully Styled Text (Not a badge) with Proper Icon & Increased Font Size */}
@@ -979,11 +984,17 @@ export function ApplyForm({
                 <div className="bg-gradient-to-r from-[#001B33] via-[#102E4D] to-[#001B33] text-white px-3 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white border-2 border-[#FFC400]/70 p-1 shrink-0 flex items-center justify-center shadow-sm">
-                      <img
-                        src="/Logo_For_Navbar_Fotter.png"
-                        alt="The Leadership Covenant"
-                        className="w-full h-full object-contain"
-                      />
+                      <picture>
+                        <source srcSet="/Logo_For_Navbar_Fotter.webp" type="image/webp" />
+                        <img
+                          src="/Logo_For_Navbar_Fotter.png"
+                          alt="The Leadership Covenant"
+                          className="w-full h-full object-contain"
+                          width={48}
+                          height={48}
+                          loading="eager"
+                        />
+                      </picture>
                     </div>
                     <div className="min-w-0">
                       <span className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#FFC400] block truncate">

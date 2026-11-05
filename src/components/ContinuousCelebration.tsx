@@ -56,31 +56,41 @@ export default function ContinuousCelebration() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     let animId = 0;
     const shapes: ParticleShape[] = ["ribbon", "star", "disc", "drop"];
-    const count = 36; // Ideal balance: rich visual celebration with ultra-low CPU
+    const count = 32; // Ultra-crisp balance: visually rich, zero jank (constant 60fps)
 
-    let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || window.innerHeight);
+    const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
+    let cssWidth = canvas.parentElement?.clientWidth || window.innerWidth;
+    let cssHeight = canvas.parentElement?.clientHeight || window.innerHeight;
+
+    const setupDimensions = () => {
+      if (!canvas.parentElement) return;
+      cssWidth = canvas.parentElement.clientWidth;
+      cssHeight = canvas.parentElement.clientHeight;
+      canvas.width = Math.floor(cssWidth * dpr);
+      canvas.height = Math.floor(cssHeight * dpr);
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
+    };
+    setupDimensions();
 
     const onResize = () => {
-      if (!canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = canvas.parentElement.clientHeight;
+      setupDimensions();
     };
-    window.addEventListener("resize", onResize);
+    window.addEventListener("resize", onResize, { passive: true });
 
     const particles: Particle[] = [];
     for (let i = 0; i < count; i++) {
       const shape = shapes[i % shapes.length];
       particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.8,
-        vy: 0.9 + Math.random() * 1.6,
+        x: Math.random() * cssWidth,
+        y: Math.random() * cssHeight,
+        vx: (Math.random() - 0.5) * 0.75,
+        vy: 0.9 + Math.random() * 1.5,
         w: shape === "ribbon" ? 7 + Math.random() * 4 : 4 + Math.random() * 3,
         h: shape === "ribbon" ? 3.5 + Math.random() * 2 : 4 + Math.random() * 3,
         color: CELEBRATION_PALETTE[i % CELEBRATION_PALETTE.length],
@@ -95,11 +105,27 @@ export default function ContinuousCelebration() {
     }
 
     let lastTime = performance.now();
+    let isPaused = false;
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        isPaused = true;
+      } else {
+        isPaused = false;
+        lastTime = performance.now();
+        animId = requestAnimationFrame(render);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const render = (now: number) => {
+      if (isPaused) return;
+
       const dt = Math.min((now - lastTime) / 16.6, 2.5);
       lastTime = now;
 
-      ctx.clearRect(0, 0, width, height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
 
       for (const p of particles) {
         p.y += p.vy * dt;
@@ -107,12 +133,12 @@ export default function ContinuousCelebration() {
         p.rotation += p.vRot * dt;
 
         // Continuous wrap-around to top
-        if (p.y > height + 20) {
+        if (p.y > cssHeight + 20) {
           p.y = -20;
-          p.x = Math.random() * width;
+          p.x = Math.random() * cssWidth;
         }
-        if (p.x < -20) p.x = width + 10;
-        if (p.x > width + 20) p.x = -10;
+        if (p.x < -20) p.x = cssWidth + 10;
+        if (p.x > cssWidth + 20) p.x = -10;
 
         ctx.save();
         ctx.globalAlpha = p.opacity;
@@ -146,6 +172,7 @@ export default function ContinuousCelebration() {
 
     return () => {
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -154,7 +181,7 @@ export default function ContinuousCelebration() {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="absolute inset-0 w-full h-full pointer-events-none z-0 rounded-2xl sm:rounded-3xl"
+      className="absolute inset-0 w-full h-full pointer-events-none z-0 rounded-2xl sm:rounded-3xl transform-gpu will-change-transform"
     />
   );
 }
