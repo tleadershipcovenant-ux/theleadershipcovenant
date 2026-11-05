@@ -51,17 +51,20 @@ export default function AboutAnimatedView() {
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#FFC400] z-20" />
 
         {/* Atmospheric Background Image */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img
-            src={hero.bgImage || "/Our%20story/S1.png"}
-            alt="The Leadership Covenant - Our Story"
-            fetchPriority="high"
-            decoding="async"
-            className="w-full h-full object-cover object-center opacity-40"
-          />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none transform-gpu">
+          <picture className="w-full h-full">
+            <source srcSet="/Our%20story/S1.webp" type="image/webp" />
+            <img
+              src={hero.bgImage || "/Our%20story/S1.png"}
+              alt="The Leadership Covenant - Our Story"
+              fetchPriority="high"
+              decoding="async"
+              className="w-full h-full object-cover object-center opacity-40"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-[#001B33]/80 via-[#001B33]/75 to-[#001B33]/90" />
-          <div className="absolute -top-24 left-1/4 w-96 h-48 bg-[#FFC400]/12 rounded-full blur-3xl" />
-          <div className="absolute -bottom-24 right-1/4 w-96 h-48 bg-[#FF7900]/12 rounded-full blur-3xl" />
+          <div className="absolute -top-24 left-1/4 w-96 h-48 bg-[#FFC400]/12 rounded-full blur-3xl transform-gpu" />
+          <div className="absolute -bottom-24 right-1/4 w-96 h-48 bg-[#FF7900]/12 rounded-full blur-3xl transform-gpu" />
         </div>
 
         <motion.div
@@ -103,7 +106,7 @@ export default function AboutAnimatedView() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-white rounded-3xl border border-[#D7F5EF] p-7 sm:p-10 shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1 transition-[box-shadow,border-color,transform] duration-300 relative overflow-hidden flex flex-col justify-between group will-change-[transform,opacity]"
+              className="bg-white rounded-3xl border border-[#D7F5EF] p-7 sm:p-10 shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1 transition-[box-shadow,border-color,transform] duration-300 relative overflow-hidden flex flex-col justify-between group transform-gpu will-change-[transform,opacity]"
             >
               <div className="h-1.5 w-full bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900] absolute top-0 left-0" />
               <div>
@@ -135,7 +138,7 @@ export default function AboutAnimatedView() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.45, delay: 0.1, ease: [0.21, 0.47, 0.32, 0.98] }}
-              className="bg-white rounded-3xl border border-[#D7F5EF] p-7 sm:p-10 shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1 transition-[box-shadow,border-color,transform] duration-300 relative overflow-hidden flex flex-col justify-between group will-change-[transform,opacity]"
+              className="bg-white rounded-3xl border border-[#D7F5EF] p-7 sm:p-10 shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1 transition-[box-shadow,border-color,transform] duration-300 relative overflow-hidden flex flex-col justify-between group transform-gpu will-change-[transform,opacity]"
             >
               <div className="h-1.5 w-full bg-gradient-to-r from-[#FF7900] via-[#FFC400] to-[#102E4D] absolute top-0 left-0" />
               <div>
@@ -204,7 +207,7 @@ export default function AboutAnimatedView() {
                     delay: idx * 0.08,
                     ease: [0.21, 0.47, 0.32, 0.98],
                   }}
-                  className="bg-white rounded-2xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1.5 transition-[box-shadow,border-color,transform] duration-300 flex flex-col justify-between overflow-hidden group will-change-[transform,opacity]"
+                  className="bg-white rounded-2xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] hover:-translate-y-1.5 transition-[box-shadow,border-color,transform] duration-300 flex flex-col justify-between overflow-hidden group transform-gpu will-change-[transform,opacity]"
                 >
                   <div className={`h-1.5 w-full bg-gradient-to-r ${cardStyle.gradient}`} />
                   <div className="p-6 sm:p-7 flex flex-col flex-1 justify-between">
@@ -269,7 +272,7 @@ export default function AboutAnimatedView() {
                   delay: idx * 0.1,
                   ease: [0.21, 0.47, 0.32, 0.98],
                 }}
-                className="p-7 sm:p-9 rounded-2xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:shadow-xl hover:-translate-y-1.5 shadow-md transition-[box-shadow,border-color,transform] duration-300 flex flex-col justify-between relative overflow-hidden group will-change-[transform,opacity]"
+                className="p-7 sm:p-9 rounded-2xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] hover:shadow-xl hover:-translate-y-1.5 shadow-md transition-[box-shadow,border-color,transform] duration-300 flex flex-col justify-between relative overflow-hidden group transform-gpu will-change-[transform,opacity]"
               >
                 <div className="h-1 w-full bg-gradient-to-r from-[#FF7900] via-[#FFC400] to-[#FF7900] absolute top-0 left-0" />
                 <div>
@@ -300,7 +303,7 @@ export default function AboutAnimatedView() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-8 sm:p-11 lg:p-14 shadow-2xl border border-white/15 text-center will-change-[transform,opacity]"
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-8 sm:p-11 lg:p-14 shadow-2xl border border-white/15 text-center transform-gpu will-change-[transform,opacity]"
           >
             {/* Top Gold Accent Line */}
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFC400] to-transparent opacity-90" />

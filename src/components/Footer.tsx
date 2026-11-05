@@ -53,11 +53,18 @@ export default function Footer() {
               className="inline-flex items-center gap-3 sm:gap-3.5 group max-w-full"
             >
               <div className="w-11 h-11 sm:w-[52px] sm:h-[52px] flex items-center justify-center shrink-0">
-                <img
-                  alt="The Leadership Covenant"
-                  className="w-full h-full object-contain"
-                  src="/images/footerlogo-transparent.png"
-                />
+                <picture className="w-full h-full flex items-center justify-center">
+                  <source srcSet="/images/footerlogo-transparent.webp" type="image/webp" />
+                  <img
+                    alt="The Leadership Covenant"
+                    width={52}
+                    height={52}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-contain"
+                    src="/images/footerlogo-transparent.png"
+                  />
+                </picture>
               </div>
 
               <div className="min-w-0">

@@ -18,7 +18,7 @@ export default function HomeCtaSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.6 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-7 sm:p-9 lg:p-11 shadow-xl border border-white/15"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#001B33] via-[#0B2540] to-[#001B33] text-white p-7 sm:p-9 lg:p-11 shadow-xl border border-white/15 transform-gpu"
         >
           {/* Ambient Glows inside the Card */}
           <div className="absolute -top-24 right-1/4 w-80 h-32 bg-[#FFC400]/15 rounded-full blur-3xl pointer-events-none" />

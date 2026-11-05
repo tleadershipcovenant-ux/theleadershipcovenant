@@ -33,18 +33,26 @@ export default function HeroSlider() {
 
       {/* Background Image & Executive Overlays */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {backgrounds.map((background, index) => (
-          <img
-            key={background.src}
-            src={background.src}
-            alt={background.alt}
-            fetchPriority={index === 0 ? "high" : "auto"}
-            decoding="async"
-            className={`absolute inset-0 w-full h-full object-cover object-center scale-105 transition-opacity duration-1000 ${
-              activeBackground === index ? "opacity-100" : "opacity-0"
-            }`}
-          />
-        ))}
+        {backgrounds.map((background, index) => {
+          const isH1 = background.src.includes("H1.png");
+          return (
+            <picture
+              key={background.src}
+              className={`absolute inset-0 w-full h-full transform-gpu transition-opacity duration-1000 ${
+                activeBackground === index ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {isH1 && <source srcSet="/Hero%20Section/H1.webp" type="image/webp" />}
+              <img
+                src={background.src}
+                alt={background.alt}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                decoding="async"
+                className="w-full h-full object-cover object-center scale-105"
+              />
+            </picture>
+          );
+        })}
         <div className="absolute inset-0 bg-black/45" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#001B33]/90 via-black/30 to-[#001B33]/55" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,27,51,0.5)_0%,_transparent_75%)]" />

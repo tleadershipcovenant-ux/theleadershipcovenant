@@ -15,6 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default function ActivitiesPage() {
+  ReactDOM.preload("/Activities/A1.webp", {
+    as: "image",
+    type: "image/webp",
+    fetchPriority: "high",
+  });
   ReactDOM.preload("/Activities/A1.png", {
     as: "image",
     fetchPriority: "high",
@@ -28,14 +33,17 @@ export default function ActivitiesPage() {
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#FFC400] z-20" />
 
         {/* Atmospheric Background Image */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img
-            src="/Activities/A1.png"
-            alt="Upcoming leadership camps, summits and cohorts at The Leadership Covenant"
-            fetchPriority="high"
-            decoding="async"
-            className="w-full h-[106%] -top-[3%] object-cover object-[center_42%] opacity-40 transform-gpu translate-y-0"
-          />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none transform-gpu">
+          <picture className="w-full h-full">
+            <source srcSet="/Activities/A1.webp" type="image/webp" />
+            <img
+              src="/Activities/A1.png"
+              alt="Upcoming leadership camps, summits and cohorts at The Leadership Covenant"
+              fetchPriority="high"
+              decoding="async"
+              className="w-full h-[106%] -top-[3%] object-cover object-[center_42%] opacity-40 transform-gpu translate-y-0"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-[#001B33]/80 via-[#001B33]/75 to-[#001B33]/90" />
           <div className="absolute -top-24 left-1/4 w-96 h-48 bg-[#FFC400]/12 rounded-full blur-3xl transform-gpu" />
           <div className="absolute -bottom-24 right-1/4 w-96 h-48 bg-[#FF7900]/12 rounded-full blur-3xl transform-gpu" />

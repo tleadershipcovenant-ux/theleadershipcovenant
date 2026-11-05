@@ -123,7 +123,7 @@ export default function HomeUpcomingSection() {
                   }
                 }}
                 aria-label={`View full details for ${event.title}`}
-                className={`shrink-0 rounded-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden group cursor-pointer ${
+                className={`shrink-0 rounded-2xl transition-[transform,box-shadow,border-color] duration-200 transform-gpu will-change-transform flex flex-col justify-between overflow-hidden group cursor-pointer ${
                   isOpenEnrollment
                     ? "w-[365px] sm:w-[395px] h-[256px] -translate-y-3 z-10 bg-gradient-to-b from-[#F0FDF4] via-white to-[#F0FDF4] border-[3px] border-[#16A34A] ring-4 ring-[#16A34A]/25 shadow-[0_22px_45px_-8px_rgba(22,163,74,0.45)] hover:shadow-[0_28px_55px_-8px_rgba(22,163,74,0.55)] hover:-translate-y-4"
                     : `w-[325px] sm:w-[350px] h-[230px] translate-y-0 z-0 bg-white border border-[#D7F5EF] shadow-md hover:shadow-xl hover:-translate-y-1.5 ${theme.ring}`

@@ -192,6 +192,22 @@ html {
   scroll-behavior: smooth;
   font-variant-numeric: lining-nums;
   font-feature-settings: "lnum" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  overflow-anchor: auto;
+}
+
+/* GPU-accelerated compositing for ambient blurred glows and floating lights */
+.blur-3xl,
+.blur-2xl {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  contain: paint;
+}
+
+/* Hardware-composited smooth touch scrolling */
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 h1, h2, h3, h4, h5, h6, .font-serif {

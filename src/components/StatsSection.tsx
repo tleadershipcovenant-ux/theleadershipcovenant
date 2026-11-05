@@ -120,7 +120,7 @@ export default function StatsSection() {
                 return (
                   <div
                     key={`${currentTabData.id}-${stat.label}-${idx}`}
-                    className={`relative overflow-hidden rounded-2xl bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm border ${tone.cardBorder} p-4 sm:p-5 transition-all duration-300 flex flex-col items-center text-center shadow-lg hover:-translate-y-0.5 group`}
+                    className={`relative overflow-hidden rounded-2xl bg-white/[0.05] hover:bg-white/[0.08] backdrop-blur-sm border ${tone.cardBorder} p-4 sm:p-5 transition-[transform,box-shadow,border-color,background-color] duration-200 transform-gpu flex flex-col items-center text-center shadow-lg hover:-translate-y-0.5 group`}
                   >
                     {/* Top gradient accent line for card */}
                     <div

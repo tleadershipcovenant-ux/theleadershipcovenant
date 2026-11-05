@@ -22,7 +22,7 @@ export default function GovernanceSection({ ceo }: { ceo?: AboutCeoMessage }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-20px" }}
             transition={{ duration: 0.32, ease: "easeOut" }}
-            className="bg-white rounded-2xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] transition-[box-shadow,border-color] duration-200 overflow-hidden group relative"
+            className="bg-white rounded-2xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] transition-[box-shadow,border-color] duration-200 overflow-hidden group relative transform-gpu"
           >
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900]" />
             <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">

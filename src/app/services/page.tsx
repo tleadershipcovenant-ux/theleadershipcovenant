@@ -13,7 +13,15 @@ export const metadata: Metadata = {
 };
 
 export default function ServicesPage() {
-  ReactDOM.preload(SERVICES_PAGE.hero.image.replace(/ /g, "%20"), {
+  const originalImg = SERVICES_PAGE.hero.image.replace(/ /g, "%20");
+  const webpImg = originalImg.replace(/\.png$/i, ".webp");
+
+  ReactDOM.preload(webpImg, {
+    as: "image",
+    type: "image/webp",
+    fetchPriority: "high",
+  });
+  ReactDOM.preload(originalImg, {
     as: "image",
     fetchPriority: "high",
   });

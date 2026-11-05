@@ -138,8 +138,9 @@ export function getDefaultCmsContent(key: CmsPageKey): Record<string, unknown> {
   }
 }
 
-// In-memory cache for ultra-fast serverless hits
+// In-memory cache for ultra-fast serverless hits with 5-second burst caching
 let memoryCmsCache: Record<string, CmsPageRecord> | null = null;
+const memoryCmsCacheExpiry: Record<string, number> = {};
 
 function buildSeedCmsMap(): Record<string, CmsPageRecord> {
   const now = new Date().toISOString();
@@ -198,12 +199,18 @@ async function writeLocalCmsCache(data: Record<string, CmsPageRecord>): Promise<
  * Tier 4: Built-in code defaults
  */
 export async function getCmsPage(key: CmsPageKey): Promise<CmsPageRecord> {
+  // 0. Super-fast in-memory cache if hit within 5 seconds
+  if (memoryCmsCache?.[key] && (memoryCmsCacheExpiry[key] ?? 0) > Date.now()) {
+    return memoryCmsCache[key];
+  }
+
   // 1. Primary: Google Cloud Firestore Edge REST
   try {
     const doc = await getFirestoreDocument<CmsPageRecord>("cms_pages", key);
     if (doc?.content) {
       if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
       memoryCmsCache[key] = doc;
+      memoryCmsCacheExpiry[key] = Date.now() + 5000;
       return doc;
     }
   } catch (err) {
@@ -309,6 +316,7 @@ export async function upsertCmsPage(
   // 2. Sync to in-memory cache
   if (!memoryCmsCache) memoryCmsCache = buildSeedCmsMap();
   memoryCmsCache[key] = record;
+  memoryCmsCacheExpiry[key] = Date.now() + 5000;
 
   // 3. Sync to local offline JSON cache
   try {

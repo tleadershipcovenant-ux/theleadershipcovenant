@@ -107,11 +107,18 @@ export default function Navbar() {
                 isScrolled ? "scale-95" : "scale-100"
               }`}
             >
-              <img
-                src="/Logo_For_Navbar_Fotter.png"
-                alt="The Leadership Covenant"
-                className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
-              />
+              <picture className="w-full h-full flex items-center justify-center">
+                <source srcSet="/Logo_For_Navbar_Fotter.webp" type="image/webp" />
+                <img
+                  src="/Logo_For_Navbar_Fotter.png"
+                  alt="The Leadership Covenant"
+                  width={56}
+                  height={56}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="w-full h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
+                />
+              </picture>
             </div>
             <div className="flex flex-col justify-center text-left min-w-0">
               <span className="font-serif font-extrabold text-[#102E4D] tracking-tight leading-tight whitespace-nowrap truncate text-base sm:text-lg lg:text-[21px]">

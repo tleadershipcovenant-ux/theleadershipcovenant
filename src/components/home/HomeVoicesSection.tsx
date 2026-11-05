@@ -87,7 +87,7 @@ export default function HomeVoicesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-20px" }}
               transition={{ duration: 0.3, delay: 0.04, ease: "easeOut" }}
-              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#D7F5EF] shadow-sm hover:shadow-md hover:-translate-y-1 transition-[transform,box-shadow] duration-200 flex flex-col justify-between relative overflow-hidden border-t-4 border-t-[#C0392B] group"
+              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#D7F5EF] shadow-sm hover:shadow-md hover:-translate-y-1 transition-[transform,box-shadow] duration-200 flex flex-col justify-between relative overflow-hidden border-t-4 border-t-[#C0392B] group transform-gpu"
             >
               <div>
                 <div className="mb-4">
@@ -111,7 +111,7 @@ export default function HomeVoicesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-20px" }}
               transition={{ duration: 0.3, delay: 0.08, ease: "easeOut" }}
-              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#D7F5EF] shadow-sm hover:shadow-md hover:-translate-y-1 transition-[transform,box-shadow] duration-200 flex flex-col justify-between relative overflow-hidden border-t-4 border-t-[#2563EB] group"
+              className="p-6 sm:p-7 rounded-2xl bg-white border border-[#D7F5EF] shadow-sm hover:shadow-md hover:-translate-y-1 transition-[transform,box-shadow] duration-200 flex flex-col justify-between relative overflow-hidden border-t-4 border-t-[#2563EB] group transform-gpu"
             >
               <div>
                 <div className="mb-4">

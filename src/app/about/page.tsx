@@ -13,6 +13,11 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  ReactDOM.preload("/Our%20story/S1.webp", {
+    as: "image",
+    type: "image/webp",
+    fetchPriority: "high",
+  });
   ReactDOM.preload("/Our%20story/S1.png", {
     as: "image",
     fetchPriority: "high",

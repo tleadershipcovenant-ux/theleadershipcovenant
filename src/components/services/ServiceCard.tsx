@@ -29,7 +29,7 @@ export default function ServiceCard({
         duration: 0.42,
         ease: [0.21, 0.47, 0.32, 0.98],
       }}
-      className="scroll-mt-32 bg-white rounded-3xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] transition-[box-shadow,border-color] duration-300 overflow-hidden relative group will-change-[transform,opacity]"
+      className="scroll-mt-32 bg-white rounded-3xl border border-[#D7F5EF] shadow-md hover:shadow-xl hover:border-[#FFC400] transition-[box-shadow,border-color] duration-300 overflow-hidden relative group transform-gpu will-change-[transform,opacity]"
     >
       <div className="h-1.5 w-full bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900]" />
 

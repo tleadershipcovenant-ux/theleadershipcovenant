@@ -98,21 +98,24 @@ export default function HomeServicesSection() {
     return () => clearInterval(timer);
   }, [nextSlide, isPaused]);
 
-  // Wheel / Trackpad horizontal scroll handler with throttle
+  // Deliberate horizontal trackpad swipe handler — never hijack vertical page scrolling
   const handleWheel = (e: React.WheelEvent) => {
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(delta) < 20) return;
+    // Only capture deliberate horizontal swipes (deltaX > deltaY)
+    // Never trap vertical scrolling so page scroll is 100% smooth without getting stuck
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) * 1.3 || Math.abs(e.deltaX) < 22) {
+      return;
+    }
 
     if (!wheelLockRef.current) {
       wheelLockRef.current = true;
-      if (delta > 0) {
+      if (e.deltaX > 0) {
         nextSlide();
       } else {
         prevSlide();
       }
       setTimeout(() => {
         wheelLockRef.current = false;
-      }, 450);
+      }, 350);
     }
   };
 
