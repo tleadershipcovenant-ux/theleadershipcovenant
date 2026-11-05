@@ -177,6 +177,7 @@ export default function AdminContactsCrmPage() {
   const [editStatus, setEditStatus] = useState<ContactCrmStatus>("new");
   const [editNotes, setEditNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isStatusUnlocked, setIsStatusUnlocked] = useState(false);
@@ -367,13 +368,24 @@ export default function AdminContactsCrmPage() {
 
   const handleDeleteRecord = async (id: string) => {
     if (!window.confirm("Permanently delete this contact inquiry record? This action cannot be undone.")) return;
-    const res = await fetch(
-      `/api/admin/contacts?id=${encodeURIComponent(id)}`,
-      { method: "DELETE" }
-    );
-    if (res.ok) {
+    setDeletingId(id);
+    try {
+      const res = await fetch(
+        `/api/admin/contacts?id=${encodeURIComponent(id)}`,
+        { method: "DELETE" }
+      );
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        alert(json?.error || "Failed to delete this inquiry.");
+        return;
+      }
       setContacts((prev) => prev.filter((c) => c.id !== id));
       if (selected?.id === id) setSelected(null);
+    } catch (err) {
+      console.error("Failed to delete contact:", err);
+      alert("A network error occurred while deleting this inquiry.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -940,6 +952,20 @@ export default function AdminContactsCrmPage() {
                       >
                         Manage
                       </button>
+                      <button
+                        type="button"
+                        disabled={deletingId === c.id}
+                        onClick={() => handleDeleteRecord(c.id)}
+                        className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white flex items-center justify-center transition-colors border border-rose-200 disabled:opacity-50 cursor-pointer"
+                        title="Delete inquiry"
+                        aria-label={`Delete inquiry from ${c.full_name}`}
+                      >
+                        {deletingId === c.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1079,6 +1105,20 @@ export default function AdminContactsCrmPage() {
                           >
                             Manage
                           </button>
+                          <button
+                            type="button"
+                            disabled={deletingId === c.id}
+                            onClick={() => handleDeleteRecord(c.id)}
+                            className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white flex items-center justify-center transition-colors border border-rose-200 disabled:opacity-50 cursor-pointer"
+                            title="Delete inquiry"
+                            aria-label={`Delete inquiry from ${c.full_name}`}
+                          >
+                            {deletingId === c.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1157,15 +1197,18 @@ export default function AdminContactsCrmPage() {
             {/* Modal Scrollable Body with Clean Alignment & Spacing */}
             <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
               {/* SECTION 1: Sender Profile (FROM) */}
-              <div className="rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 p-3 sm:p-4 space-y-3 sm:space-y-3.5">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-200/70">
+              <div className="rounded-xl sm:rounded-2xl bg-gradient-to-br from-slate-50 via-white to-[#EFFBF8] border border-slate-200/90 p-3.5 sm:p-4 space-y-3.5 sm:space-y-4 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2.5 border-b border-slate-200/80">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-[#102E4D] text-white flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-[#102E4D] text-white flex items-center justify-center shrink-0 shadow-xs">
                       <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
-                      Inquiry From (Sender Profile)
-                    </span>
+                    <div>
+                      <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-[0.12em] text-[#102E4D] block">
+                        Sender Profile
+                      </span>
+                      <span className="text-[10px] text-slate-500">Contact details provided with this inquiry</span>
+                    </div>
                   </div>
                   <div className="text-[10px] sm:text-[11px] text-slate-500 font-num flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
@@ -1181,38 +1224,50 @@ export default function AdminContactsCrmPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {/* Sender Name & Organization */}
-                  <div className="space-y-1.5">
-                    <div className="text-[10px] sm:text-[10.5px] uppercase font-bold text-slate-400">
-                      Sender Name
+                  <div className="rounded-xl bg-white border border-slate-200/90 p-3.5 space-y-2.5 shadow-2xs">
+                    <div className="text-[10px] uppercase font-extrabold tracking-[0.12em] text-slate-400">
+                      Contact
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-lg border ${getAvatarColor(
+                        className={`w-11 h-11 rounded-xl border ${getAvatarColor(
                           selected.full_name
-                        )} flex items-center justify-center font-bold text-xs shrink-0`}
+                        )} flex items-center justify-center font-extrabold text-sm shrink-0 shadow-2xs`}
                       >
                         {getInitials(selected.full_name)}
                       </div>
-                      <div className="font-bold text-sm sm:text-base text-[#102E4D] leading-tight break-words">
-                        {selected.full_name}
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-sm sm:text-base text-[#102E4D] leading-tight break-words">
+                          {selected.full_name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">Inquiry sender</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="break-words">{selected.organization || "Independent / Individual"}</span>
+                    <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5">
+                      <div className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 mb-1">Organization</div>
+                      <div className="flex items-start gap-1.5 text-xs text-slate-700 font-semibold">
+                        <Building2 className="w-3.5 h-3.5 text-[#005696] shrink-0 mt-0.5" />
+                        <span className="break-words">{selected.organization || "Independent / Individual"}</span>
+                      </div>
                     </div>
                     {selected.address_with_city && (
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="break-words">{selected.address_with_city}</span>
+                      <div className="rounded-lg bg-slate-50 border border-slate-100 p-2.5">
+                        <div className="text-[9px] uppercase tracking-wider font-extrabold text-slate-400 mb-1">Address</div>
+                        <div className="flex items-start gap-1.5 text-xs text-slate-700 font-semibold">
+                          <MapPin className="w-3.5 h-3.5 text-[#10B981] shrink-0 mt-0.5" />
+                          <span className="break-words">{selected.address_with_city}</span>
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {/* Contact Channels: Email & WhatsApp */}
-                  <div className="space-y-2">
+                  <div className="rounded-xl bg-white border border-slate-200/90 p-3.5 space-y-2.5 shadow-2xs">
+                    <div className="text-[10px] uppercase font-extrabold tracking-[0.12em] text-slate-400">
+                      Contact Channels
+                    </div>
                     {/* Email row */}
                     <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0 flex-1">
@@ -1289,37 +1344,52 @@ export default function AdminContactsCrmPage() {
               </div>
 
               {/* SECTION 2: Topic & Inquiry Message */}
-              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3 sm:p-4 space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
                   <div className="flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FF7900] shrink-0" />
                     <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
                       Inquiry Message
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 sm:px-2.5 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-bold text-[10.5px] sm:text-[11px] border border-[#C8EFE6]">
-                      Topic: {formatTopicName(selected.interest)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(selected.message, "msg_modal")}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-[#102E4D] inline-flex items-center gap-1 cursor-pointer"
-                      title="Copy Message Text"
-                    >
-                      {copiedKey === "msg_modal" ? (
-                        <>
-                          <Check className="w-3 h-3 text-emerald-600" />
-                          <span className="text-emerald-600 font-bold">Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3" />
-                          <span>Copy</span>
-                        </>
-                      )}
-                    </button>
+                </div>
+
+                <div className="rounded-xl bg-gradient-to-r from-[#EFFBF8] to-[#F8FAFC] border border-[#BFE9DE] px-3.5 py-3 flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#005696] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Tag className="w-4 h-4" />
                   </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.12em] font-extrabold text-[#005696]">
+                      Contact Topic
+                    </div>
+                    <div className="text-sm sm:text-[15px] font-extrabold text-[#102E4D] leading-snug break-words mt-0.5">
+                      {formatTopicName(selected.interest)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                    Message / Request
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(selected.message, "msg_modal")}
+                    className="text-[11px] font-semibold text-slate-500 hover:text-[#102E4D] inline-flex items-center gap-1 cursor-pointer"
+                    title="Copy Message Text"
+                  >
+                    {copiedKey === "msg_modal" ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span className="text-emerald-600 font-bold">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 <div className="rounded-xl bg-slate-50/90 border border-slate-200/70 p-3 sm:p-3.5 text-slate-800 leading-relaxed text-xs sm:text-sm whitespace-pre-wrap font-sans break-words">
@@ -1522,11 +1592,16 @@ export default function AdminContactsCrmPage() {
             <div className="px-4 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0">
               <button
                 type="button"
+                disabled={deletingId === selected.id}
                 onClick={() => handleDeleteRecord(selected.id)}
-                className="h-9 px-3 sm:px-3.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="h-9 px-3 sm:px-3.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold inline-flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete</span>
+                {deletingId === selected.id ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>{deletingId === selected.id ? "Deleting…" : "Delete"}</span>
               </button>
 
               <div className="flex items-center gap-2">
