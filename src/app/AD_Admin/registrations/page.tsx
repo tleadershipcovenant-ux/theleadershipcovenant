@@ -31,6 +31,7 @@ import {
   Loader2,
   Building2,
   Briefcase,
+  Pencil,
   User,
   Tag,
   Copy,
@@ -229,6 +230,18 @@ function RegistrationsCrmInner() {
 
   // Inspector Modal State
   const [selected, setSelected] = useState<ActivityRegistrationRecord | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    role: "",
+    school_name: "",
+    address_with_city: "",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState(false);
   const [editMode, setEditMode] = useState<BookingModeType>("reserve_later");
   const [editVerification, setEditVerification] = useState<VerificationStatus>("pending_callback");
   const [editTransactionRef, setEditTransactionRef] = useState("");
@@ -558,6 +571,17 @@ function RegistrationsCrmInner() {
 
   const openInspector = (reg: ActivityRegistrationRecord) => {
     setSelected(reg);
+    setIsEditingProfile(false);
+    setProfileForm({
+      full_name: reg.full_name,
+      email: reg.email,
+      phone: reg.phone,
+      role: reg.role,
+      school_name: reg.school_name || reg.organization || "",
+      address_with_city: reg.address_with_city || "",
+    });
+    setProfileError(null);
+    setProfileSuccess(false);
     setEditMode(reg.booking_mode);
     setEditVerification(reg.verification_status);
     setEditTransactionRef(reg.transaction_ref || "");
@@ -567,6 +591,66 @@ function RegistrationsCrmInner() {
     setStatusDropdownOpen(false);
     setProofRequirementWarning(null);
     setFeedback(null);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!selected) return;
+    if (!profileForm.full_name.trim() || profileForm.full_name.trim().length < 2) {
+      setProfileError("Full Name must be at least 2 characters.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profileForm.email.trim())) {
+      setProfileError("Please enter a valid email address.");
+      return;
+    }
+    if (profileForm.phone.trim().length < 7) {
+      setProfileError("Please enter a valid phone number with at least 7 digits.");
+      return;
+    }
+    if (profileForm.role.trim().length < 2) {
+      setProfileError("Role / Designation must be at least 2 characters.");
+      return;
+    }
+
+    setSavingProfile(true);
+    setProfileError(null);
+
+    try {
+      const res = await fetch("/api/admin/registrations", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: selected.id,
+          full_name: profileForm.full_name.trim(),
+          email: profileForm.email.trim(),
+          phone: profileForm.phone.trim(),
+          role: profileForm.role.trim(),
+          school_name: profileForm.school_name.trim(),
+          organization: profileForm.school_name.trim(),
+          address_with_city: profileForm.address_with_city.trim(),
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.ok || !json.registration) {
+        setProfileError(json?.error || "Failed to save profile changes.");
+        return;
+      }
+
+      const updated: ActivityRegistrationRecord = json.registration;
+      setSelected(updated);
+      setRegistrations((prev) =>
+        prev.map((r) => (r.id === updated.id ? updated : r))
+      );
+      setIsEditingProfile(false);
+      setProfileSuccess(true);
+      setTimeout(() => setProfileSuccess(false), 3500);
+    } catch (err) {
+      console.error("[PROFILE UPDATE ERROR]", err);
+      setProfileError("Network error occurred while saving profile changes.");
+    } finally {
+      setSavingProfile(false);
+    }
   };
 
   const copyToClipboard = (text: string, key: string) => {
@@ -1971,7 +2055,7 @@ function RegistrationsCrmInner() {
             <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto overscroll-contain touch-pan-y [WebkitOverflowScrolling:touch] [will-change:scroll-position] flex-1 text-xs sm:text-sm crm-scrollbar-y">
               {/* SECTION 1: Participant Identity Profile */}
               <div className="rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200/90 p-3.5 sm:p-4 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 pb-2 border-b border-slate-200/70">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2.5 border-b border-slate-200/70">
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-[#102E4D] text-white flex items-center justify-center shrink-0">
                       <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -1979,175 +2063,418 @@ function RegistrationsCrmInner() {
                     <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#102E4D]">
                       Participant Profile
                     </span>
-                  </div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-500 font-num flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
-                    <span>
-                      Registered: {new Date(selected.created_at).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                  {/* Name & Reference */}
-                  <div className="space-y-1">
-                    <div className="text-[10px] sm:text-[10.5px] uppercase font-bold text-slate-400">
-                      Participant Full Name
+                    <span className="text-slate-300 hidden sm:inline">•</span>
+                    <div className="text-[10px] sm:text-[11px] text-slate-500 font-num hidden sm:flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span>
+                        Registered: {new Date(selected.created_at).toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className={`w-10 h-10 rounded-xl border ${getAvatarColor(selected.full_name)} flex items-center justify-center font-black text-sm shrink-0 shadow-2xs`}
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
+                    <div className="text-[10px] text-slate-500 font-num sm:hidden flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span>
+                        {new Date(selected.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    {profileSuccess && (
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold inline-flex items-center gap-1 animate-fade-in">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                        <span>Profile Saved!</span>
+                      </span>
+                    )}
+
+                    {!isEditingProfile ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingProfile(true);
+                          setProfileForm({
+                            full_name: selected.full_name,
+                            email: selected.email,
+                            phone: selected.phone,
+                            role: selected.role,
+                            school_name: selected.school_name || selected.organization || "",
+                            address_with_city: selected.address_with_city || "",
+                          });
+                          setProfileError(null);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FFF7ED] text-[#FF7900] hover:text-[#E56D00] border border-[#FF7900]/40 hover:border-[#FF7900] text-xs font-bold inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+                        title="Edit Participant Details"
                       >
-                        {getInitials(selected.full_name)}
+                        <Pencil className="w-3 h-3" />
+                        <span>Edit Profile</span>
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingProfile(false);
+                            setProfileError(null);
+                          }}
+                          disabled={savingProfile}
+                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <X className="w-3 h-3" />
+                          <span>Cancel</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSaveProfile}
+                          disabled={savingProfile}
+                          className="px-3 py-1 rounded-lg bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white text-xs font-black inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                        >
+                          {savingProfile ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              <span>Save Changes</span>
+                            </>
+                          )}
+                        </button>
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-extrabold text-base sm:text-lg text-[#102E4D] leading-tight break-words">
-                          {selected.full_name}
+                    )}
+                  </div>
+                </div>
+
+                {/* EDITING FORM MODE */}
+                {isEditingProfile ? (
+                  <div className="space-y-3 pt-1">
+                    {profileError && (
+                      <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                        <span>{profileError}</span>
+                      </div>
+                    )}
+
+                    <div className="p-3.5 rounded-xl bg-white border border-slate-200/90 shadow-2xs space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Full Name */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            Full Name <span className="text-[#FF7900]">*</span>
+                          </label>
+                          <div className="relative flex items-center">
+                            <User className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="text"
+                              value={profileForm.full_name}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, full_name: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="e.g. Salman Ahmed"
+                            />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-extrabold text-[10px] border border-[#C8EFE6] font-num">
-                            Ref: #{selected.reference_code}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                              selected.booking_mode === "secure_seat"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : "bg-amber-50 text-amber-700 border-amber-200"
-                            }`}
+
+                        {/* Role / Designation */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            Role / Designation <span className="text-[#FF7900]">*</span>
+                          </label>
+                          <div className="relative flex items-center">
+                            <Briefcase className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="text"
+                              value={profileForm.role}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, role: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="e.g. Principal / Coordinator"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Email Address */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            Email Address <span className="text-[#FF7900]">*</span>
+                          </label>
+                          <div className="relative flex items-center">
+                            <Mail className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="email"
+                              value={profileForm.email}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, email: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="name@school.edu.pk"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Phone / WhatsApp */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            Phone / WhatsApp <span className="text-[#FF7900]">*</span>
+                          </label>
+                          <div className="relative flex items-center">
+                            <Phone className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="tel"
+                              value={profileForm.phone}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, phone: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] font-num focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="+92 300 1234567"
+                            />
+                          </div>
+                        </div>
+
+                        {/* School Name */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            School Name
+                          </label>
+                          <div className="relative flex items-center">
+                            <Building2 className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="text"
+                              value={profileForm.school_name}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, school_name: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="Beaconhouse / Roots Millennium / Independent"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Address with City */}
+                        <div className="space-y-1">
+                          <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
+                            Address with City
+                          </label>
+                          <div className="relative flex items-center">
+                            <MapPin className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
+                            <input
+                              type="text"
+                              value={profileForm.address_with_city}
+                              onChange={(e) =>
+                                setProfileForm({ ...profileForm, address_with_city: e.target.value })
+                              }
+                              className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-semibold text-[#102E4D] focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all placeholder:text-slate-400"
+                              placeholder="e.g. Sector F-8/4, Islamabad"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action buttons inside form */}
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditingProfile(false);
+                            setProfileError(null);
+                          }}
+                          disabled={savingProfile}
+                          className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Cancel</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSaveProfile}
+                          disabled={savingProfile}
+                          className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-[#FF7900] via-[#FF6D00] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs font-black inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                        >
+                          {savingProfile ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Saving Changes...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>Save Profile Changes</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* VIEW MODE */
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                      {/* Name & Reference */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] sm:text-[10.5px] uppercase font-bold text-slate-400">
+                          Participant Full Name
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={`w-10 h-10 rounded-xl border ${getAvatarColor(selected.full_name)} flex items-center justify-center font-black text-sm shrink-0 shadow-2xs`}
                           >
-                            {selected.booking_mode === "secure_seat"
-                              ? "Priority Seat"
-                              : "Provisional Reservation"}
-                          </span>
+                            {getInitials(selected.full_name)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-base sm:text-lg text-[#102E4D] leading-tight break-words">
+                              {selected.full_name}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md bg-[#EFFBF8] text-[#005696] font-extrabold text-[10px] border border-[#C8EFE6] font-num">
+                                Ref: #{selected.reference_code}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                  selected.booking_mode === "secure_seat"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
+                                }`}
+                              >
+                                {selected.booking_mode === "secure_seat"
+                                  ? "Priority Seat"
+                                  : "Provisional Reservation"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Direct Contact Buttons */}
+                      <div className="space-y-2">
+                        {/* Email Box */}
+                        <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Mail className="w-3.5 h-3.5 text-[#005696] shrink-0" />
+                            <span className="text-xs font-semibold text-slate-800 truncate block">
+                              {selected.email}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(selected.email, "email_modal")}
+                              className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                              title="Copy Email"
+                            >
+                              {copiedKey === "email_modal" ? (
+                                <Check className="w-3 h-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </button>
+                            <a
+                              href={`mailto:${selected.email}?subject=${encodeURIComponent(
+                                `Registration #${selected.reference_code} — ${selected.activity_title}`
+                              )}`}
+                              className="px-2 py-0.5 rounded-md bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors"
+                            >
+                              Email
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* WhatsApp Box */}
+                        <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Phone className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+                            <span className="text-xs font-semibold text-slate-800 truncate font-num block">
+                              {selected.phone}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(selected.phone, "phone_modal")}
+                              className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                              title="Copy Phone"
+                            >
+                              {copiedKey === "phone_modal" ? (
+                                <Check className="w-3 h-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-3 h-3" />
+                              )}
+                            </button>
+                            <a
+                              href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                                `Assalam-o-Alaikum ${selected.full_name}! Regarding your registration (Ref #${selected.reference_code}) for "${selected.activity_title}":`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2 py-0.5 rounded-md bg-[#25D366] hover:bg-[#20BD5A] text-white text-[10.5px] font-bold inline-flex items-center gap-1 transition-colors"
+                            >
+                              <FaWhatsapp className="w-3 h-3" />
+                              <span>WhatsApp</span>
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Direct Contact Buttons */}
-                  <div className="space-y-2">
-                    {/* Email Box */}
-                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <Mail className="w-3.5 h-3.5 text-[#005696] shrink-0" />
-                        <span className="text-xs font-semibold text-slate-800 truncate block">
-                          {selected.email}
-                        </span>
+                    {/* DEDICATED COLORFUL PARTICIPANT DETAILS CARDS: School Name, Role, Address */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
+                      {/* 1. School Name Card */}
+                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white border-2 border-[#BFDBFE] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#005696] to-[#003A66] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                          <Building2 className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#005696] block">
+                            School Name
+                          </span>
+                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                            {selected.school_name || selected.organization || "Independent / Individual"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(selected.email, "email_modal")}
-                          className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
-                          title="Copy Email"
-                        >
-                          {copiedKey === "email_modal" ? (
-                            <Check className="w-3 h-3 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                        <a
-                          href={`mailto:${selected.email}?subject=${encodeURIComponent(
-                            `Registration #${selected.reference_code} — ${selected.activity_title}`
-                          )}`}
-                          className="px-2 py-0.5 rounded-md bg-[#102E4D] hover:bg-[#001B33] text-white text-[10.5px] font-bold transition-colors"
-                        >
-                          Email
-                        </a>
-                      </div>
-                    </div>
 
-                    {/* WhatsApp Box */}
-                    <div className="flex items-center justify-between gap-1.5 p-2 rounded-xl bg-white border border-slate-200 min-w-0 shadow-2xs">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <Phone className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
-                        <span className="text-xs font-semibold text-slate-800 truncate font-num block">
-                          {selected.phone}
-                        </span>
+                      {/* 2. Role Card */}
+                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#FFF7ED] via-[#F8FAFC] to-white border-2 border-[#FED7AA] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                          <Briefcase className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#EA580C] block">
+                            Role / Designation
+                          </span>
+                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                            {selected.role || "Participant"}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => copyToClipboard(selected.phone, "phone_modal")}
-                          className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
-                          title="Copy Phone"
-                        >
-                          {copiedKey === "phone_modal" ? (
-                            <Check className="w-3 h-3 text-emerald-600" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                        <a
-                          href={`https://wa.me/${selected.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                            `Assalam-o-Alaikum ${selected.full_name}! Regarding your registration (Ref #${selected.reference_code}) for "${selected.activity_title}":`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-2 py-0.5 rounded-md bg-[#25D366] hover:bg-[#20BD5A] text-white text-[10.5px] font-bold inline-flex items-center gap-1 transition-colors"
-                        >
-                          <FaWhatsapp className="w-3 h-3" />
-                          <span>WhatsApp</span>
-                        </a>
+
+                      {/* 3. Address Card */}
+                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] via-[#F8FAFC] to-white border-2 border-[#A7F3D0] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                          <MapPin className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#059669] block">
+                            Address with City
+                          </span>
+                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                            {selected.address_with_city || "Not Specified"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* DEDICATED COLORFUL PARTICIPANT DETAILS CARDS: School Name, Role, Address */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
-                  {/* 1. School Name Card */}
-                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white border-2 border-[#BFDBFE] shadow-2xs flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#005696] to-[#003A66] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                      <Building2 className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#005696] block">
-                        School Name
-                      </span>
-                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
-                        {selected.school_name || selected.organization || "Independent / Individual"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 2. Role Card */}
-                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#FFF7ED] via-[#F8FAFC] to-white border-2 border-[#FED7AA] shadow-2xs flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                      <Briefcase className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#EA580C] block">
-                        Role / Designation
-                      </span>
-                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
-                        {selected.role || "Participant"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* 3. Address Card */}
-                  <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] via-[#F8FAFC] to-white border-2 border-[#A7F3D0] shadow-2xs flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                      <MapPin className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-[#059669] block">
-                        Address with City
-                      </span>
-                      <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
-                        {selected.address_with_city || "Not Specified"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  </>
+                )}
               </div>
 
               {/* SECTION 2: Enrolled Activity Cohort Details */}

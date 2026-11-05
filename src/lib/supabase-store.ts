@@ -812,6 +812,13 @@ export async function updateActivityRegistration(
   patch: Partial<
     Pick<
       ActivityRegistrationRecord,
+      | "full_name"
+      | "email"
+      | "phone"
+      | "role"
+      | "organization"
+      | "school_name"
+      | "address_with_city"
       | "verification_status"
       | "booking_mode"
       | "transaction_ref"

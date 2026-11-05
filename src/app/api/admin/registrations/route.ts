@@ -149,6 +149,13 @@ export async function PATCH(req: NextRequest) {
     }
 
     const patch: {
+      full_name?: string;
+      email?: string;
+      phone?: string;
+      role?: string;
+      organization?: string;
+      school_name?: string;
+      address_with_city?: string;
       verification_status?: VerificationStatus;
       booking_mode?: BookingModeType;
       transaction_ref?: string;
@@ -158,6 +165,29 @@ export async function PATCH(req: NextRequest) {
       screenshot_public_id?: string;
       screenshot_name?: string;
     } = {};
+
+    if (typeof body.full_name === "string" && body.full_name.trim().length >= 2) {
+      patch.full_name = body.full_name.trim();
+    }
+    if (typeof body.email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())) {
+      patch.email = body.email.trim();
+    }
+    if (typeof body.phone === "string" && body.phone.trim().length >= 7) {
+      patch.phone = body.phone.trim();
+    }
+    if (typeof body.role === "string" && body.role.trim().length >= 2) {
+      patch.role = body.role.trim();
+    }
+    if (typeof body.school_name === "string") {
+      patch.school_name = body.school_name.trim();
+      patch.organization = body.school_name.trim();
+    } else if (typeof body.organization === "string") {
+      patch.organization = body.organization.trim();
+      patch.school_name = body.organization.trim();
+    }
+    if (typeof body.address_with_city === "string") {
+      patch.address_with_city = body.address_with_city.trim();
+    }
 
     if (
       body.verification_status &&
