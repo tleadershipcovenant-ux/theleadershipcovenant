@@ -10,6 +10,8 @@ export interface ApplyDraftData {
   email: string;
   phone: string;
   role: string;
+  school_name?: string;
+  address_with_city?: string;
   activity_slug: string;
   bookingMode: "reservation" | "secure_seat" | null;
   message?: string;

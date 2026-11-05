@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     const full_name = String(body?.full_name || "").trim();
     const email = String(body?.email || "").trim();
     const organization = String(body?.organization || "").trim();
+    const address_with_city = String(body?.address_with_city || "").trim();
     const message = String(body?.message || "").trim();
     const phone = String(body?.phone || "").trim();
     const interest = String(body?.interest || "general").trim();
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
       email,
       phone,
       organization: organization || "Independent",
+      address_with_city,
       interest,
       message: message || "Direct inbound contact inquiry",
     });

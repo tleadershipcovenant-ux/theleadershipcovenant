@@ -16,7 +16,9 @@ export function EnquiryForm({ defaultInterest = "general" }: EnquiryFormProps) {
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
+    phone: "",
     organization: "",
+    address_with_city: "",
     interest: queryInterest,
     message: "",
     website: "", // honeypot
@@ -86,7 +88,9 @@ export function EnquiryForm({ defaultInterest = "general" }: EnquiryFormProps) {
             setFormData({
               full_name: "",
               email: "",
+              phone: "",
               organization: "",
+              address_with_city: "",
               interest: "general",
               message: "",
               website: "",
@@ -155,6 +159,42 @@ export function EnquiryForm({ defaultInterest = "general" }: EnquiryFormProps) {
             onChange={handleChange}
             className="field-input"
             autoComplete="email"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        <div>
+          <label htmlFor="contact-phone" className="field-label">
+            Phone / WhatsApp <span className="text-danger">*</span>
+          </label>
+          <input
+            id="contact-phone"
+            name="phone"
+            type="tel"
+            required
+            placeholder="+92 300 1234567"
+            value={formData.phone}
+            onChange={handleChange}
+            className="field-input font-num"
+            autoComplete="tel"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="contact-address" className="field-label">
+            Address with city <span className="text-danger">*</span>
+          </label>
+          <input
+            id="contact-address"
+            name="address_with_city"
+            type="text"
+            required
+            placeholder="e.g. Sector F-8/4, Islamabad"
+            value={formData.address_with_city}
+            onChange={handleChange}
+            className="field-input"
+            autoComplete="street-address"
           />
         </div>
       </div>

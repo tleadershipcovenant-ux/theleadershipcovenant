@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
       phone,
       role,
       organization,
+      school_name,
+      address_with_city,
       activity_slug,
       interest,
       message,
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
         email,
         phone: phone ? String(phone) : "",
         organization: String(organization),
+        address_with_city: address_with_city ? String(address_with_city).trim() : "",
         interest: interest ? String(interest) : "general",
         message: String(message),
       });
@@ -173,6 +176,17 @@ export async function POST(req: NextRequest) {
           : pricing.formattedPayablePrice
         : "");
 
+    const resolvedSchoolName = school_name
+      ? String(school_name).trim()
+      : organization
+      ? String(organization).trim()
+      : "";
+    const resolvedOrg = organization
+      ? String(organization).trim()
+      : school_name
+      ? String(school_name).trim()
+      : "";
+
     // Guaranteed 100% unique official booking reference: TLC-26-XXXXX
     const refCode = await generateUniqueBookingReference();
     const saved = await createActivityRegistration({
@@ -182,7 +196,9 @@ export async function POST(req: NextRequest) {
       email,
       phone: String(phone),
       role: String(role),
-      organization: organization ? String(organization) : "",
+      organization: resolvedOrg,
+      school_name: resolvedSchoolName,
+      address_with_city: address_with_city ? String(address_with_city).trim() : "",
       activity_slug: resolvedSlug,
       booking_mode:
         booking_mode === "secure_seat" ? "secure_seat" : "reserve_later",

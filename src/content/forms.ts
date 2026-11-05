@@ -84,6 +84,8 @@ export interface ApplyPageContent {
     email: ApplyFieldCopy;
     phone: ApplyFieldCopy;
     role: ApplyFieldCopy;
+    schoolName: ApplyFieldCopy;
+    addressWithCity: ApplyFieldCopy;
     activity: ApplyFieldCopy;
     activityDropdownHeading: string;
     notes: ApplyFieldCopy;
@@ -194,6 +196,14 @@ export const APPLY_PAGE: ApplyPageContent = {
     role: {
       label: "Your Role / Title",
       placeholder: "e.g. Principal, Teacher, Parent",
+    },
+    schoolName: {
+      label: "School Name",
+      placeholder: "e.g. Beaconhouse, Roots Millennium, etc.",
+    },
+    addressWithCity: {
+      label: "Address with city",
+      placeholder: "e.g. Sector F-8/4, Islamabad",
     },
     activity: {
       label: "Select Activity / Cohort",
@@ -387,6 +397,8 @@ export function normalizeApplyCms(
       email: asField(step1.email, d.step1.email),
       phone: asField(step1.phone, d.step1.phone),
       role: asField(step1.role, d.step1.role),
+      schoolName: asField(step1.schoolName, d.step1.schoolName),
+      addressWithCity: asField(step1.addressWithCity, d.step1.addressWithCity),
       activity: asField(step1.activity, d.step1.activity),
       notes: asField(step1.notes, d.step1.notes),
     },

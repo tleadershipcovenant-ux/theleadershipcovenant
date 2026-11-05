@@ -1005,9 +1005,14 @@ export default function AdminDashboardPage() {
                           <span className="font-semibold text-slate-700 truncate max-w-[200px] sm:max-w-[260px]">
                             {r.activity_title}
                           </span>
-                          {(r.organization || r.phone) && (
+                          {(r.school_name || r.organization || r.phone) && (
                             <span className="text-slate-400 text-[11px] truncate">
-                              • {r.organization || r.phone}
+                              • {r.school_name || r.organization || r.phone}
+                            </span>
+                          )}
+                          {r.address_with_city && (
+                            <span className="text-slate-400 text-[11px] truncate">
+                              • {r.address_with_city}
                             </span>
                           )}
                         </div>
@@ -1135,6 +1140,11 @@ export default function AdminDashboardPage() {
                           {c.organization && (
                             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EDF6FB] text-[#0284C7] border border-[#CFE6F3] truncate max-w-[160px]">
                               {c.organization}
+                            </span>
+                          )}
+                          {c.address_with_city && (
+                            <span className="text-[10px] font-medium text-slate-500 hidden sm:inline truncate max-w-[160px]">
+                              • {c.address_with_city}
                             </span>
                           )}
                           {c.interest && (

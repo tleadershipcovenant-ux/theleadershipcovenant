@@ -85,6 +85,9 @@ export async function POST(req: NextRequest) {
         : pricing.formattedPayablePrice
       : "";
 
+    const schoolName = String(body?.school_name || body?.organization || "").trim();
+    const addressWithCity = String(body?.address_with_city || "").trim();
+
     const created = await createActivityRegistration({
       reference_code: formatBookingReference(generateRefToken(5)),
       submission_type: "application",
@@ -92,7 +95,9 @@ export async function POST(req: NextRequest) {
       email,
       phone,
       role,
-      organization: String(body?.organization || ""),
+      organization: String(body?.organization || schoolName || ""),
+      school_name: schoolName,
+      address_with_city: addressWithCity,
       activity_slug: activitySlug,
       booking_mode: bookingMode,
       payment_method: "ubl",

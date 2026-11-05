@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS public.contact_submissions (
   email TEXT NOT NULL,
   phone TEXT,
   organization TEXT NOT NULL,
+  address_with_city TEXT DEFAULT '',
   interest TEXT DEFAULT 'general',
   message TEXT NOT NULL,
   crm_status TEXT NOT NULL DEFAULT 'new'
@@ -59,6 +60,8 @@ CREATE TABLE IF NOT EXISTS public.activity_registrations (
   phone TEXT NOT NULL,
   role TEXT NOT NULL,
   organization TEXT DEFAULT '',
+  school_name TEXT DEFAULT '',
+  address_with_city TEXT DEFAULT '',
   activity_slug TEXT NOT NULL,
   activity_title TEXT NOT NULL,
   activity_category TEXT DEFAULT 'Leadership Activity',

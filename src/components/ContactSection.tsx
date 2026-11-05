@@ -15,6 +15,7 @@ import {
   Mail,
   Phone,
   Building2,
+  MapPin,
   Compass,
   MessageSquareText,
   AlertCircle,
@@ -115,6 +116,7 @@ export default function ContactSection() {
     email: "",
     phone: "",
     organization: "",
+    address_with_city: "",
     interest: "general",
     message: "",
     website: "", // honeypot
@@ -126,6 +128,7 @@ export default function ContactSection() {
     email: false,
     phone: false,
     organization: false,
+    address_with_city: false,
     message: false,
   });
 
@@ -134,6 +137,7 @@ export default function ContactSection() {
     email: null,
     phone: null,
     organization: null,
+    address_with_city: null,
     message: null,
   });
 
@@ -214,6 +218,10 @@ export default function ContactSection() {
         if (!clean) return "School or organization name is required.";
         if (clean.length < 2) return "Please enter your full institution name.";
         return null;
+      case "address_with_city":
+        if (!clean) return "Address with city is required.";
+        if (clean.length < 3) return "Please enter your address with city.";
+        return null;
       case "message":
         if (!clean) return "Your message is required.";
         if (clean.length < 10) {
@@ -226,7 +234,7 @@ export default function ContactSection() {
   };
 
   const handleFieldChange = (
-    field: "name" | "email" | "phone" | "organization" | "message",
+    field: "name" | "email" | "phone" | "organization" | "address_with_city" | "message",
     value: string
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -240,7 +248,7 @@ export default function ContactSection() {
   };
 
   const handleFieldBlur = (
-    field: "name" | "email" | "phone" | "organization" | "message"
+    field: "name" | "email" | "phone" | "organization" | "address_with_city" | "message"
   ) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
     const err = validateField(field, formData[field]);
@@ -267,6 +275,7 @@ export default function ContactSection() {
     const eErr = validateField("email", formData.email);
     const pErr = validateField("phone", formData.phone);
     const oErr = validateField("organization", formData.organization);
+    const aErr = validateField("address_with_city", formData.address_with_city);
     const mErr = validateField("message", formData.message);
 
     setTouched({
@@ -274,6 +283,7 @@ export default function ContactSection() {
       email: true,
       phone: true,
       organization: true,
+      address_with_city: true,
       message: true,
     });
 
@@ -282,10 +292,11 @@ export default function ContactSection() {
       email: eErr,
       phone: pErr,
       organization: oErr,
+      address_with_city: aErr,
       message: mErr,
     });
 
-    if (nErr || eErr || pErr || oErr || mErr) {
+    if (nErr || eErr || pErr || oErr || aErr || mErr) {
       setErrorMessage("Please correct the highlighted fields before submitting.");
       return;
     }
@@ -306,6 +317,7 @@ export default function ContactSection() {
           email: formData.email.trim(),
           phone: formData.phone.trim(),
           organization: formData.organization.trim(),
+          address_with_city: formData.address_with_city.trim(),
           interest: formData.interest,
           message: formData.message.trim(),
           website: formData.website,
@@ -369,6 +381,7 @@ export default function ContactSection() {
       email: "",
       phone: "",
       organization: "",
+      address_with_city: "",
       interest: "general",
       message: "",
       website: "",
@@ -378,6 +391,7 @@ export default function ContactSection() {
       email: false,
       phone: false,
       organization: false,
+      address_with_city: false,
       message: false,
     });
     setFieldErrors({
@@ -385,6 +399,7 @@ export default function ContactSection() {
       email: null,
       phone: null,
       organization: null,
+      address_with_city: null,
       message: null,
     });
   };
@@ -397,7 +412,7 @@ export default function ContactSection() {
    * 4. Default -> Soft mint border
    */
   const getFieldInputClass = (
-    fieldName: "name" | "email" | "phone" | "organization" | "message",
+    fieldName: "name" | "email" | "phone" | "organization" | "address_with_city" | "message",
     value: string
   ) => {
     const isFieldTouched = touched[fieldName];
@@ -1050,116 +1065,160 @@ export default function ContactSection() {
                     </div>
                   </div>
 
-                  {/* Row 3: COMPACT & PROPER "I'M INTERESTED IN" DROPDOWN */}
-                  <div className="relative" ref={dropdownRef}>
-                    <div className="mb-1.5">
-                      <label htmlFor="interest-trigger" className={labelClass}>
-                        I&apos;m Interested In{" "}
-                        <span className="text-[#FF7900]">*</span>
-                      </label>
+                  {/* Row 3: Address with city & COMPACT "I'M INTERESTED IN" DROPDOWN */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Address with city */}
+                    <div>
+                      <div className="mb-1.5">
+                        <label htmlFor="address_with_city" className={labelClass}>
+                          Address with city <span className="text-[#FF7900]">*</span>
+                        </label>
+                      </div>
+                      <div className="relative flex items-center">
+                        <MapPin
+                          className={`w-4 h-4 absolute left-3.5 pointer-events-none transition-colors ${
+                            touched.address_with_city && fieldErrors.address_with_city
+                              ? "text-rose-500"
+                              : formData.address_with_city
+                              ? "text-[#10B981]"
+                              : "text-slate-400"
+                          }`}
+                        />
+                        <input
+                          id="address_with_city"
+                          type="text"
+                          value={formData.address_with_city}
+                          onChange={(e) =>
+                            handleFieldChange("address_with_city", e.target.value)
+                          }
+                          onBlur={() => handleFieldBlur("address_with_city")}
+                          className={`${getFieldInputClass(
+                            "address_with_city",
+                            formData.address_with_city
+                          )} pl-10 pr-4 py-3 sm:py-3.5`}
+                          placeholder="e.g. Sector F-8/4, Islamabad"
+                          autoComplete="street-address"
+                        />
+                      </div>
+                      {touched.address_with_city && fieldErrors.address_with_city && (
+                        <p className="text-[11px] text-rose-600 font-semibold mt-1.5 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{fieldErrors.address_with_city}</span>
+                        </p>
+                      )}
                     </div>
 
-                    {/* Compact Trigger Button */}
-                    <button
-                      id="interest-trigger"
-                      type="button"
-                      aria-haspopup="listbox"
-                      aria-expanded={interestDropdownOpen}
-                      onClick={() =>
-                        setInterestDropdownOpen((prev) => !prev)
-                      }
-                      className={`w-full text-left pl-10 pr-9 py-3 sm:py-3.5 rounded-xl border-2 transition-all relative flex items-center justify-between cursor-pointer ${
-                        interestDropdownOpen
-                          ? "border-[#FF7900] bg-white ring-4 ring-[#FF7900]/15"
-                          : "border-[#10B981] bg-[#F0FDF4]/35 hover:bg-[#F0FDF4]/60"
-                      }`}
-                    >
-                      <Compass
-                        className={`w-4 h-4 absolute left-3.5 pointer-events-none transition-colors ${
+                    {/* COMPACT & PROPER "I'M INTERESTED IN" DROPDOWN */}
+                    <div className="relative" ref={dropdownRef}>
+                      <div className="mb-1.5">
+                        <label htmlFor="interest-trigger" className={labelClass}>
+                          I&apos;m Interested In{" "}
+                          <span className="text-[#FF7900]">*</span>
+                        </label>
+                      </div>
+
+                      {/* Compact Trigger Button */}
+                      <button
+                        id="interest-trigger"
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded={interestDropdownOpen}
+                        onClick={() =>
+                          setInterestDropdownOpen((prev) => !prev)
+                        }
+                        className={`w-full text-left pl-10 pr-9 py-3 sm:py-3.5 rounded-xl border-2 transition-all relative flex items-center justify-between cursor-pointer ${
                           interestDropdownOpen
-                            ? "text-[#FF7900]"
-                            : "text-[#10B981]"
+                            ? "border-[#FF7900] bg-white ring-4 ring-[#FF7900]/15"
+                            : "border-[#10B981] bg-[#F0FDF4]/35 hover:bg-[#F0FDF4]/60"
                         }`}
-                      />
+                      >
+                        <Compass
+                          className={`w-4 h-4 absolute left-3.5 pointer-events-none transition-colors ${
+                            interestDropdownOpen
+                              ? "text-[#FF7900]"
+                              : "text-[#10B981]"
+                          }`}
+                        />
 
-                      <span className="text-sm font-bold text-[#102E4D] truncate pr-2">
-                        {selectedInterestMeta.label}
-                      </span>
+                        <span className="text-sm font-bold text-[#102E4D] truncate pr-2">
+                          {selectedInterestMeta.label}
+                        </span>
 
-                      <ChevronDown
-                        className={`w-4 h-4 text-slate-400 absolute right-3 transition-transform duration-200 ${
-                          interestDropdownOpen ? "rotate-180 text-[#FF7900]" : ""
-                        }`}
-                      />
-                    </button>
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 absolute right-3 transition-transform duration-200 ${
+                            interestDropdownOpen ? "rotate-180 text-[#FF7900]" : ""
+                          }`}
+                        />
+                      </button>
 
-                    {/* Compact Floating Dropdown Menu with Colorful Custom Scrollbar */}
-                    <AnimatePresence>
-                      {interestDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 4, scale: 0.99 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 4, scale: 0.99 }}
-                          transition={{ duration: 0.15 }}
-                          role="listbox"
-                          style={{
-                            scrollbarWidth: "thin",
-                            scrollbarColor: "#10B981 #EFFBF8",
-                          }}
-                          className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-[#C8EFE6] shadow-[0_12px_32px_-8px_rgba(0,27,51,0.18)] overflow-hidden max-h-56 overflow-y-auto divide-y divide-slate-100 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#059669] hover:[&::-webkit-scrollbar-thumb]:to-[#E56D00]"
-                        >
-                          {INTEREST_OPTIONS.map((opt) => {
-                            const isSelected = formData.interest === opt.value;
+                      {/* Compact Floating Dropdown Menu with Colorful Custom Scrollbar */}
+                      <AnimatePresence>
+                        {interestDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 4, scale: 0.99 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 4, scale: 0.99 }}
+                            transition={{ duration: 0.15 }}
+                            role="listbox"
+                            style={{
+                              scrollbarWidth: "thin",
+                              scrollbarColor: "#10B981 #EFFBF8",
+                            }}
+                            className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-white rounded-xl border border-[#C8EFE6] shadow-[0_12px_32px_-8px_rgba(0,27,51,0.18)] overflow-hidden max-h-56 overflow-y-auto divide-y divide-slate-100 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-[#EFFBF8] [&::-webkit-scrollbar-thumb]:bg-gradient-to-b [&::-webkit-scrollbar-thumb]:from-[#10B981] [&::-webkit-scrollbar-thumb]:to-[#FF7900] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:from-[#059669] hover:[&::-webkit-scrollbar-thumb]:to-[#E56D00]"
+                          >
+                            {INTEREST_OPTIONS.map((opt) => {
+                              const isSelected = formData.interest === opt.value;
 
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                role="option"
-                                aria-selected={isSelected}
-                                onClick={() => {
-                                  setFormData({
-                                    ...formData,
-                                    interest: opt.value,
-                                  });
-                                  setInterestDropdownOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2.5 flex items-center justify-between gap-3 transition-colors cursor-pointer text-xs sm:text-sm ${
-                                  isSelected
-                                    ? "bg-[#EFFBF8] text-[#102E4D] font-extrabold"
-                                    : "hover:bg-[#F8FCFB] text-slate-700 font-medium"
-                                }`}
-                              >
-                                <span className="truncate">{opt.label}</span>
+                              return (
+                                <button
+                                  key={opt.value}
+                                  type="button"
+                                  role="option"
+                                  aria-selected={isSelected}
+                                  onClick={() => {
+                                    setFormData({
+                                      ...formData,
+                                      interest: opt.value,
+                                    });
+                                    setInterestDropdownOpen(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 flex items-center justify-between gap-3 transition-colors cursor-pointer text-xs sm:text-sm ${
+                                    isSelected
+                                      ? "bg-[#EFFBF8] text-[#102E4D] font-extrabold"
+                                      : "hover:bg-[#F8FCFB] text-slate-700 font-medium"
+                                  }`}
+                                >
+                                  <span className="truncate">{opt.label}</span>
 
-                                {isSelected && (
-                                  <Check className="w-4 h-4 text-[#10B981] shrink-0" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                                  {isSelected && (
+                                    <Check className="w-4 h-4 text-[#10B981] shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
-                    {/* Hidden Native Select for Browser Autofill & Accessibility */}
-                    <select
-                      id="interest"
-                      name="interest"
-                      tabIndex={-1}
-                      aria-hidden="true"
-                      value={formData.interest}
-                      onChange={(e) =>
-                        setFormData({ ...formData, interest: e.target.value })
-                      }
-                      className="sr-only pointer-events-none"
-                    >
-                      {INTEREST_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+                      {/* Hidden Native Select for Browser Autofill & Accessibility */}
+                      <select
+                        id="interest"
+                        name="interest"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        value={formData.interest}
+                        onChange={(e) =>
+                          setFormData({ ...formData, interest: e.target.value })
+                        }
+                        className="sr-only pointer-events-none"
+                      >
+                        {INTEREST_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Row 4: Message */}

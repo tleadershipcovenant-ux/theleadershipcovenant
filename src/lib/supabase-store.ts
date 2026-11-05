@@ -30,6 +30,7 @@ export interface ContactSubmissionRecord {
   email: string;
   phone: string;
   organization: string;
+  address_with_city: string;
   interest: string;
   message: string;
   crm_status: ContactCrmStatus;
@@ -57,6 +58,8 @@ export interface ActivityRegistrationRecord {
   phone: string;
   role: string;
   organization: string;
+  school_name: string;
+  address_with_city: string;
   activity_slug: string;
   activity_title: string;
   activity_category: string;
@@ -130,9 +133,18 @@ async function readLocalDb(): Promise<LocalDbSchema> {
     const raw = await fs.readFile(filePath, "utf8");
     const parsed = JSON.parse(raw) as Partial<LocalDbSchema>;
     return {
-      contacts: Array.isArray(parsed.contacts) ? parsed.contacts : [],
+      contacts: Array.isArray(parsed.contacts)
+        ? parsed.contacts.map((c) => ({
+            ...c,
+            address_with_city: c.address_with_city || "",
+          }))
+        : [],
       registrations: Array.isArray(parsed.registrations)
-        ? parsed.registrations
+        ? parsed.registrations.map((r) => ({
+            ...r,
+            school_name: r.school_name || r.organization || "",
+            address_with_city: r.address_with_city || "",
+          }))
         : [],
     };
   } catch {
@@ -269,6 +281,7 @@ export async function createContactSubmission(input: {
   email: string;
   phone?: string;
   organization: string;
+  address_with_city?: string;
   interest?: string;
   message: string;
 }): Promise<ContactSubmissionRecord> {
@@ -280,6 +293,7 @@ export async function createContactSubmission(input: {
     email: input.email.trim(),
     phone: (input.phone || "").trim(),
     organization: input.organization.trim(),
+    address_with_city: (input.address_with_city || "").trim(),
     interest: (input.interest || "general").trim(),
     message: input.message.trim(),
     crm_status: "new",
@@ -593,6 +607,8 @@ export async function createActivityRegistration(input: {
   phone: string;
   role: string;
   organization?: string;
+  school_name?: string;
+  address_with_city?: string;
   activity_slug: string;
   booking_mode?: BookingModeType;
   payment_method?: string;
@@ -620,6 +636,9 @@ export async function createActivityRegistration(input: {
     resolvedRefCode = await generateUniqueBookingReference();
   }
 
+  const resolvedSchoolName = (input.school_name || input.organization || "").trim();
+  const resolvedOrg = (input.organization || input.school_name || "").trim();
+
   const record: ActivityRegistrationRecord = {
     id: crypto.randomUUID(),
     reference_code: resolvedRefCode,
@@ -628,7 +647,9 @@ export async function createActivityRegistration(input: {
     email: input.email.trim(),
     phone: input.phone.trim(),
     role: input.role.trim(),
-    organization: (input.organization || "").trim(),
+    organization: resolvedOrg,
+    school_name: resolvedSchoolName,
+    address_with_city: (input.address_with_city || "").trim(),
     activity_slug: input.activity_slug.trim(),
     activity_title: meta.title,
     activity_category: meta.category,

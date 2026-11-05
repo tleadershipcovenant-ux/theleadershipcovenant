@@ -275,6 +275,8 @@ function RegistrationsCrmInner() {
     phone: "",
     role: "",
     organization: "",
+    school_name: "",
+    address_with_city: "",
     activity_slug: "school-impact-summit-2026",
     booking_mode: "reserve_later" as BookingModeType,
     transaction_ref: "",
@@ -433,6 +435,8 @@ function RegistrationsCrmInner() {
         r.email.toLowerCase().includes(q) ||
         r.phone.toLowerCase().includes(q) ||
         r.role.toLowerCase().includes(q) ||
+        (r.school_name && r.school_name.toLowerCase().includes(q)) ||
+        (r.address_with_city && r.address_with_city.toLowerCase().includes(q)) ||
         r.organization.toLowerCase().includes(q) ||
         r.reference_code.toLowerCase().includes(q) ||
         r.transaction_ref.toLowerCase().includes(q) ||
@@ -777,6 +781,8 @@ function RegistrationsCrmInner() {
           phone: "",
           role: "",
           organization: "",
+          school_name: "",
+          address_with_city: "",
           activity_slug:
             activeActivityTab !== "all"
               ? activeActivityTab
@@ -842,6 +848,8 @@ function RegistrationsCrmInner() {
       "Email",
       "Phone",
       "Role",
+      "School Name",
+      "Address with City",
       "Organization",
       "Activity",
       "Booking Mode",
@@ -858,6 +866,8 @@ function RegistrationsCrmInner() {
       r.email,
       r.phone,
       r.role,
+      r.school_name || r.organization || "",
+      r.address_with_city || "",
       r.organization,
       r.activity_title,
       r.booking_mode === "secure_seat"
@@ -1558,8 +1568,14 @@ function RegistrationsCrmInner() {
                         <div className="flex items-center gap-1 text-[11px] text-slate-500 truncate mt-0.5">
                           <span className="font-semibold text-slate-700">{r.role}</span>
                           <span>•</span>
-                          <span className="truncate">{r.organization || "Independent"}</span>
+                          <span className="truncate">{r.school_name || r.organization || "Independent"}</span>
                         </div>
+                        {r.address_with_city && (
+                          <div className="flex items-center gap-1 text-[10.5px] text-slate-400 truncate mt-0.5">
+                            <MapPin className="w-2.5 h-2.5 shrink-0 text-slate-400" />
+                            <span className="truncate">{r.address_with_city}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -1738,13 +1754,19 @@ function RegistrationsCrmInner() {
                           >
                             {initials}
                           </div>
-                          <div className="min-w-0 max-w-[140px]">
+                          <div className="min-w-0 max-w-[155px]">
                             <div className="font-bold text-slate-900 group-hover:text-[#FF7900] transition-colors truncate text-xs">
                               {r.full_name}
                             </div>
                             <div className="text-[10px] text-slate-500 truncate">
-                              {r.organization || r.role || "Independent"}
+                              {r.school_name || r.organization || r.role || "Independent"}
                             </div>
+                            {r.address_with_city && (
+                              <div className="text-[9.5px] text-slate-400 truncate flex items-center gap-0.5">
+                                <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                <span className="truncate">{r.address_with_city}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -1990,9 +2012,17 @@ function RegistrationsCrmInner() {
                     <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
                       <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="break-words">
-                        {selected.role} • {selected.organization || "Independent"}
+                        {selected.role} • {selected.school_name || selected.organization || "Independent"}
                       </span>
                     </div>
+                    {selected.address_with_city && (
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="break-words">
+                          {selected.address_with_city}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Direct Contact Buttons */}
@@ -2845,17 +2875,43 @@ function RegistrationsCrmInner() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5 pt-0.5">
-                    <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-                      School / Organization
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Beaconhouse / Roots Millennium / Independent"
-                      value={newReg.organization}
-                      onChange={(e) => setNewReg({ ...newReg, organization: e.target.value })}
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        School Name <span className="text-[#FF7900]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Beaconhouse / Roots Millennium"
+                        value={newReg.school_name || newReg.organization}
+                        onChange={(e) =>
+                          setNewReg({
+                            ...newReg,
+                            school_name: e.target.value,
+                            organization: e.target.value,
+                          })
+                        }
+                        className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Address with City <span className="text-[#FF7900]">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Sector F-8/4, Islamabad"
+                        value={newReg.address_with_city}
+                        onChange={(e) =>
+                          setNewReg({
+                            ...newReg,
+                            address_with_city: e.target.value,
+                          })
+                        }
+                        className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20"
+                      />
+                    </div>
                   </div>
                 </section>
 

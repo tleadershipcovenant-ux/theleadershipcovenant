@@ -7,6 +7,8 @@ export interface ReceiptPayload {
   email: string;
   phone: string;
   role: string;
+  schoolName?: string;
+  addressWithCity?: string;
   activityTitle: string;
   activityCategory: string;
   activityDate: string;
@@ -478,6 +480,8 @@ export async function generateReceiptPngBlob(
     [
       { label: "Participant Full Name", value: data.fullName },
       { label: "Role / Designation", value: data.role },
+      ...(data.schoolName ? [{ label: "School Name", value: data.schoolName }] : []),
+      ...(data.addressWithCity ? [{ label: "Address with City", value: data.addressWithCity }] : []),
       { label: "Email Address", value: data.email },
       { label: "Phone / WhatsApp", value: data.phone },
     ]
@@ -1622,6 +1626,16 @@ export function printOfficialReceipt(data: ReceiptPayload): void {
               <div class="field-label">Role / Designation</div>
               <div class="field-val">${escapeHtml(data.role)}</div>
             </div>
+            ${data.schoolName ? `
+            <div class="field">
+              <div class="field-label">School Name</div>
+              <div class="field-val">${escapeHtml(data.schoolName)}</div>
+            </div>` : ""}
+            ${data.addressWithCity ? `
+            <div class="field">
+              <div class="field-label">Address with City</div>
+              <div class="field-val">${escapeHtml(data.addressWithCity)}</div>
+            </div>` : ""}
             <div class="field">
               <div class="field-label">Email Address</div>
               <div class="field-val">${escapeHtml(data.email)}</div>

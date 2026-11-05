@@ -14,6 +14,7 @@ import {
   Mail,
   Phone,
   Building2,
+  MapPin,
   X,
   Trash2,
   CheckCircle2,
@@ -188,6 +189,7 @@ export default function AdminContactsCrmPage() {
     email: "",
     phone: "",
     organization: "",
+    address_with_city: "",
     interest: "school-impact-summit",
     crm_status: "new" as ContactCrmStatus,
     message: "",
@@ -280,6 +282,7 @@ export default function AdminContactsCrmPage() {
         c.full_name.toLowerCase().includes(q) ||
         c.email.toLowerCase().includes(q) ||
         c.organization.toLowerCase().includes(q) ||
+        (c.address_with_city && c.address_with_city.toLowerCase().includes(q)) ||
         c.phone.toLowerCase().includes(q) ||
         c.interest.toLowerCase().includes(q) ||
         c.message.toLowerCase().includes(q) ||
@@ -396,6 +399,7 @@ export default function AdminContactsCrmPage() {
           email: "",
           phone: "",
           organization: "",
+          address_with_city: "",
           interest: "school-impact-summit",
           crm_status: "new",
           message: "",
@@ -417,6 +421,7 @@ export default function AdminContactsCrmPage() {
       "Email",
       "Phone",
       "Organization",
+      "Address with City",
       "Interest / Topic",
       "CRM Status",
       "Message",
@@ -430,6 +435,7 @@ export default function AdminContactsCrmPage() {
       c.email,
       c.phone,
       c.organization,
+      c.address_with_city || "",
       c.interest,
       c.crm_status,
       c.message.replace(/\r?\n/g, " "),
@@ -860,6 +866,12 @@ export default function AdminContactsCrmPage() {
                           <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                           <span className="truncate">{c.organization || "Independent"}</span>
                         </div>
+                        {c.address_with_city && (
+                          <div className="flex items-center gap-1 text-[10.5px] text-slate-400 truncate mt-0.5">
+                            <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                            <span className="truncate">{c.address_with_city}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -998,12 +1010,18 @@ export default function AdminContactsCrmPage() {
                         </div>
                       </td>
 
-                      {/* School / Organization */}
+                      {/* School / Organization & Address */}
                       <td className="py-3 px-4 text-slate-700 font-medium whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span className="truncate">{c.organization || "Independent"}</span>
                         </div>
+                        {c.address_with_city && (
+                          <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[180px]">{c.address_with_city}</span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Topic & Message Preview (Fills empty space with meaningful context!) */}
@@ -1185,6 +1203,12 @@ export default function AdminContactsCrmPage() {
                       <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span className="break-words">{selected.organization || "Independent / Individual"}</span>
                     </div>
+                    {selected.address_with_city && (
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600 font-medium pt-0.5">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="break-words">{selected.address_with_city}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Contact Channels: Email & WhatsApp */}
@@ -1677,6 +1701,27 @@ export default function AdminContactsCrmPage() {
                           value={addForm.organization}
                           onChange={(e) =>
                             setAddForm({ ...addForm, organization: e.target.value })
+                          }
+                          className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Address with city */}
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                        Address with city
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                          <MapPin className="w-3.5 h-3.5" />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Sector F-8/4, Islamabad"
+                          value={addForm.address_with_city}
+                          onChange={(e) =>
+                            setAddForm({ ...addForm, address_with_city: e.target.value })
                           }
                           className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF7900] focus:ring-2 focus:ring-[#FF7900]/20 transition-all"
                         />

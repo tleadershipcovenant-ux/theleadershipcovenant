@@ -95,6 +95,8 @@ export function ApplyForm({
     email: "",
     phone: "",
     role: "",
+    school_name: "",
+    address_with_city: "",
     activity_slug: initialActivity || "",
     transaction_ref: "",
     message: "",
@@ -175,6 +177,8 @@ export function ApplyForm({
         email: draft.email || prev.email,
         phone: draft.phone || prev.phone,
         role: draft.role || prev.role,
+        school_name: draft.school_name || prev.school_name,
+        address_with_city: draft.address_with_city || prev.address_with_city,
         activity_slug: prev.activity_slug || draft.activity_slug,
         message: draft.message || prev.message,
       }));
@@ -191,6 +195,8 @@ export function ApplyForm({
       formData.email ||
       formData.phone ||
       formData.role ||
+      formData.school_name ||
+      formData.address_with_city ||
       formData.activity_slug ||
       bookingMode
     ) {
@@ -200,6 +206,8 @@ export function ApplyForm({
           email: formData.email,
           phone: formData.phone,
           role: formData.role,
+          school_name: formData.school_name,
+          address_with_city: formData.address_with_city,
           activity_slug: formData.activity_slug,
           bookingMode,
           message: formData.message,
@@ -219,6 +227,8 @@ export function ApplyForm({
           email: formData.email,
           phone: formData.phone,
           role: formData.role,
+          school_name: formData.school_name,
+          address_with_city: formData.address_with_city,
           activity_slug: formData.activity_slug,
           bookingMode,
           message: formData.message,
@@ -397,6 +407,14 @@ export function ApplyForm({
     }
     if (formData.role.trim().length < 2) {
       setError("Please enter your role (e.g. Principal, Teacher, Parent).");
+      return false;
+    }
+    if (formData.school_name.trim().length < 2) {
+      setError("Please enter your school / institution name (at least 2 characters).");
+      return false;
+    }
+    if (formData.address_with_city.trim().length < 3) {
+      setError("Please enter your address with city (at least 3 characters).");
       return false;
     }
     if (!formData.activity_slug) {
@@ -739,6 +757,8 @@ export function ApplyForm({
       email: "",
       phone: "",
       role: "",
+      school_name: "",
+      address_with_city: "",
       activity_slug: "",
       transaction_ref: "",
       message: "",
@@ -798,6 +818,8 @@ export function ApplyForm({
       email: formData.email.trim(),
       phone: formData.phone.trim(),
       role: formData.role.trim(),
+      schoolName: formData.school_name.trim() || undefined,
+      addressWithCity: formData.address_with_city.trim() || undefined,
       activityTitle: selectedEvent?.title || "Leadership Activity",
       activityCategory: selectedEvent
         ? CATEGORY_LABELS[selectedEvent.category] || selectedEvent.category
@@ -1479,6 +1501,42 @@ export function ApplyForm({
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="apply-school" className={labelClass}>
+                      {copy.step1.schoolName.label} <span className="text-[#FF7900]">*</span>
+                    </label>
+                    <input
+                      id="apply-school"
+                      name="school_name"
+                      type="text"
+                      required
+                      placeholder={copy.step1.schoolName.placeholder}
+                      value={formData.school_name}
+                      onChange={handleChange}
+                      className={getInputClass(Boolean(formData.school_name.trim()))}
+                      autoComplete="organization"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="apply-address" className={labelClass}>
+                      {copy.step1.addressWithCity.label} <span className="text-[#FF7900]">*</span>
+                    </label>
+                    <input
+                      id="apply-address"
+                      name="address_with_city"
+                      type="text"
+                      required
+                      placeholder={copy.step1.addressWithCity.placeholder}
+                      value={formData.address_with_city}
+                      onChange={handleChange}
+                      className={getInputClass(Boolean(formData.address_with_city.trim()))}
+                      autoComplete="street-address"
+                    />
+                  </div>
+                </div>
+
                 {/* Custom Colorful & Professional Activity / Cohort Selector */}
                 <div ref={activityDropdownRef} className="relative z-40">
                   <label
@@ -2056,7 +2114,7 @@ export function ApplyForm({
                     <strong className="text-[#102E4D]">
                       {formData.full_name}
                     </strong>{" "}
-                    ({formData.role})
+                    ({formData.role}{formData.school_name ? ` • ${formData.school_name}` : ""})
                   </span>
                   <span className="hidden sm:inline text-slate-300">•</span>
                   <span className="font-num text-slate-600 font-semibold">
