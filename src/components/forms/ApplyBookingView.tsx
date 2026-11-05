@@ -32,9 +32,15 @@ function ApplyBookingContent({ initialEvents }: ApplyBookingViewProps) {
             document.getElementById("apply-form") ||
             document.getElementById("booking-form");
           if (formEl) {
-            formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            const navOffset = window.innerWidth >= 768 ? 120 : 80;
+            const elementPosition = formEl.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+            window.scrollTo({
+              top: Math.max(0, offsetPosition),
+              behavior: "smooth",
+            });
           }
-        }, 120);
+        }, 60);
         return () => window.clearTimeout(timer);
       }
     }

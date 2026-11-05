@@ -19,14 +19,22 @@ export default function ApplyPageView({
       <section className="relative w-full overflow-hidden bg-[#001B33] text-white py-14 sm:py-18 lg:py-22 min-h-[360px] sm:min-h-[400px] flex items-center justify-center border-b border-white/10">
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#FFC400] z-20" />
 
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <img
-            src={copy.hero.image}
-            alt={copy.hero.imageAlt}
-            fetchPriority="high"
-            decoding="async"
-            className="w-full h-full object-cover object-center opacity-40 transform-gpu"
-          />
+        <div className="absolute inset-0 overflow-hidden pointer-events-none transform-gpu">
+          <picture className="w-full h-full">
+            {copy.hero.image.endsWith(".png") && (
+              <source
+                srcSet={copy.hero.image.replace(/\.png$/i, ".webp")}
+                type="image/webp"
+              />
+            )}
+            <img
+              src={copy.hero.image}
+              alt={copy.hero.imageAlt}
+              fetchPriority="high"
+              decoding="async"
+              className="w-full h-full object-cover object-center opacity-40 transform-gpu"
+            />
+          </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-[#001B33]/80 via-[#001B33]/75 to-[#001B33]/90" />
           <div className="absolute -top-24 left-1/4 w-96 h-48 bg-[#FFC400]/12 rounded-full blur-3xl transform-gpu" />
           <div className="absolute -bottom-24 right-1/4 w-96 h-48 bg-[#FF7900]/12 rounded-full blur-3xl transform-gpu" />

@@ -70,7 +70,7 @@ export default function ApplyCookieBanner({
         aria-label="Cookie preferences"
         className="fixed bottom-0 inset-x-0 z-50 p-2 sm:p-3 pointer-events-none pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]"
       >
-        <div className="pointer-events-auto max-w-5xl mx-auto w-full relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#001B33]/95 backdrop-blur-xl text-white border border-white/15 shadow-[0_14px_40px_rgba(0,15,30,0.6)] px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
+        <div className="pointer-events-auto max-w-5xl mx-auto w-full relative overflow-hidden rounded-xl sm:rounded-2xl bg-[#001B33]/95 backdrop-blur-xl text-white border border-white/15 shadow-[0_14px_40px_rgba(0,15,30,0.6)] px-3.5 py-2.5 sm:px-4 sm:py-3 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 transform-gpu">
           {/* Top signature gradient accent line */}
           <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#FFC400] via-[#FF7900] to-[#10B981]" />
 

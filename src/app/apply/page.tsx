@@ -38,7 +38,15 @@ export const metadata: Metadata = {
 };
 
 export default function ApplyPage() {
-  ReactDOM.preload(APPLY_PAGE.hero.image, {
+  const originalHero = APPLY_PAGE.hero.image;
+  const webpHero = originalHero.replace(/\.png$/i, ".webp");
+
+  ReactDOM.preload(webpHero, {
+    as: "image",
+    type: "image/webp",
+    fetchPriority: "high",
+  });
+  ReactDOM.preload(originalHero, {
     as: "image",
     fetchPriority: "high",
   });

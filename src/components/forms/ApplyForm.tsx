@@ -347,8 +347,10 @@ export function ApplyForm({
       : null;
   }, [selectedEvent, todayIsoDate]);
 
-  const activePaymentAccount =
-    PAYMENT_METHODS.find((m) => m.id === paymentMethod) ?? PAYMENT_METHODS[0];
+  const activePaymentAccount = useMemo(
+    () => PAYMENT_METHODS.find((m) => m.id === paymentMethod) ?? PAYMENT_METHODS[0],
+    [paymentMethod]
+  );
 
   const scrollWizardIntoView = () => {
     if (typeof window === "undefined") return;
