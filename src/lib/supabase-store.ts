@@ -316,7 +316,34 @@ export async function createContactSubmission(input: {
         }
       );
       if (inserted?.[0]) return inserted[0];
-    } catch {
+    } catch (err: unknown) {
+      const errStr = String(err);
+      if (errStr.includes("PGRST204") || errStr.includes("schema cache")) {
+        try {
+          const { address_with_city, ...fallbackPayload } = record;
+          void address_with_city;
+          const retry = await supabaseFetch<ContactSubmissionRecord[]>(
+            "contact_submissions",
+            {
+              method: "POST",
+              headers: { Prefer: "return=representation" },
+              body: JSON.stringify(fallbackPayload),
+            }
+          );
+          if (retry?.[0]) {
+            const merged: ContactSubmissionRecord = {
+              ...retry[0],
+              address_with_city: record.address_with_city,
+            };
+            const db = await readLocalDb();
+            db.contacts.unshift(merged);
+            await writeLocalDb(db).catch(() => {});
+            return merged;
+          }
+        } catch {
+          // Fallback safely to local DB
+        }
+      }
       // Fallback safely to local DB
     }
   }
@@ -721,6 +748,40 @@ export async function createActivityRegistration(input: {
             db.registrations.unshift(retry[0]);
             await writeLocalDb(db).catch(() => {});
             return retry[0];
+          }
+        } catch {
+          // Fall through to local DB
+        }
+      } else if (
+        errStr.includes("PGRST204") ||
+        errStr.includes("schema cache") ||
+        errStr.includes("address_with_city") ||
+        errStr.includes("school_name")
+      ) {
+        // Handle temporary PostgREST schema cache lag: retry insert with base columns
+        try {
+          const { school_name, address_with_city, ...fallbackPayload } = record;
+          void school_name;
+          void address_with_city;
+          const retry = await supabaseFetch<ActivityRegistrationRecord[]>(
+            "activity_registrations",
+            {
+              method: "POST",
+              headers: { Prefer: "return=representation" },
+              body: JSON.stringify(fallbackPayload),
+            }
+          );
+          if (retry?.[0]) {
+            const merged: ActivityRegistrationRecord = {
+              ...retry[0],
+              school_name: record.school_name,
+              address_with_city: record.address_with_city,
+            };
+            if (memoryDb) memoryDb.registrations.unshift(merged);
+            const db = await readLocalDb();
+            db.registrations.unshift(merged);
+            await writeLocalDb(db).catch(() => {});
+            return merged;
           }
         } catch {
           // Fall through to local DB
