@@ -24,10 +24,32 @@ export default function SummitPageView() {
         <div className="w-full max-w-[1920px] mx-auto flex items-center justify-center relative">
           {/* Responsive Hero Picture: Mobile Devices (<640px) use mobile hero, Tablet/Desktop (>=640px) use wide hero */}
           <picture className="w-full flex items-center justify-center">
+            {/* Mobile WebP (<640px) */}
+            <source
+              type="image/webp"
+              media="(max-width: 639px)"
+              srcSet={
+                hero.mobileImage && hero.mobileImage.endsWith(".webp")
+                  ? hero.mobileImage
+                  : "/Submit/Mobile%20devices%20hero%20section.webp"
+              }
+            />
+            {/* Mobile Fallback (<640px) */}
             <source
               media="(max-width: 639px)"
               srcSet={hero.mobileImage || "/Submit/Mobile%20devices%20hero%20section.png"}
             />
+            {/* Desktop WebP (>=640px) */}
+            <source
+              type="image/webp"
+              media="(min-width: 640px)"
+              srcSet={
+                hero.desktopImage && hero.desktopImage.endsWith(".webp")
+                  ? hero.desktopImage
+                  : "/Submit/Hero.webp"
+              }
+            />
+            {/* Desktop Fallback (>=640px) */}
             <source
               media="(min-width: 640px)"
               srcSet={hero.desktopImage || "/Submit/Hero.png"}
@@ -38,6 +60,9 @@ export default function SummitPageView() {
               className="w-full h-auto max-h-[85vh] object-contain sm:object-cover object-center select-none"
               loading="eager"
               fetchPriority="high"
+              decoding="async"
+              width={1920}
+              height={1080}
             />
           </picture>
 

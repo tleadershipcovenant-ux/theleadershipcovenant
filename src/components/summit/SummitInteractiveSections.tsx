@@ -34,7 +34,7 @@ export default function SummitInteractiveSections({
       {/* 5. SPEAKERS & FACILITATORS                                */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20 md:scroll-mt-28"
         id="speakers"
       >
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
@@ -94,6 +94,9 @@ export default function SummitInteractiveSections({
                       alt={spk.name}
                       className="w-full h-full object-cover object-center select-none transition-transform duration-300 group-hover:scale-105"
                       loading="lazy"
+                      decoding="async"
+                      width={400}
+                      height={400}
                     />
                   </div>
 
@@ -138,7 +141,7 @@ export default function SummitInteractiveSections({
       {/* 6. WATCH & RELIVE — EMBEDDED VIDEO PLAYERS                 */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
-        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden"
+        className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20 md:scroll-mt-28"
         id="videos"
       >
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">

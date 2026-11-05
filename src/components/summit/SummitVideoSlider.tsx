@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { MdChevronLeft, MdChevronRight, MdClose } from "react-icons/md";
 import { FaPlay } from "react-icons/fa";
@@ -56,6 +56,7 @@ export default function SummitVideoSlider({
   const slides = videos && videos.length > 0 ? videos : SUMMIT_VIDEOS;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
 
   const total = slides.length;
 
@@ -68,6 +69,23 @@ export default function SummitVideoSlider({
     setIsPlaying(false);
     setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
   }, [total]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (Math.abs(deltaX) > 40) {
+      if (deltaX > 0) {
+        handlePrev();
+      } else {
+        handleNext();
+      }
+    }
+  };
 
   const handleCardClick = (index: number) => {
     if (index === currentIndex) {
@@ -98,17 +116,21 @@ export default function SummitVideoSlider({
   };
 
   return (
-    <div className="relative w-full max-w-6xl mx-auto pt-2 pb-2 sm:pt-3 sm:pb-4 select-none">
+    <div className="relative w-full max-w-6xl mx-auto pt-2 pb-2 sm:pt-3 sm:pb-4 select-none transform-gpu">
       {/* ────────────────────────────────────────────────────────── */}
       {/* 3D Coverflow Slider Presentation Track                      */}
       {/* ────────────────────────────────────────────────────────── */}
-      <div className="relative w-full h-[240px] sm:h-[360px] md:h-[440px] lg:h-[480px] flex items-center justify-center overflow-hidden">
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="relative w-full h-[240px] sm:h-[360px] md:h-[440px] lg:h-[480px] flex items-center justify-center overflow-hidden touch-pan-y"
+      >
         {/* Navigation Arrow — Left */}
         <button
           type="button"
           onClick={handlePrev}
           aria-label="Previous Video"
-          className="absolute left-2 sm:left-4 md:left-6 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full shadow-xl border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#102E4D] hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#FFC400]"
+          className="absolute left-2 sm:left-4 md:left-6 lg:left-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full shadow-xl border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#102E4D] hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#FFC400] cursor-pointer"
         >
           <MdChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
@@ -118,7 +140,7 @@ export default function SummitVideoSlider({
           type="button"
           onClick={handleNext}
           aria-label="Next Video"
-          className="absolute right-2 sm:right-4 md:right-6 lg:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full shadow-xl border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#102E4D] hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#FFC400]"
+          className="absolute right-2 sm:right-4 md:right-6 lg:right-8 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full shadow-xl border border-slate-200/80 flex items-center justify-center text-slate-700 hover:text-[#102E4D] hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-[#FFC400] cursor-pointer"
         >
           <MdChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
         </button>
@@ -136,7 +158,7 @@ export default function SummitVideoSlider({
             <div
               key={video.id}
               onClick={() => handleCardClick(idx)}
-              className={`absolute top-1/2 left-1/2 aspect-video w-[78%] sm:w-[68%] md:w-[62%] lg:w-[58%] max-w-[780px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer transition-[transform,opacity,box-shadow,filter] duration-500 ease-out will-change-transform ${
+              className={`absolute top-1/2 left-1/2 aspect-video w-[78%] sm:w-[68%] md:w-[62%] lg:w-[58%] max-w-[780px] rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer transition-[transform,opacity,box-shadow,filter] duration-500 ease-out will-change-transform transform-gpu ${
                 isActive
                   ? "-translate-x-1/2 -translate-y-1/2 scale-100 opacity-100 z-20 shadow-[0_24px_60px_-15px_rgba(0,27,51,0.35)] border-2 border-white ring-1 ring-slate-200"
                   : isPrev
@@ -162,7 +184,7 @@ export default function SummitVideoSlider({
                       setIsPlaying(false);
                     }}
                     aria-label="Close video player"
-                    className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors shadow-md"
+                    className="absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-colors shadow-md cursor-pointer"
                   >
                     <MdClose className="w-5 h-5" />
                   </button>
@@ -174,7 +196,14 @@ export default function SummitVideoSlider({
                     src={video.thumbnail}
                     alt={video.title}
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
-                    loading="lazy"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (!img.src.includes("hqdefault")) {
+                        img.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                      }
+                    }}
                   />
 
                   {/* Soft Gradient Overlay for depth */}
@@ -215,7 +244,7 @@ export default function SummitVideoSlider({
               setCurrentIndex(i);
             }}
             aria-label={`Go to slide ${i + 1}`}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
               i === currentIndex
                 ? "w-7 bg-[#FF7900]"
                 : "w-2 bg-slate-300 hover:bg-slate-400"

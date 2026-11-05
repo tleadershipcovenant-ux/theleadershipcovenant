@@ -37,14 +37,14 @@ export const metadata: Metadata = {
 };
 
 export default function SummitPage() {
-  ReactDOM.preload("/Submit/Hero.png", {
+  ReactDOM.preload("/Submit/Hero.webp", {
     as: "image",
     fetchPriority: "high",
   });
-  ReactDOM.preload("/Submit/Mobile%20devices%20hero%20section.png", {
+  ReactDOM.preload("/Submit/Mobile%20devices%20hero%20section.webp", {
     as: "image",
+    fetchPriority: "high",
   });
-  ReactDOM.preload("/Submit/SP1.png", { as: "image" });
 
   return <SummitPageView />;
 }
