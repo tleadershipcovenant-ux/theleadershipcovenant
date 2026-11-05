@@ -2118,38 +2118,9 @@ function RegistrationsCrmInner() {
                         <span>Edit Profile</span>
                       </button>
                     ) : (
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setIsEditingProfile(false);
-                            setProfileError(null);
-                          }}
-                          disabled={savingProfile}
-                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 text-xs font-bold inline-flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          <X className="w-3 h-3" />
-                          <span>Cancel</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleSaveProfile}
-                          disabled={savingProfile}
-                          className="px-3 py-1 rounded-lg bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white text-xs font-black inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
-                        >
-                          {savingProfile ? (
-                            <>
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              <span>Saving...</span>
-                            </>
-                          ) : (
-                            <>
-                              <Check className="w-3 h-3 stroke-[3]" />
-                              <span>Save Changes</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-[#FFF7ED] text-[#C2410C] border border-[#FED7AA] text-[11px] font-bold">
+                        Editing profile
+                      </span>
                     )}
                   </div>
                 </div>
@@ -2169,7 +2140,7 @@ function RegistrationsCrmInner() {
                         {/* Full Name */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            Full Name <span className="text-[#FF7900]">*</span>
+                            Name <span className="text-[#FF7900]">*</span>
                           </label>
                           <div className="relative flex items-center">
                             <User className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2188,7 +2159,7 @@ function RegistrationsCrmInner() {
                         {/* Role / Designation */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            Role / Designation <span className="text-[#FF7900]">*</span>
+                            Role <span className="text-[#FF7900]">*</span>
                           </label>
                           <div className="relative flex items-center">
                             <Briefcase className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2207,7 +2178,7 @@ function RegistrationsCrmInner() {
                         {/* Email Address */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            Email Address <span className="text-[#FF7900]">*</span>
+                            Email <span className="text-[#FF7900]">*</span>
                           </label>
                           <div className="relative flex items-center">
                             <Mail className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2226,7 +2197,7 @@ function RegistrationsCrmInner() {
                         {/* Phone / WhatsApp */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            Phone / WhatsApp <span className="text-[#FF7900]">*</span>
+                            Phone <span className="text-[#FF7900]">*</span>
                           </label>
                           <div className="relative flex items-center">
                             <Phone className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2245,7 +2216,7 @@ function RegistrationsCrmInner() {
                         {/* School Name */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            School Name
+                            School
                           </label>
                           <div className="relative flex items-center">
                             <Building2 className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2264,7 +2235,7 @@ function RegistrationsCrmInner() {
                         {/* Address with City */}
                         <div className="space-y-1">
                           <label className="block text-[11px] font-extrabold text-[#102E4D] uppercase tracking-wider">
-                            Address with City
+                            Address
                           </label>
                           <div className="relative flex items-center">
                             <MapPin className="w-3.5 h-3.5 absolute left-3 text-slate-400 pointer-events-none" />
@@ -2281,8 +2252,8 @@ function RegistrationsCrmInner() {
                         </div>
                       </div>
 
-                      {/* Action buttons inside form */}
-                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                      {/* Single profile action row */}
+                      <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
                         <button
                           type="button"
                           onClick={() => {
@@ -2309,7 +2280,7 @@ function RegistrationsCrmInner() {
                           ) : (
                             <>
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
-                              <span>Save Profile Changes</span>
+                              <span>Save Profile</span>
                             </>
                           )}
                         </button>
@@ -2427,47 +2398,47 @@ function RegistrationsCrmInner() {
                     </div>
 
                     {/* DEDICATED COLORFUL PARTICIPANT DETAILS CARDS: School Name, Role, Address */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       {/* 1. School Name Card */}
-                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white border-2 border-[#BFDBFE] shadow-2xs flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#005696] to-[#003A66] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <div className="min-h-[112px] p-3.5 rounded-xl bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white border border-[#BFDBFE] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#005696] to-[#003A66] text-white flex items-center justify-center shrink-0 shadow-xs">
                           <Building2 className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#005696] block">
-                            School Name
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#005696] block">
+                            School
                           </span>
-                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                          <p className="text-sm font-extrabold text-[#102E4D] leading-snug break-words mt-1">
                             {selected.school_name || selected.organization || "Independent / Individual"}
                           </p>
                         </div>
                       </div>
 
                       {/* 2. Role Card */}
-                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#FFF7ED] via-[#F8FAFC] to-white border-2 border-[#FED7AA] shadow-2xs flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <div className="min-h-[112px] p-3.5 rounded-xl bg-gradient-to-br from-[#FFF7ED] via-[#F8FAFC] to-white border border-[#FED7AA] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF7900] to-[#E56D00] text-white flex items-center justify-center shrink-0 shadow-xs">
                           <Briefcase className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#EA580C] block">
-                            Role / Designation
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#EA580C] block">
+                            Role
                           </span>
-                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                          <p className="text-sm font-extrabold text-[#102E4D] leading-snug break-words mt-1">
                             {selected.role || "Participant"}
                           </p>
                         </div>
                       </div>
 
                       {/* 3. Address Card */}
-                      <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] via-[#F8FAFC] to-white border-2 border-[#A7F3D0] shadow-2xs flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                      <div className="min-h-[112px] p-3.5 rounded-xl bg-gradient-to-br from-[#ECFDF5] via-[#F8FAFC] to-white border border-[#A7F3D0] shadow-2xs flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] text-white flex items-center justify-center shrink-0 shadow-xs">
                           <MapPin className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-[#059669] block">
-                            Address with City
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <span className="text-[10px] font-black uppercase tracking-[0.12em] text-[#059669] block">
+                            Address
                           </span>
-                          <p className="text-xs sm:text-[13.5px] font-black text-[#102E4D] leading-snug break-words mt-0.5">
+                          <p className="text-sm font-extrabold text-[#102E4D] leading-snug break-words mt-1">
                             {selected.address_with_city || "Not Specified"}
                           </p>
                         </div>
