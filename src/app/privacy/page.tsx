@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import PrivacyContent from "@/components/privacy/PrivacyContent";
+import { SITE_URL } from "@/config/site";
+import { PrivacyStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "Privacy Policy & Data Governance - The Leadership Covenant",
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
     title: "Privacy Policy & Data Governance - The Leadership Covenant",
     description:
       "Institutional privacy policy, student data safeguards, and data governance at The Leadership Covenant Pakistan. Authorized FranklinCovey Education Partner.",
-    url: "https://theleadershipcovenant.com/privacy",
+    url: `${SITE_URL}/privacy`,
     siteName: "The Leadership Covenant",
     images: [
       {
@@ -44,6 +46,7 @@ export default function PrivacyPage() {
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
+      <PrivacyStructuredData />
       {/* ────────────────────────────────────────────────────────── */}
       {/* 1. EXECUTIVE HERO SECTION WITH USER-REQUESTED IMAGE        */}
       {/* ────────────────────────────────────────────────────────── */}

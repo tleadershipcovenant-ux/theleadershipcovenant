@@ -2,11 +2,21 @@ import React from "react";
 import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import SummitPageView from "@/components/summit/SummitPageView";
+import { SITE_URL } from "@/config/site";
+import { SummitStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "The School Impact Summit 2026 - The Leadership Covenant",
   description:
     "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, past highlights and testimonials. Register online in minutes.",
+  keywords: [
+    "The School Impact Summit 2026",
+    "School Impact Summit Islamabad",
+    "Educational Leadership Summit Pakistan",
+    "Fazal Niazi FranklinCovey",
+    "Ubaid ur Rehman Summit",
+    "Principal Conference Islamabad 2026",
+  ],
   alternates: {
     canonical: "/summit",
   },
@@ -14,7 +24,7 @@ export const metadata: Metadata = {
     title: "The School Impact Summit 2026 - The Leadership Covenant",
     description:
       "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, past highlights and testimonials. Register online in minutes.",
-    url: "https://theleadershipcovenant.com/summit",
+    url: `${SITE_URL}/summit`,
     siteName: "The Leadership Covenant",
     images: [
       {
@@ -46,5 +56,10 @@ export default function SummitPage() {
     fetchPriority: "high",
   });
 
-  return <SummitPageView />;
+  return (
+    <>
+      <SummitStructuredData />
+      <SummitPageView />
+    </>
+  );
 }

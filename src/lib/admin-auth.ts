@@ -146,6 +146,169 @@ export async function verifyAdminWithSupabase(
 }
 
 /**
+ * Verifies the admin's current password against Supabase Auth (auth.users)
+ * and updates their password in the Supabase PostgreSQL database in a single secure flow.
+ */
+export async function changeAdminPasswordWithSupabase(
+  inputEmail: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<{
+  ok: boolean;
+  email?: string;
+  userId?: string;
+  field?: "currentPassword" | "newPassword" | "general";
+  error?: string;
+}> {
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").trim().replace(/\/+$/, "");
+  const key = (
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    ""
+  ).trim();
+
+  if (!url || !key) {
+    return {
+      ok: false,
+      field: "general",
+      error: "Supabase authentication service is not configured.",
+    };
+  }
+
+  const normalizedInput = inputEmail.trim().toLowerCase();
+  const primaryEmail =
+    normalizedInput && normalizedInput !== "admin@theleadershipcovenant.com"
+      ? normalizedInput
+      : "tleadershipcovenant@gmail.com";
+
+  const tokenEndpoint = `${url}/auth/v1/token?grant_type=password`;
+  const userEndpoint = `${url}/auth/v1/user`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    // 1. Verify Current Password against Supabase Auth to obtain a fresh user access_token
+    let verifyRes = await fetch(tokenEndpoint, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: primaryEmail,
+        password: currentPassword,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!verifyRes.ok && primaryEmail !== "tleadershipcovenant@gmail.com") {
+      verifyRes = await fetch(tokenEndpoint, {
+        method: "POST",
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "tleadershipcovenant@gmail.com",
+          password: currentPassword,
+        }),
+        signal: controller.signal,
+      });
+    }
+
+    const verifyData = (await verifyRes.json().catch(() => null)) as {
+      access_token?: string;
+      user?: {
+        id: string;
+        email?: string;
+        app_metadata?: { role?: string };
+        user_metadata?: { role?: string };
+      };
+      error_description?: string;
+      msg?: string;
+      message?: string;
+    } | null;
+
+    if (!verifyRes.ok || !verifyData?.access_token || !verifyData?.user) {
+      return {
+        ok: false,
+        field: "currentPassword",
+        error:
+          "Current password is incorrect. Please enter your valid existing password.",
+      };
+    }
+
+    const user = verifyData.user;
+    const isSuperAdmin =
+      user.app_metadata?.role === "admin" ||
+      user.user_metadata?.role === "admin" ||
+      user.email === "tleadershipcovenant@gmail.com";
+
+    if (!isSuperAdmin) {
+      return {
+        ok: false,
+        field: "general",
+        error: "Access denied. This account does not have administrator privileges.",
+      };
+    }
+
+    // 2. Update password in Supabase Auth (auth.users table) using verified access_token
+    const updateRes = await fetch(userEndpoint, {
+      method: "PUT",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${verifyData.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password: newPassword,
+      }),
+      signal: controller.signal,
+    });
+
+    const updateData = (await updateRes.json().catch(() => null)) as {
+      id?: string;
+      email?: string;
+      error_description?: string;
+      msg?: string;
+      message?: string;
+    } | null;
+
+    if (!updateRes.ok) {
+      const errMsg =
+        updateData?.error_description ||
+        updateData?.msg ||
+        updateData?.message ||
+        "Failed to update password in database.";
+      return {
+        ok: false,
+        field: "newPassword",
+        error: errMsg,
+      };
+    }
+
+    return {
+      ok: true,
+      email: user.email || primaryEmail,
+      userId: user.id,
+    };
+  } catch (err: unknown) {
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    return {
+      ok: false,
+      field: "general",
+      error: isAbort
+        ? "Database request timed out. Please check your connection and try again."
+        : "Failed to communicate with the authentication database.",
+    };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
  * Signs an HS256 JWT token with strict 30-minute inactivity tracking.
  */
 export async function signAdminJwt(email: string): Promise<{

@@ -4,13 +4,47 @@ import type { Metadata } from "next";
 import ActivitiesExplorer from "@/components/activities/ActivitiesExplorer";
 import ActivitiesHero from "@/components/activities/ActivitiesHero";
 import { EVENTS } from "@/content/events";
+import { SITE_URL } from "@/config/site";
+import { ActivitiesStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "Upcoming Activities - The Leadership Covenant",
   description:
     "Explore 2026 leadership camps, cohorts, summits, family sessions and educator workshops across Islamabad, Peshawar and Swat, and apply online in minutes.",
+  keywords: [
+    "Upcoming Leadership Activities Pakistan",
+    "Leadership Camps Islamabad Swat",
+    "Educator Workshops Pakistan 2026",
+    "Principal's Academy Islamabad",
+    "7 Habits Workshops Pakistan",
+    "The Leadership Covenant Calendar",
+  ],
   alternates: {
     canonical: "/activities",
+  },
+  openGraph: {
+    title: "Upcoming Activities & 2026–2027 Calendar - The Leadership Covenant",
+    description:
+      "Explore 2026 leadership camps, cohorts, summits, family sessions and educator workshops across Islamabad, Peshawar and Swat, and apply online in minutes.",
+    url: `${SITE_URL}/activities`,
+    siteName: "The Leadership Covenant",
+    images: [
+      {
+        url: "/OG_Image.png",
+        width: 1672,
+        height: 941,
+        alt: "Upcoming Leadership Activities - The Leadership Covenant",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Upcoming Activities & 2026–2027 Calendar - The Leadership Covenant",
+    description:
+      "Explore 2026 leadership camps, cohorts, summits, family sessions and educator workshops across Islamabad, Peshawar and Swat.",
+    images: ["/OG_Image.png"],
   },
 };
 
@@ -27,6 +61,7 @@ export default function ActivitiesPage() {
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
+      <ActivitiesStructuredData events={EVENTS} />
       {/* 1. Executive Hero Section — Server-Rendered Photographic Backdrop + Midnight Navy Overlay */}
       <section className="relative w-full overflow-hidden bg-[#001B33] text-white py-14 sm:py-18 lg:py-22 min-h-[360px] sm:min-h-[400px] flex items-center justify-center border-b border-white/10">
         {/* Top Signature Accent Bar */}

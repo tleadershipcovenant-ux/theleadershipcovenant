@@ -3,11 +3,19 @@ import type { Metadata } from "next";
 import ApplyPageView from "@/components/forms/ApplyPageView";
 import { EVENTS } from "@/content/events";
 import { APPLY_PAGE } from "@/content/forms";
+import { SITE_URL } from "@/config/site";
+import { ApplyStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "Online Application & Seat Booking - The Leadership Covenant",
   description:
     "Reserve your seat in a few clicks. Complete your provisional registration or priority confirmation for 2026 leadership cohorts, summits, and workshops.",
+  keywords: [
+    "Apply The Leadership Covenant",
+    "Online Seat Booking Leadership Summit",
+    "Register School Impact Summit 2026",
+    "Leadership Cohort Registration Pakistan",
+  ],
   alternates: {
     canonical: "/apply",
   },
@@ -15,7 +23,7 @@ export const metadata: Metadata = {
     title: "Online Application & Seat Booking - The Leadership Covenant",
     description:
       "Reserve your seat in a few clicks. Complete your provisional registration or priority confirmation for 2026 leadership cohorts, summits, and workshops.",
-    url: "https://theleadershipcovenant.com/apply",
+    url: `${SITE_URL}/apply`,
     siteName: "The Leadership Covenant",
     images: [
       {
@@ -51,5 +59,10 @@ export default function ApplyPage() {
     fetchPriority: "high",
   });
 
-  return <ApplyPageView initialEvents={EVENTS} />;
+  return (
+    <>
+      <ApplyStructuredData />
+      <ApplyPageView initialEvents={EVENTS} />
+    </>
+  );
 }

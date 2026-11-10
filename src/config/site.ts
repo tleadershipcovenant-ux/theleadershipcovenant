@@ -3,15 +3,20 @@
  * Source: New MD files/leadership-covenant-docs/docs/content/00-global.md
  */
 
+export const CANONICAL_DOMAIN = "https://leadershipcovenant.com.pk";
+
 function resolveSiteUrl(): string {
-  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicit) return explicit.replace(/\/$/, "");
+  const explicit = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
+  if (explicit && !explicit.includes("localhost") && !explicit.includes("127.0.0.1")) {
+    return explicit;
+  }
   const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
   if (vercel) return `https://${vercel}`;
-  return "http://localhost:3000";
+  return CANONICAL_DOMAIN;
 }
 
 export const SITE_URL = resolveSiteUrl();
+export const PUBLIC_SITE_URL = SITE_URL;
 
 export const SITE = {
   name: "The Leadership Covenant",

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import PublicSiteShell from "@/components/layout/PublicSiteShell";
+import { SITE, SITE_URL } from "@/config/site";
+import { GlobalStructuredData } from "@/components/seo/StructuredData";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -25,13 +27,56 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://theleadershipcovenant.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "The Leadership Covenant - Learn. Develop. Lead. Transform.",
     template: "%s | The Leadership Covenant",
   },
-  description:
-    "The Leadership Covenant helps schools, students, educators and families unlock their leadership potential through Leader in Me, LeaderU, camps and transformational processes.",
+  description: SITE.description,
+  applicationName: SITE.name,
+  authors: [
+    { name: SITE.name, url: SITE_URL },
+    { name: "Ubaid ur Rehman", url: `${SITE_URL}/about` },
+  ],
+  creator: SITE.name,
+  publisher: `${SITE.name} (${SITE.affiliation})`,
+  category: "Education & Leadership Development",
+  keywords: [
+    "The Leadership Covenant",
+    "FranklinCovey Education Pakistan",
+    "FranklinCovey Education North Region",
+    "Leader in Me Pakistan",
+    "LeaderU Pakistan",
+    "School Impact Summit 2026",
+    "The 7 Habits of Highly Effective People Pakistan",
+    "Professional Development for Educators Islamabad",
+    "Student Leadership Camps Pakistan",
+    "School Leadership Transformation Islamabad",
+    "Principal's Academy Pakistan",
+    "Ubaid ur Rehman Leadership",
+    "Fazal Niazi FranklinCovey",
+  ],
+  alternates: {
+    canonical: "/",
+    types: {
+      "text/plain": [
+        { url: "/llms.txt", title: "AI & LLM Knowledge Summary" },
+        { url: "/llms-full.txt", title: "Complete AI Knowledge Base" },
+      ],
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: "/Logo_For_Navbar_Fotter.png",
     shortcut: "/Logo_For_Navbar_Fotter.png",
@@ -39,16 +84,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "The Leadership Covenant - Learn. Develop. Lead. Transform.",
-    description:
-      "The Leadership Covenant helps schools, students, educators and families unlock their leadership potential through Leader in Me, LeaderU, camps and transformational processes.",
-    url: "https://theleadershipcovenant.com",
-    siteName: "The Leadership Covenant",
+    description: SITE.description,
+    url: SITE_URL,
+    siteName: SITE.name,
     images: [
       {
         url: "/OG_Image.png",
         width: 1672,
         height: 941,
-        alt: "The Leadership Covenant",
+        alt: "The Leadership Covenant — FranklinCovey Education North Region",
       },
     ],
     locale: "en_US",
@@ -57,9 +101,15 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The Leadership Covenant - Learn. Develop. Lead. Transform.",
-    description:
-      "The Leadership Covenant helps schools, students, educators and families unlock their leadership potential through Leader in Me, LeaderU, camps and transformational processes.",
+    description: SITE.description,
     images: ["/OG_Image.png"],
+  },
+  other: {
+    "geo.region": "PK-IS",
+    "geo.placename": "Islamabad, Pakistan",
+    "geo.position": "33.6938;73.0151",
+    ICBM: "33.6938, 73.0151",
+    "ai-content-declaration": `${SITE_URL}/llms-full.txt`,
   },
 };
 
@@ -79,6 +129,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-background text-[#111c2d] antialiased selection:bg-[#ffbe3b] selection:text-[#00153d]"
       >
+        <GlobalStructuredData />
         <PublicSiteShell>{children}</PublicSiteShell>
       </body>
     </html>

@@ -27,7 +27,9 @@ import {
   Building2,
   Calendar,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
+import ChangePasswordModal from "@/components/admin/ChangePasswordModal";
 import type {
   ActivityRegistrationRecord,
   ContactSubmissionRecord,
@@ -100,6 +102,7 @@ export default function AdminDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
 
   const loadDashboard = useCallback(async (isRefresh = false) => {
     if (isRefresh) setLoading(true);
@@ -278,7 +281,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Action Hub Buttons (Responsive grid on mobile, horizontal on tablet/desktop) */}
-          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full lg:w-auto shrink-0">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:items-center gap-2 sm:gap-2.5 w-full lg:w-auto shrink-0">
             <Link
               href="/AD_Admin/registrations"
               prefetch={true}
@@ -297,8 +300,17 @@ export default function AdminDashboardPage() {
             </Link>
             <button
               type="button"
+              onClick={() => setPasswordModalOpen(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-[#10B981]/20 hover:bg-[#10B981]/30 border border-[#10B981]/40 text-white text-xs font-extrabold uppercase tracking-wider inline-flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer text-center shadow-sm"
+              title="Change Admin Password"
+            >
+              <KeyRound className="w-4 h-4 text-[#FFC400] shrink-0" />
+              <span className="truncate">Change Password</span>
+            </button>
+            <button
+              type="button"
               onClick={() => loadDashboard(true)}
-              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95 transition-all inline-flex items-center justify-center gap-1.5"
+              className="col-span-2 sm:col-auto px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95 transition-all inline-flex items-center justify-center gap-1.5"
               title="Refresh dashboard statistics"
               aria-label="Refresh dashboard statistics"
             >
@@ -1198,6 +1210,15 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ────────────────── 5. CHANGE PASSWORD EXECUTIVE MODAL ────────────────── */}
+      <ChangePasswordModal
+        open={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        adminEmail={
+          data?.systemHealth?.jwt?.email || "tleadershipcovenant@gmail.com"
+        }
+      />
     </div>
   );
 }

@@ -4,13 +4,45 @@ import type { Metadata } from "next";
 import ContactHero from "@/components/contact/ContactHero";
 import ContactSection from "@/components/ContactSection";
 import ContactMapSection from "@/components/contact/ContactMapSection";
+import { SITE_URL } from "@/config/site";
+import { ContactStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: "Contact Us - The Leadership Covenant",
   description:
-    "Get in touch with The Leadership Covenant. Address, phone, email and enquiry form.",
+    "Get in touch with The Leadership Covenant in F-10/3, Islamabad. Address, phone, WhatsApp, email and online enquiry form for schools, educators, and families.",
+  keywords: [
+    "Contact The Leadership Covenant",
+    "FranklinCovey Education Islamabad Office",
+    "Leadership Training Enquiry Pakistan",
+    "The Leadership Covenant F-10 Islamabad",
+  ],
   alternates: {
     canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact Us - The Leadership Covenant Islamabad",
+    description:
+      "Get in touch with The Leadership Covenant in F-10/3, Islamabad. Address, phone, WhatsApp, email and online enquiry form.",
+    url: `${SITE_URL}/contact`,
+    siteName: "The Leadership Covenant",
+    images: [
+      {
+        url: "/OG_Image.png",
+        width: 1672,
+        height: 941,
+        alt: "Contact The Leadership Covenant in Islamabad",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Us - The Leadership Covenant Islamabad",
+    description:
+      "Get in touch with The Leadership Covenant in F-10/3, Islamabad. Address, phone, WhatsApp, email and online enquiry form.",
+    images: ["/OG_Image.png"],
   },
 };
 
@@ -22,6 +54,7 @@ export default function ContactPage() {
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
+      <ContactStructuredData />
       {/* 1. Executive Hero Section — Photographic Backdrop + Midnight Navy Overlay */}
       <section className="relative w-full overflow-hidden bg-[#001B33] text-white py-14 sm:py-18 lg:py-22 min-h-[360px] sm:min-h-[400px] flex items-center justify-center border-b border-white/10">
         {/* Top Signature Accent Bar */}

@@ -245,6 +245,8 @@ export const SUMMIT_CONTENT: SummitPageContent = {
   },
 };
 
+export const SUMMIT_PAGE: SummitPageContent = SUMMIT_CONTENT;
+
 export function normalizeSummitCms(
   raw: Record<string, unknown> | null | undefined
 ): SummitPageContent {

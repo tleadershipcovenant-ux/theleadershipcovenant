@@ -8,14 +8,19 @@ import HomeServicesSection from "@/components/home/HomeServicesSection";
 import HomeVoicesSection from "@/components/home/HomeVoicesSection";
 import HomeCtaSection from "@/components/home/HomeCtaSection";
 import { HOME_CONTENT } from "@/content/home";
+import { SITE_URL } from "@/config/site";
+import { HomeStructuredData } from "@/components/seo/StructuredData";
 
 export const metadata: Metadata = {
   title: HOME_CONTENT.meta.title,
   description: HOME_CONTENT.meta.description,
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: HOME_CONTENT.meta.title,
     description: HOME_CONTENT.meta.description,
-    url: "https://theleadershipcovenant.com",
+    url: SITE_URL,
     siteName: "The Leadership Covenant",
     images: [
       {
@@ -45,6 +50,7 @@ export default function Home() {
 
   return (
     <main className="w-full pt-[68px] md:pt-[112px]">
+      <HomeStructuredData />
       <div className="flex flex-col w-full">
         {/* 1. Hero Section */}
         <div id="hero" className="w-full">
