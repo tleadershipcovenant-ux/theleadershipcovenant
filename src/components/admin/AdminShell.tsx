@@ -13,7 +13,6 @@ import {
   X,
   ChevronDown,
   ExternalLink,
-  RefreshCw,
   PanelLeftClose,
   Calendar,
   Briefcase,
@@ -96,15 +95,20 @@ export default function AdminShell({
   const fetchShellMeta = useCallback(async (force = false) => {
     if (isLoginRoute) return;
     const now = Date.now();
-    // Throttle to at most once every 30 seconds unless forced, avoiding DB hammer on route navigation
-    if (!force && now - lastFetchRef.current < 30000) return;
+    // Deduplicate bursts within 1.5s unless forced by a mutation
+    if (!force && now - lastFetchRef.current < 1500) return;
     lastFetchRef.current = now;
 
     try {
-      const statsRes = await fetch("/api/admin/stats", { cache: "no-store" });
+      const statsRes = await fetch(
+        `/api/admin/stats${force ? "?fresh=1" : ""}`,
+        { cache: "no-store" }
+      );
       if (statsRes.status === 401) {
         if (typeof window !== "undefined") {
-          window.location.href = isCleanUrl ? "/login?reason=inactivity" : "/AD_Admin/login?reason=inactivity";
+          window.location.href = isCleanUrl
+            ? "/login?reason=inactivity"
+            : "/AD_Admin/login?reason=inactivity";
         } else {
           router.replace(isCleanUrl ? "/login" : "/AD_Admin/login");
         }
@@ -122,9 +126,20 @@ export default function AdminShell({
         setBadges(newBadges);
         if (typeof window !== "undefined") {
           try {
-            sessionStorage.setItem("tlc_admin_badges", JSON.stringify(newBadges));
+            sessionStorage.setItem(
+              "tlc_admin_badges",
+              JSON.stringify(newBadges)
+            );
+            sessionStorage.setItem(
+              "tlc_admin_dashboard_cache",
+              JSON.stringify(sJson)
+            );
+            localStorage.setItem(
+              "tlc_admin_dashboard_cache",
+              JSON.stringify(sJson)
+            );
           } catch {
-            // Ignore
+            // Ignore storage errors
           }
         }
       }
@@ -148,9 +163,103 @@ export default function AdminShell({
     fetchShellMeta(true);
   }, [fetchShellMeta]);
 
+  // Auto-refresh on route navigation
   useEffect(() => {
     setMobileOpen(false);
-  }, [pathname]);
+    fetchShellMeta(false);
+  }, [pathname, fetchShellMeta]);
+
+  // Global Automatic Sync Engine: intercepts any admin mutation (POST/PATCH/PUT/DELETE),
+  // listens to focus/visibilitychange, BroadcastChannel, and periodic background sync
+  useEffect(() => {
+    if (isLoginRoute || typeof window === "undefined") return;
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      if ("BroadcastChannel" in window) {
+        bc = new BroadcastChannel("tlc_admin_sync");
+        bc.onmessage = () => {
+          fetchShellMeta(true);
+          window.dispatchEvent(new CustomEvent("tlc:admin-sync-external"));
+        };
+      }
+    } catch {
+      // BroadcastChannel not supported
+    }
+
+    const originalFetch = window.fetch;
+    window.fetch = async function (...args) {
+      const response = await originalFetch.apply(this, args);
+      try {
+        const reqInfo = args[0];
+        const reqInit = args[1];
+        const urlStr =
+          typeof reqInfo === "string"
+            ? reqInfo
+            : reqInfo instanceof Request
+            ? reqInfo.url
+            : String(reqInfo || "");
+        const method = (
+          reqInit?.method ||
+          (reqInfo instanceof Request ? reqInfo.method : "GET") ||
+          "GET"
+        ).toUpperCase();
+
+        const isAdminMutation =
+          response.ok &&
+          (method === "POST" ||
+            method === "PATCH" ||
+            method === "PUT" ||
+            method === "DELETE") &&
+          (urlStr.includes("/api/admin/contacts") ||
+            urlStr.includes("/api/admin/registrations") ||
+            urlStr.includes("/api/admin/cms") ||
+            urlStr.includes("/api/submit"));
+
+        if (isAdminMutation) {
+          setTimeout(() => {
+            fetchShellMeta(true);
+            window.dispatchEvent(new CustomEvent("tlc:admin-sync"));
+            try {
+              bc?.postMessage({ type: "sync", ts: Date.now() });
+            } catch {
+              // Ignore
+            }
+          }, 60);
+        }
+      } catch {
+        // Never disrupt caller fetch
+      }
+      return response;
+    };
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchShellMeta(true);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchShellMeta(false);
+      }
+    }, 12000);
+
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.fetch = originalFetch;
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      window.clearInterval(intervalId);
+      try {
+        bc?.close();
+      } catch {
+        // Ignore
+      }
+    };
+  }, [isLoginRoute, fetchShellMeta]);
 
   if (isLoginRoute) {
     return <>{children}</>;
@@ -507,46 +616,26 @@ export default function AdminShell({
           </div>
         </nav>
 
-        {/* Bottom Section: Refresh & Live Site (Directly above Sign Out) */}
+        {/* Bottom Section: Live Site & Sign Out */}
         <div
           className={`${
             isMini ? "p-2 space-y-2" : "p-3.5 space-y-2.5"
           } border-t border-white/10 bg-[#001529]/90 shrink-0`}
         >
-          {/* Refresh & Live Site Buttons */}
+          {/* Live Site Button */}
           {!isMini ? (
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fetchShellMeta(true)}
-                className="h-8.5 px-2.5 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-slate-200 hover:text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
-                title="Refresh CRM stats"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-[#FFC400]" />
-                <span>Refresh</span>
-              </button>
-
-              <a
-                href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-8.5 px-2.5 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-slate-200 hover:text-white text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors active:scale-95"
-                title="View live website in new tab"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-[#FF7900]" />
-                <span>Live Site</span>
-              </a>
-            </div>
+            <a
+              href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-9 px-3 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-slate-200 hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors active:scale-98"
+              title="View live website in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-[#FF7900]" />
+              <span>View Live Site</span>
+            </a>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={() => fetchShellMeta(true)}
-                className="w-12 h-10 rounded-xl bg-white/6 hover:bg-white/15 border border-white/10 text-[#FFC400] flex items-center justify-center mx-auto cursor-pointer transition-colors active:scale-95"
-                title="Refresh statistics"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
               <a
                 href={isCleanUrl ? "https://leadershipcovenant.com.pk" : "/"}
                 target="_blank"
@@ -612,18 +701,8 @@ export default function AdminShell({
             </div>
           </Link>
 
-          {/* Right Action Icons: Refresh + Menu Toggle Button */}
+          {/* Right Action Icon: Menu Toggle Button */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => fetchShellMeta(true)}
-              className="p-2 rounded-xl bg-white/6 hover:bg-white/15 text-[#FFC400] border border-white/10 cursor-pointer active:scale-95 transition-all"
-              title="Refresh statistics"
-              aria-label="Refresh statistics"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-
             <button
               type="button"
               onClick={() => setMobileOpen(true)}

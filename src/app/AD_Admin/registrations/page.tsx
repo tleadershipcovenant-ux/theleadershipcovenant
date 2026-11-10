@@ -379,6 +379,43 @@ function RegistrationsCrmInner() {
     loadData(true);
   }, [loadData]);
 
+  // Automatic Real-Time Sync: refresh registrations on external changes, tab focus, and background interval
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleExternalSync = () => {
+      loadData(false);
+    };
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        loadData(false);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        !selected &&
+        !addModalOpen &&
+        !deleteConfirmOpen
+      ) {
+        loadData(false);
+      }
+    }, 12000);
+
+    window.addEventListener("tlc:admin-sync-external", handleExternalSync);
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("tlc:admin-sync-external", handleExternalSync);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      window.clearInterval(intervalId);
+    };
+  }, [loadData, selected, addModalOpen, deleteConfirmOpen]);
+
   // Build dynamic Activity Tabs from CMS events + any custom slugs in DB
   const activityTabs = useMemo(() => {
     const map = new Map<string, { slug: string; title: string; count: number }>();
@@ -1198,17 +1235,6 @@ function RegistrationsCrmInner() {
               >
                 <Download className="w-3.5 h-3.5 text-[#FF7900]" />
                 <span>Export CSV</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => loadData(false)}
-                disabled={refreshing || loading}
-                className="h-9 px-3 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
-                title="Refresh Records"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-[#FFC400] ${refreshing || loading ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
               </button>
             </div>
           </div>

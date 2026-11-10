@@ -352,6 +352,17 @@ export default function ContactSection() {
       setFormSubmitted(true);
       setIsServerBusy(false);
 
+      // Notify any open Admin Portal tabs immediately
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        try {
+          const bc = new BroadcastChannel("tlc_admin_sync");
+          bc.postMessage({ type: "sync", ts: Date.now() });
+          bc.close();
+        } catch {
+          // Ignore
+        }
+      }
+
       // Smoothly scroll to the top of the container to reveal the thank-you screen
       if (typeof window !== "undefined") {
         const formEl = document.getElementById("enquiry-form");

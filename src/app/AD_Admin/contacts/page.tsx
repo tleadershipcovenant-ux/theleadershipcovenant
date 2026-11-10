@@ -258,6 +258,38 @@ export default function AdminContactsCrmPage() {
     loadContacts(true);
   }, [loadContacts]);
 
+  // Automatic Real-Time Sync: refresh contacts on external changes, tab focus, and background interval
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleExternalSync = () => {
+      loadContacts(false);
+    };
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        loadContacts(false);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible" && !selected && !addModalOpen) {
+        loadContacts(false);
+      }
+    }, 12000);
+
+    window.addEventListener("tlc:admin-sync-external", handleExternalSync);
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("tlc:admin-sync-external", handleExternalSync);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      window.clearInterval(intervalId);
+    };
+  }, [loadContacts, selected, addModalOpen]);
+
   const openInspector = (record: ContactSubmissionRecord) => {
     setSelected(record);
     setEditStatus(record.crm_status);
@@ -548,17 +580,6 @@ export default function AdminContactsCrmPage() {
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span>Export CSV</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => loadContacts(false)}
-              disabled={refreshing || loading}
-              className="h-8.5 px-3 rounded-lg bg-[#102E4D] hover:bg-[#001B33] text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer active:scale-[0.98] disabled:opacity-60"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 text-[#FFC400] ${refreshing || loading ? "animate-spin" : ""}`}
-              />
-              <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
             </button>
           </div>
         </div>

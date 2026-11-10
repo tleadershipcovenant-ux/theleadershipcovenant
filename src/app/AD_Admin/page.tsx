@@ -156,6 +156,40 @@ export default function AdminDashboardPage() {
     loadDashboard();
   }, [loadDashboard]);
 
+  // Automatic Real-Time Sync: refresh dashboard on mutations, tab focus, and background interval
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleSync = () => {
+      loadDashboard(true);
+    };
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        loadDashboard(true);
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadDashboard(true);
+      }
+    }, 12000);
+
+    window.addEventListener("tlc:admin-sync", handleSync);
+    window.addEventListener("tlc:admin-sync-external", handleSync);
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    return () => {
+      window.removeEventListener("tlc:admin-sync", handleSync);
+      window.removeEventListener("tlc:admin-sync-external", handleSync);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      window.clearInterval(intervalId);
+    };
+  }, [loadDashboard]);
+
   // Loading skeleton matching layout during SSR/initial hydration
   if (!mounted && !data) {
     return (
@@ -306,18 +340,6 @@ export default function AdminDashboardPage() {
             >
               <KeyRound className="w-4 h-4 text-[#FFC400] shrink-0" />
               <span className="truncate">Change Password</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => loadDashboard(true)}
-              className="col-span-2 sm:col-auto px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white cursor-pointer active:scale-95 transition-all inline-flex items-center justify-center gap-1.5"
-              title="Refresh dashboard statistics"
-              aria-label="Refresh dashboard statistics"
-            >
-              <RefreshCw
-                className={`w-4 h-4 shrink-0 ${loading ? "animate-spin text-[#FFC400]" : "text-slate-200"}`}
-              />
-              <span className="sm:hidden text-xs font-bold">Refresh</span>
             </button>
           </div>
         </div>

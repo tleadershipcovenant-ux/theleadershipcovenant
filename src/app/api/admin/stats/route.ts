@@ -15,7 +15,7 @@ let cachedStats: {
   payload: Record<string, unknown>;
   timestamp: number;
 } | null = null;
-const CACHE_TTL_MS = 15000; // 15-second server-side cache for ultra-fast, snappy navigation
+const CACHE_TTL_MS = 1500; // 1.5-second deduplication cache so live mutations reflect immediately
 
 export async function GET(req: NextRequest) {
   const session = await authenticateAdminRequest(req);
@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
 
   const url = new URL(req.url);
   const forceFresh = url.searchParams.get("fresh") === "1";
+  const checkHealth = url.searchParams.get("health") === "1";
   const now = Date.now();
 
   if (!forceFresh && cachedStats && now - cachedStats.timestamp < CACHE_TTL_MS) {
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
     message: "Connected to Google Cloud Firestore (Edge REST Engine Active).",
   };
 
-  if (forceFresh) {
+  if (checkHealth) {
     const [sb, fb] = await Promise.all([
       testSupabaseConnection().catch(() => null),
       testFirebaseConnection().catch(() => null),

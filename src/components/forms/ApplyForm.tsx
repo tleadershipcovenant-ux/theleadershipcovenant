@@ -713,6 +713,17 @@ export function ApplyForm({
       setSubmissionId(refCode);
       setIssuedAt(nowFormatted);
       setReceiptFeedback(null);
+
+      // Notify any open Admin Portal tabs immediately
+      if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+        try {
+          const bc = new BroadcastChannel("tlc_admin_sync");
+          bc.postMessage({ type: "sync", ts: Date.now() });
+          bc.close();
+        } catch {
+          // Ignore
+        }
+      }
       setDirection(1);
       setStep("complete");
       clearApplyFormDraft();
