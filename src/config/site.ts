@@ -63,7 +63,7 @@ export const HEADER_CTA: NavItem = { label: "Apply Now", href: "/apply" };
 
 /** Rolling announcements shown in the header ticker (verbatim from the live site). */
 export const ANNOUNCEMENTS: { text: string; href?: string }[] = [
-  { text: "Upcoming: The School Impact Summit 2026 · 28th November 2026 · Islamabad", href: "/summit" },
+  { text: "Upcoming: The School Impact Summit 2026 · 28th November 2026 · Islamabad", href: "/event" },
   { text: "Leader in Me Community Coaching: date to be announced soon" },
   { text: "Principal's Academy: January 2027" },
 ];

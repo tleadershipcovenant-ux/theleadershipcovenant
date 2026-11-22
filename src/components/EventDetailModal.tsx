@@ -125,7 +125,7 @@ export default function EventDetailModal({
         };
         const isSummit = event.slug === "school-impact-summit-2026";
         const targetLink = isSummit
-          ? "/summit"
+          ? "/event"
           : `/apply?activity=${event.slug}#apply-form`;
         const enrollmentLink = `/apply?activity=${event.slug}#apply-form`;
 
@@ -444,11 +444,11 @@ export default function EventDetailModal({
               <div className="px-4 sm:px-7 py-3.5 sm:py-4 bg-slate-50/95 backdrop-blur-sm border-t border-slate-200/90 flex items-center justify-end shrink-0">
                 {isSummit ? (
                   <Link
-                    href="/summit"
+                    href="/event"
                     onClick={onClose}
                     className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-xl bg-gradient-to-r ${theme.gradient} text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center gap-2 active:scale-98`}
                   >
-                    <span>Explore Summit &amp; Register</span>
+                    <span>Explore Event &amp; Register</span>
                     <MdArrowForward className="text-base shrink-0" />
                   </Link>
                 ) : (

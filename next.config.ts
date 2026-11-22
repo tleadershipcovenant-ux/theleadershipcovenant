@@ -34,6 +34,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    return [
+      {
+        source: "/summit",
+        destination: "/event",
+        permanent: true,
+      },
+      {
+        source: "/AD_Admin/cms/summit",
+        destination: "/AD_Admin/cms/event",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

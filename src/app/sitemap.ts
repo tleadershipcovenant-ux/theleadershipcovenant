@@ -96,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ],
     },
     {
-      url: `${SITE_URL}/summit`,
+      url: `${SITE_URL}/event`,
       lastModified: summitUpdated,
       changeFrequency: "daily",
       priority: 0.95,
@@ -162,7 +162,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Dynamic Activity Application URLs for every active leadership cohort/workshop/camp
   const activityEntries: MetadataRoute.Sitemap = activeEvents
-    .filter((event) => event.slug && event.detailPath !== "/summit")
+    .filter(
+      (event) =>
+        event.slug &&
+        event.detailPath !== "/event" &&
+        event.detailPath !== "/summit"
+    )
     .map((event) => ({
       url: `${SITE_URL}/apply?activity=${encodeURIComponent(event.slug)}`,
       lastModified: eventsUpdated,

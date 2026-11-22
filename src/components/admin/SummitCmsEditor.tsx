@@ -849,13 +849,13 @@ export default function SummitCmsEditor() {
 
               {/* Public Page Preview */}
               <Link
-                href="/summit"
+                href="/event"
                 target="_blank"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-white text-xs font-bold border border-white/10 hover:border-white/20 transition-all"
-                title="Open public /summit in a new tab"
+                title="Open public /event in a new tab"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
-                <span className="hidden sm:inline">Preview /summit</span>
+                <span className="hidden sm:inline">Preview /event</span>
                 <span className="sm:hidden">Preview</span>
               </Link>
 

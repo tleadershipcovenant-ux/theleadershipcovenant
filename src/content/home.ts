@@ -76,8 +76,14 @@ export interface HomePageContent {
     tabs: HomeStatTab[];
   };
   upcoming: {
+    visible?: boolean;
     eyebrow: string;
     heading: string;
+    subtitle?: string;
+    ctaLabel: string;
+    ctaHref: string;
+    showCta?: boolean;
+    filterMode?: "upcoming" | "all";
   };
   story: {
     eyebrow: string;
@@ -200,8 +206,14 @@ export const HOME_PAGE: HomePageContent = {
     ],
   },
   upcoming: {
+    visible: true,
     eyebrow: "WHAT'S COMING UP",
-    heading: "Programs, Events & Learning Experiences",
+    heading: "Programmes, Events & Learning Experiences",
+    subtitle: "",
+    ctaLabel: "View all activities",
+    ctaHref: "/activities",
+    showCta: true,
+    filterMode: "upcoming",
   },
   story: {
     eyebrow: "Our Story",
@@ -471,8 +483,17 @@ export function normalizeHomeCms(
       tabs: tabs.length > 0 ? tabs : d.stats.tabs,
     },
     upcoming: {
+      visible: upcomingRaw.visible !== false,
       eyebrow: String(upcomingRaw.eyebrow || d.upcoming.eyebrow),
       heading: String(upcomingRaw.heading || d.upcoming.heading),
+      subtitle:
+        typeof upcomingRaw.subtitle === "string"
+          ? upcomingRaw.subtitle
+          : d.upcoming.subtitle || "",
+      ctaLabel: String(upcomingRaw.ctaLabel || d.upcoming.ctaLabel),
+      ctaHref: String(upcomingRaw.ctaHref || d.upcoming.ctaHref),
+      showCta: upcomingRaw.showCta !== false,
+      filterMode: upcomingRaw.filterMode === "all" ? "all" : "upcoming",
     },
     story: {
       ...d.story,

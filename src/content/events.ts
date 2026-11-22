@@ -17,6 +17,13 @@ export type StatusTone = "open" | "limited" | "free";
 
 export type EventLifecycle = "previous" | "enrollment_open" | "upcoming";
 
+export type CardActionButtonType =
+  | "auto"
+  | "event_details"
+  | "enroll_now"
+  | "apply_now"
+  | "none";
+
 export interface LeadershipEvent {
   slug: string;
   title: string;
@@ -64,8 +71,14 @@ export interface LeadershipEvent {
 
   /** CMS-only: hide this activity from public pages without deleting it. */
   hidden?: boolean;
+  /** CMS-only: whether to display this activity in the Home page "WHAT'S COMING UP" slider (default: true for upcoming/open events). */
+  showOnHome?: boolean;
   /** CMS-managed activity type. When set, it overrides date-based lifecycle. */
   lifecycleOverride?: EventLifecycle;
+  /** CMS-managed: whether to show the left "More details" modal button on the activity card (default: true). */
+  showMoreDetailsButton?: boolean;
+  /** CMS-managed: which primary right-hand action button to show on the activity card ("event_details" | "enroll_now" | "apply_now" | "none" | "auto"). */
+  cardActionButton?: CardActionButtonType;
 }
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
@@ -478,7 +491,9 @@ export const EVENTS: LeadershipEvent[] = [
     endDate: "2026-11-28",
     statusLabel: "Open enrollment",
     statusTone: "open",
-    detailPath: "/summit",
+    detailPath: "/event",
+    cardActionButton: "event_details",
+    showMoreDetailsButton: true,
     featured: true,
     image: "/images/summit-banner.png",
     duration: "1-Day Regional Summit",
@@ -676,4 +691,78 @@ export function getOpenEnrollmentCount(todayIsoDate?: string): number {
   return PRECOMPUTED_EVENTS.filter(
     (event) => getEventLifecycle(event, todayIsoDate) === "enrollment_open"
   ).length;
+}
+
+/**
+ * Resolves which of the 2 buttons ("More details" on the left, and "Event details" / "Enroll now" / "Apply now" / none on the right)
+ * should display on an Activity Card based on CMS configuration.
+ */
+export function resolveActivityCardButtons(
+  evt: LeadershipEvent,
+  todayIsoDate?: string
+): {
+  showMoreDetails: boolean;
+  actionType: "event_details" | "enroll_now" | "apply_now" | "none";
+  actionLabel: string;
+  actionHref: string;
+} {
+  const showMoreDetails = evt.showMoreDetailsButton !== false;
+  const lifecycle = getEventLifecycle(evt, todayIsoDate);
+  const isSummitOrEvent =
+    evt.slug === "school-impact-summit-2026" ||
+    evt.detailPath === "/event" ||
+    evt.detailPath === "/summit";
+
+  let actionType: "event_details" | "enroll_now" | "apply_now" | "none";
+
+  if (evt.cardActionButton && evt.cardActionButton !== "auto") {
+    actionType = evt.cardActionButton;
+  } else {
+    if (lifecycle === "previous") {
+      actionType = "none";
+    } else if (isSummitOrEvent) {
+      actionType = "event_details";
+    } else if (lifecycle === "enrollment_open") {
+      actionType = "enroll_now";
+    } else {
+      actionType = "apply_now";
+    }
+  }
+
+  const eventPageHref =
+    evt.detailPath && evt.detailPath !== "/summit"
+      ? evt.detailPath
+      : "/event";
+  const applyHref = `/apply?activity=${encodeURIComponent(evt.slug)}#apply-form`;
+
+  if (actionType === "event_details") {
+    return {
+      showMoreDetails,
+      actionType,
+      actionLabel: "Event details",
+      actionHref: eventPageHref,
+    };
+  }
+  if (actionType === "enroll_now") {
+    return {
+      showMoreDetails,
+      actionType,
+      actionLabel: "Enroll now",
+      actionHref: applyHref,
+    };
+  }
+  if (actionType === "apply_now") {
+    return {
+      showMoreDetails,
+      actionType,
+      actionLabel: "Apply now",
+      actionHref: applyHref,
+    };
+  }
+  return {
+    showMoreDetails,
+    actionType: "none",
+    actionLabel: "",
+    actionHref: "",
+  };
 }

@@ -2,6 +2,6 @@
 
 import SummitCmsEditor from "@/components/admin/SummitCmsEditor";
 
-export default function CmsSummitPage() {
+export default function CmsEventPage() {
   return <SummitCmsEditor />;
 }

@@ -37,7 +37,7 @@ const CMS_PAGES_SUBMENU = [
   { label: "Our Story Page", pageKey: "about", path: "/AD_Admin/cms/about", icon: BookOpen, iconColor: "text-[#F59E0B]" },
   { label: "Pricing & Early Bird", pageKey: "pricing", path: "/AD_Admin/cms/pricing", icon: DollarSign, iconColor: "text-[#4ADE80]" },
   { label: "Services & Programs", pageKey: "services", path: "/AD_Admin/cms/services", icon: Briefcase, iconColor: "text-[#10B981]" },
-  { label: "Summit 2026", pageKey: "summit", path: "/AD_Admin/cms/summit", icon: Calendar, iconColor: "text-[#FF7900]" },
+  { label: "Event / Summit 2026", pageKey: "event", path: "/AD_Admin/cms/event", icon: Calendar, iconColor: "text-[#FF7900]" },
 ];
 
 export default function AdminShell({

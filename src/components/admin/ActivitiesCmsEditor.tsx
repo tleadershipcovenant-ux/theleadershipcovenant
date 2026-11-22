@@ -43,6 +43,8 @@ import {
   EVENTS,
   getEventLifecycle,
   getMonthTheme,
+  resolveActivityCardButtons,
+  type CardActionButtonType,
   type EventCategory,
   type EventLifecycle,
   type LeadershipEvent,
@@ -140,6 +142,8 @@ function createBlankEvent(events: LeadershipEvent[]): LeadershipEvent {
     seatLimit: 0,
     hidden: false,
     lifecycleOverride: "upcoming",
+    showMoreDetailsButton: true,
+    cardActionButton: "auto",
   };
 }
 
@@ -188,6 +192,7 @@ function ActivityPreviewCard({
   onToggleHidden,
   onDelete,
   onPreviewModal,
+  onQuickUpdateButtons,
   isTogglingHidden = false,
 }: {
   event: LeadershipEvent;
@@ -195,6 +200,11 @@ function ActivityPreviewCard({
   onToggleHidden: () => void;
   onDelete: () => void;
   onPreviewModal: () => void;
+  onQuickUpdateButtons?: (
+    patch: Partial<
+      Pick<LeadershipEvent, "showMoreDetailsButton" | "cardActionButton">
+    >
+  ) => void;
   isTogglingHidden?: boolean;
 }) {
   const [yStr, mStr, dStr] = (event.startDate || "2026-01-01").split("-");
@@ -209,7 +219,7 @@ function ActivityPreviewCard({
   const lifecycle = getEventLifecycle(event);
   const isPreviousEvent = lifecycle === "previous";
   const isOpenEnrollment = lifecycle === "enrollment_open";
-  const isSummit = event.slug === "school-impact-summit-2026";
+  const btnCfg = resolveActivityCardButtons(event);
   const statusDot =
     lifecycle === "previous"
       ? "bg-[#F97316]"
@@ -327,32 +337,86 @@ function ActivityPreviewCard({
                 {EVENT_LIFECYCLE_LABELS[lifecycle]}
               </span>
             </div>
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                onClick={onPreviewModal}
-                className="flex-1 py-2.5 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF] text-[#102E4D] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                title="Preview visitor detailed information popup"
-              >
-                <MdInfoOutline className="text-sm text-[#FF7900]" />
-                More details
-              </button>
-              {isPreviousEvent ? null : (
-                <span
-                  className={`flex-1 py-2.5 rounded-xl text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 ${
-                    isOpenEnrollment
-                      ? "bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#166534]"
-                      : `bg-gradient-to-r ${theme.gradient}`
-                  }`}
-                >
-                  {isOpenEnrollment ? "Enroll now" : "Apply now"}
-                  <MdArrowForward className="text-sm" />
-                </span>
-              )}
-            </div>
+            {(btnCfg.showMoreDetails || btnCfg.actionType !== "none") ? (
+              <div className="flex items-center gap-2 pt-1">
+                {btnCfg.showMoreDetails && (
+                  <button
+                    type="button"
+                    onClick={onPreviewModal}
+                    className="flex-1 py-2.5 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF] text-[#102E4D] text-[11px] font-bold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Preview visitor detailed information popup"
+                  >
+                    <MdInfoOutline className="text-sm text-[#FF7900]" />
+                    More details
+                  </button>
+                )}
+                {btnCfg.actionType !== "none" && (
+                  <span
+                    className={`flex-1 py-2.5 rounded-xl text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 ${
+                      btnCfg.actionType === "enroll_now" ||
+                      (isOpenEnrollment &&
+                        btnCfg.actionType !== "event_details")
+                        ? "bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#166534]"
+                        : `bg-gradient-to-r ${theme.gradient}`
+                    }`}
+                  >
+                    {btnCfg.actionLabel}
+                    <MdArrowForward className="text-sm" />
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="py-2 px-3 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center text-[11px] font-semibold text-slate-400">
+                Both card buttons hidden
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Quick Inline Card Buttons Selector (More Details + Action Button) */}
+      {onQuickUpdateButtons && (
+        <div className="px-3.5 py-2.5 bg-slate-50/90 border-t border-slate-200/80 grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+              Left Button (More details)
+            </label>
+            <select
+              value={event.showMoreDetailsButton === false ? "hide" : "show"}
+              onChange={(e) =>
+                onQuickUpdateButtons({
+                  showMoreDetailsButton: e.target.value === "show",
+                })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+            >
+              <option value="show">Show &ldquo;More details&rdquo;</option>
+              <option value="hide">Hide &ldquo;More details&rdquo;</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[9px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+              Right Action Button
+            </label>
+            <select
+              value={event.cardActionButton || "auto"}
+              onChange={(e) =>
+                onQuickUpdateButtons({
+                  cardActionButton: e.target.value as CardActionButtonType,
+                })
+              }
+              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+            >
+              <option value="auto">Auto (By Status)</option>
+              <option value="event_details">Event details</option>
+              <option value="enroll_now">Enroll now</option>
+              <option value="apply_now">Apply now</option>
+              <option value="none">Hide Button (None)</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Styled Card Actions: Edit, Live/Hide Toggle, and Delete */}
       <div className="px-3.5 py-3 bg-[#F8FBFA] border-t border-[#D7F5EF] flex items-center gap-2">
@@ -679,6 +743,176 @@ function ActivityEditorForm({
                 ))}
               </div>
             ) : null}
+          </div>
+
+          {/* 2-Button Activity Card Action Configuration */}
+          <div className="pt-4 border-t border-slate-100 space-y-3.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D]">
+                  Activity Card Action Buttons (2 Button Slots)
+                </span>
+                <span className="block text-[11px] text-slate-500">
+                  Choose which buttons appear at the bottom of this activity card on /activities and the Home slider.
+                </span>
+              </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-violet-100 text-violet-800 border border-violet-200">
+                Card Footer Controls
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/90">
+              {/* Slot 1: Left "More details" Button */}
+              <div className="md:col-span-5 space-y-2">
+                <span className="block text-[10.5px] font-extrabold uppercase tracking-wider text-[#102E4D]">
+                  Button 1 (Left): &ldquo;More details&rdquo; Modal
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChange({ ...event, showMoreDetailsButton: true })
+                    }
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      event.showMoreDetailsButton !== false
+                        ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D] shadow-xs"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Show Button</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChange({ ...event, showMoreDetailsButton: false })
+                    }
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      event.showMoreDetailsButton === false
+                        ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Hide Button</span>
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-slate-500 leading-snug">
+                  Opens the detailed information popup modal when clicked.
+                </p>
+              </div>
+
+              {/* Slot 2: Right Primary Action Button */}
+              <div className="md:col-span-7 space-y-2">
+                <span className="block text-[10.5px] font-extrabold uppercase tracking-wider text-[#102E4D]">
+                  Button 2 (Right): Primary Action Button
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(
+                    [
+                      {
+                        id: "event_details",
+                        label: "Event details",
+                        desc: "Links to /event page",
+                      },
+                      {
+                        id: "enroll_now",
+                        label: "Enroll now",
+                        desc: "Green enrollment CTA",
+                      },
+                      {
+                        id: "apply_now",
+                        label: "Apply now",
+                        desc: "Standard apply CTA",
+                      },
+                      {
+                        id: "none",
+                        label: "Hide Button",
+                        desc: "No 2nd button shown",
+                      },
+                      {
+                        id: "auto",
+                        label: "Auto (Default)",
+                        desc: "Based on lifecycle",
+                      },
+                    ] as const
+                  ).map((opt) => {
+                    const currentVal = event.cardActionButton || "auto";
+                    const isSelected = currentVal === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() =>
+                          onChange({ ...event, cardActionButton: opt.id })
+                        }
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-[#102E4D] text-white border-[#102E4D] shadow-xs ring-2 ring-[#FFC400]/50"
+                            : "bg-white text-[#102E4D] border-slate-200 hover:border-[#FF7900]"
+                        }`}
+                      >
+                        <div className="text-xs font-extrabold flex items-center justify-between">
+                          <span>{opt.label}</span>
+                          {isSelected && (
+                            <span className="w-2 h-2 rounded-full bg-[#FFC400]" />
+                          )}
+                        </div>
+                        <div
+                          className={`text-[10px] mt-0.5 ${
+                            isSelected ? "text-slate-300" : "text-slate-500"
+                          }`}
+                        >
+                          {opt.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Live 2-Button Preview Bar */}
+              <div className="md:col-span-12 pt-3 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-500">
+                  Live Card Footer Buttons Preview:
+                </span>
+                {(() => {
+                  const previewBtns = resolveActivityCardButtons(event);
+                  if (
+                    !previewBtns.showMoreDetails &&
+                    previewBtns.actionType === "none"
+                  ) {
+                    return (
+                      <span className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                        Both buttons are currently hidden on the activity card
+                      </span>
+                    );
+                  }
+                  return (
+                    <div className="flex items-center gap-2.5 w-full sm:w-80">
+                      {previewBtns.showMoreDetails && (
+                        <span className="flex-1 py-2 px-3 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8] text-[#102E4D] text-[11px] font-bold inline-flex items-center justify-center gap-1.5">
+                          <MdInfoOutline className="text-sm text-[#FF7900]" />
+                          <span>More details</span>
+                        </span>
+                      )}
+                      {previewBtns.actionType !== "none" && (
+                        <span
+                          className={`flex-1 py-2 px-3 rounded-xl text-white text-[11px] font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1 ${
+                            previewBtns.actionType === "enroll_now"
+                              ? "bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#166534]"
+                              : `bg-gradient-to-r ${theme.gradient}`
+                          }`}
+                        >
+                          <span>{previewBtns.actionLabel}</span>
+                          <MdArrowForward className="text-sm" />
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
           </div>
 
           {/* Dual Image Uploader */}
@@ -1862,6 +2096,19 @@ export default function ActivitiesCmsEditor() {
                   onPreviewModal={() => setPreviewModalEvent(event)}
                   onToggleHidden={() => handleToggleHidden(index)}
                   onDelete={() => setDeleteTarget({ index, event })}
+                  onQuickUpdateButtons={(patch) => {
+                    setEvents((prev) => {
+                      const next = [...prev];
+                      if (next[index]) {
+                        next[index] = { ...next[index], ...patch };
+                      }
+                      return next;
+                    });
+                    setFeedback({
+                      type: "success",
+                      text: `Updated card buttons for "${event.title}". Click "Publish Changes" (Ctrl+S) to save live.`,
+                    });
+                  }}
                   isTogglingHidden={togglingIndex === index}
                 />
               ))}

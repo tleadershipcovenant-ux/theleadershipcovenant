@@ -8,7 +8,7 @@ import { SummitStructuredData } from "@/components/seo/StructuredData";
 export const metadata: Metadata = {
   title: "The School Impact Summit 2026 - The Leadership Covenant",
   description:
-    "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, past highlights and testimonials. Register online in minutes.",
+    "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, panel discussion, participating schools, past highlights and testimonials. Register online in minutes.",
   keywords: [
     "The School Impact Summit 2026",
     "School Impact Summit Islamabad",
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     "Principal Conference Islamabad 2026",
   ],
   alternates: {
-    canonical: "/summit",
+    canonical: "/event",
   },
   openGraph: {
     title: "The School Impact Summit 2026 - The Leadership Covenant",
     description:
-      "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, past highlights and testimonials. Register online in minutes.",
-    url: `${SITE_URL}/summit`,
+      "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, panel discussion, participating schools, past highlights and testimonials. Register online in minutes.",
+    url: `${SITE_URL}/event`,
     siteName: "The Leadership Covenant",
     images: [
       {
@@ -41,12 +41,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "The School Impact Summit 2026 - The Leadership Covenant",
     description:
-      "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, past highlights and testimonials. Register online in minutes.",
+      "The School Impact Summit 2026: 28 November 2026, Islamabad. Objectives, who should attend, speakers, panel discussion, participating schools, past highlights and testimonials. Register online in minutes.",
     images: ["/OG_Image.png"],
   },
 };
 
-export default function SummitPage() {
+export default function EventPage() {
   ReactDOM.preload("/Submit/Hero.webp", {
     as: "image",
     fetchPriority: "high",

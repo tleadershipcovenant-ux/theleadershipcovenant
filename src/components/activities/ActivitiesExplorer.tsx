@@ -12,6 +12,7 @@ import {
   CATEGORY_LABELS,
   getMonthTheme,
   getEventLifecycle,
+  resolveActivityCardButtons,
   EVENT_LIFECYCLE_LABELS,
   type LeadershipEvent,
 } from "@/content/events";
@@ -550,45 +551,52 @@ export default function ActivitiesExplorer({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-2 sm:gap-2.5 pt-1">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedModalEvent(evt);
-                              }}
-                              className="flex-1 py-2.5 px-2.5 sm:px-3 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF]/70 text-[#102E4D] text-[11px] sm:text-[11.5px] font-bold tracking-wide transition-all duration-150 inline-flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-98"
-                            >
-                              <MdInfoOutline className="text-sm text-[#FF7900]" />
-                              <span>More details</span>
-                            </button>
+                          {(() => {
+                            const btnCfg = resolveActivityCardButtons(
+                              evt,
+                              todayIsoDate
+                            );
+                            if (
+                              !btnCfg.showMoreDetails &&
+                              btnCfg.actionType === "none"
+                            ) {
+                              return null;
+                            }
+                            return (
+                              <div className="flex items-center gap-2 sm:gap-2.5 pt-1">
+                                {btnCfg.showMoreDetails && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedModalEvent(evt);
+                                    }}
+                                    className="flex-1 py-2.5 px-2.5 sm:px-3 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF]/70 text-[#102E4D] text-[11px] sm:text-[11.5px] font-bold tracking-wide transition-all duration-150 inline-flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer active:scale-98"
+                                  >
+                                    <MdInfoOutline className="text-sm text-[#FF7900]" />
+                                    <span>More details</span>
+                                  </button>
+                                )}
 
-                            {isPreviousEvent ? null : isSummit ? (
-                              <Link
-                                href="/summit"
-                                onClick={(e) => e.stopPropagation()}
-                                className={`flex-1 py-2.5 px-3 sm:px-3.5 rounded-xl bg-gradient-to-r ${theme.gradient} text-white text-[11px] sm:text-[11.5px] font-bold uppercase tracking-wider shadow-xs hover:shadow-md transition-all duration-150 inline-flex items-center justify-center gap-1 group/btn active:scale-98`}
-                              >
-                                <span>Event details</span>
-                                <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform duration-150" />
-                              </Link>
-                            ) : (
-                              <Link
-                                href={`/apply?activity=${evt.slug}#apply-form`}
-                                onClick={(e) => e.stopPropagation()}
-                                className={`flex-1 py-2.5 px-3 sm:px-3.5 rounded-xl ${
-                                  isOpenEnrollment
-                                    ? "bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#166534] shadow-xs hover:shadow-md"
-                                    : `bg-gradient-to-r ${theme.gradient} shadow-xs hover:shadow-md`
-                                } text-white text-[11px] sm:text-[11.5px] font-bold uppercase tracking-wider transition-all duration-150 inline-flex items-center justify-center gap-1 cursor-pointer group/btn active:scale-98`}
-                              >
-                                <span>
-                                  {isOpenEnrollment ? "Enroll now" : "Apply now"}
-                                </span>
-                                <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform duration-150" />
-                              </Link>
-                            )}
-                          </div>
+                                {btnCfg.actionType !== "none" && (
+                                  <Link
+                                    href={btnCfg.actionHref}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className={`flex-1 py-2.5 px-3 sm:px-3.5 rounded-xl ${
+                                      btnCfg.actionType === "enroll_now" ||
+                                      (isOpenEnrollment &&
+                                        btnCfg.actionType !== "event_details")
+                                        ? "bg-gradient-to-r from-[#16A34A] via-[#15803D] to-[#166534] shadow-xs hover:shadow-md"
+                                        : `bg-gradient-to-r ${theme.gradient} shadow-xs hover:shadow-md`
+                                    } text-white text-[11px] sm:text-[11.5px] font-bold uppercase tracking-wider transition-all duration-150 inline-flex items-center justify-center gap-1 cursor-pointer group/btn active:scale-98`}
+                                  >
+                                    <span>{btnCfg.actionLabel}</span>
+                                    <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform duration-150" />
+                                  </Link>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>

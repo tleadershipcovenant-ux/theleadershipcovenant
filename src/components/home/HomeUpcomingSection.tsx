@@ -15,6 +15,7 @@ import {
   CATEGORY_LABELS,
   EVENT_LIFECYCLE_LABELS,
   getEventLifecycle,
+  resolveActivityCardButtons,
   precomputeLeadershipEvents,
   type LeadershipEvent,
 } from "@/content/events";
@@ -42,18 +43,34 @@ export default function HomeUpcomingSection() {
   );
 
   const MARQUEE_EVENTS = useMemo(() => {
-    const list =
+    const rawList =
       Array.isArray(eventsCms.events) && eventsCms.events.length > 0
-        ? eventsCms.events.filter((event) => !event.hidden)
-        : EVENTS.filter((event) => !event.hidden);
-    const upcomingEvents = precomputeLeadershipEvents(list).filter(
-      (event) => event.endDate >= todayIso
+        ? eventsCms.events
+        : EVENTS;
+    const visibleList = rawList.filter(
+      (event) => !event.hidden && event.showOnHome !== false
     );
-    const source = upcomingEvents.length > 0 ? upcomingEvents : PRECOMPUTED_EVENTS.filter(
-      (event) => event.endDate >= todayIso
-    );
+    const precomputed = precomputeLeadershipEvents(visibleList);
+    const filtered =
+      upcoming.filterMode === "all"
+        ? precomputed
+        : precomputed.filter(
+            (event) =>
+              getEventLifecycle(event, todayIso) !== "previous" ||
+              event.showOnHome === true
+          );
+    const source =
+      filtered.length > 0
+        ? filtered
+        : precomputed.length > 0
+        ? precomputed
+        : PRECOMPUTED_EVENTS.filter((event) => event.endDate >= todayIso);
     return [...source, ...source];
-  }, [eventsCms]);
+  }, [eventsCms, upcoming.filterMode]);
+
+  if (upcoming.visible === false) {
+    return null;
+  }
 
   return (
     <section className="w-full py-10 sm:py-12 lg:py-14 relative overflow-hidden" id="upcoming">
@@ -79,6 +96,11 @@ export default function HomeUpcomingSection() {
           <h2 className="font-serif font-extrabold text-3xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight">
             {upcoming.heading}
           </h2>
+          {upcoming.subtitle && (
+            <p className="text-sm sm:text-base text-slate-600 mt-3 max-w-2xl mx-auto leading-relaxed">
+              {upcoming.subtitle}
+            </p>
+          )}
           <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
         </motion.div>
       </div>
@@ -103,11 +125,7 @@ export default function HomeUpcomingSection() {
               theme,
               isOpenEnrollment,
             } = event;
-            const isSummit = event.slug === "school-impact-summit-2026";
-            const targetLink = isSummit
-              ? "/summit"
-              : `/apply?activity=${event.slug}#apply-form`;
-            const buttonLabel = isSummit ? "Event details" : "Apply now";
+            const btnCfg = resolveActivityCardButtons(event, todayIso);
             const statusDot = STATUS_DOT[event.statusTone];
 
             return (
@@ -233,34 +251,42 @@ export default function HomeUpcomingSection() {
                     </div>
 
                     {/* Action Buttons Row */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(event);
-                        }}
-                        className={`flex-1 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF] text-[#102E4D] font-bold tracking-wide transition-colors inline-flex items-center justify-center gap-1 cursor-pointer ${
-                          isOpenEnrollment ? "py-2 text-xs" : "py-1.5 text-[11px]"
-                        }`}
-                      >
-                        <MdInfoOutline className="text-sm text-[#FF7900]" />
-                        <span>Details</span>
-                      </button>
+                    {(btnCfg.showMoreDetails || btnCfg.actionType !== "none") && (
+                      <div className="flex items-center gap-2">
+                        {btnCfg.showMoreDetails && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEvent(event);
+                            }}
+                            className={`flex-1 rounded-xl border border-[#D7F5EF] bg-[#EFFBF8]/80 hover:bg-[#D7F5EF] text-[#102E4D] font-bold tracking-wide transition-colors inline-flex items-center justify-center gap-1 cursor-pointer ${
+                              isOpenEnrollment ? "py-2 text-xs" : "py-1.5 text-[11px]"
+                            }`}
+                          >
+                            <MdInfoOutline className="text-sm text-[#FF7900]" />
+                            <span>More details</span>
+                          </button>
+                        )}
 
-                      <Link
-                        href={targetLink}
-                        onClick={(e) => e.stopPropagation()}
-                        className={`flex-1 rounded-xl text-white font-black uppercase tracking-wider hover:shadow-md transition-all inline-flex items-center justify-center gap-1 group/btn ${
-                          isOpenEnrollment
-                            ? "py-2 text-xs bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-[#15803D] hover:to-[#0F652E] shadow-sm ring-1 ring-[#16A34A]/50"
-                            : `py-1.5 text-[11px] bg-gradient-to-r ${theme.gradient} shadow-xs`
-                        }`}
-                      >
-                        <span>{buttonLabel}</span>
-                        <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform" />
-                      </Link>
-                    </div>
+                        {btnCfg.actionType !== "none" && (
+                          <Link
+                            href={btnCfg.actionHref}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`flex-1 rounded-xl text-white font-black uppercase tracking-wider hover:shadow-md transition-all inline-flex items-center justify-center gap-1 group/btn ${
+                              btnCfg.actionType === "enroll_now" ||
+                              (isOpenEnrollment &&
+                                btnCfg.actionType !== "event_details")
+                                ? "py-2 text-xs bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-[#15803D] hover:to-[#0F652E] shadow-sm ring-1 ring-[#16A34A]/50"
+                                : `py-1.5 text-[11px] bg-gradient-to-r ${theme.gradient} shadow-xs`
+                            }`}
+                          >
+                            <span>{btnCfg.actionLabel}</span>
+                            <MdArrowForward className="text-sm group-hover/btn:translate-x-0.5 transition-transform" />
+                          </Link>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </article>
@@ -270,15 +296,17 @@ export default function HomeUpcomingSection() {
       </div>
 
       {/* Centered Professional "View all activities" CTA */}
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-6 sm:mt-7 flex justify-center">
-        <Link
-          href="/activities"
-          className="inline-flex items-center justify-center gap-2.5 px-7 py-3 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs sm:text-sm font-bold tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-98 transition-all duration-300 group"
-        >
-          <span>View all activities</span>
-          <MdArrowForward className="text-base sm:text-lg group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
+      {upcoming.showCta !== false && (
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mt-6 sm:mt-7 flex justify-center">
+          <Link
+            href={upcoming.ctaHref || "/activities"}
+            className="inline-flex items-center justify-center gap-2.5 px-7 py-3 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] hover:from-[#E56D00] hover:to-[#CC5F00] text-white text-xs sm:text-sm font-bold tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-98 transition-all duration-300 group"
+          >
+            <span>{upcoming.ctaLabel || "View all activities"}</span>
+            <MdArrowForward className="text-base sm:text-lg group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      )}
 
       {/* Lazy-Loaded Event Details Modal */}
       {selectedEvent && (

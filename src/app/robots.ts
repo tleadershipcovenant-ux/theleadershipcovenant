@@ -18,6 +18,7 @@ const ALLOWED_PATHS = [
   "/services",
   "/about",
   "/activities",
+  "/event",
   "/summit",
   "/apply",
   "/online-booking",
