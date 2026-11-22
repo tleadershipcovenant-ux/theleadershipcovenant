@@ -6,47 +6,80 @@ import { motion } from "framer-motion";
 import {
   SUMMIT_CONTENT,
   type SummitSpeakersContent,
+  type SummitPanelDiscussionContent,
+  type SummitParticipatingSchoolsContent,
   type SummitVideosContent,
   type SummitCtaContent,
 } from "@/content/summit";
 import SummitVideoSlider from "@/components/summit/SummitVideoSlider";
 import { MdArrowForward } from "react-icons/md";
 
-const PARTICIPATING_SCHOOL_LOGOS = [
-  "/SchoolLogos/APS logo-1.png",
-  "/SchoolLogos/WhatsApp Image 2026-11-18 at 16.44.40.jpeg",
-  "/SchoolLogos/WhatsApp Image 2026-11-18 at 16.44.41.jpeg",
-  "/SchoolLogos/WhatsApp Image 2026-11-18 at 17.21.33.jpeg",
-] as const;
-
-const PANEL_DISCUSSION_PARTICIPANTS = [
-  {
-    name: "Sabahat K. Tatari",
-    designation: "Head of International Baccalaureate Programmes, Headstart School",
-    image: "/panelist1.jpg",
-  },
-  {
-    name: "Wajiha Shabbir",
-    designation: "Director, Educational Advisory Department, Pakistan Air Force",
-    image: "/anonymous-female.svg",
-  },
-] as const;
-
 interface SummitInteractiveSectionsProps {
   speakers?: SummitSpeakersContent;
+  panelDiscussion?: SummitPanelDiscussionContent;
+  participatingSchools?: SummitParticipatingSchoolsContent;
   videos?: SummitVideosContent;
   registration?: SummitCtaContent;
 }
 
 export default function SummitInteractiveSections({
   speakers: propSpeakers,
+  panelDiscussion: propPanelDiscussion,
+  participatingSchools: propParticipatingSchools,
   videos: propVideos,
   registration: propRegistration,
 }: SummitInteractiveSectionsProps = {}) {
   const speakers = propSpeakers || SUMMIT_CONTENT.speakers;
+  const panelDiscussion =
+    propPanelDiscussion || SUMMIT_CONTENT.panelDiscussion;
+  const participatingSchools =
+    propParticipatingSchools || SUMMIT_CONTENT.participatingSchools;
   const videos = propVideos || SUMMIT_CONTENT.videos;
   const registration = propRegistration || SUMMIT_CONTENT.registration;
-  const speakerList = speakers.items && speakers.items.length > 0 ? speakers.items : SUMMIT_CONTENT.speakers.items;
+
+  const speakerList =
+    speakers.items && speakers.items.length > 0
+      ? speakers.items
+      : SUMMIT_CONTENT.speakers.items;
+
+  const panelMembers =
+    panelDiscussion.items && panelDiscussion.items.length > 0
+      ? panelDiscussion.items
+      : SUMMIT_CONTENT.panelDiscussion.items;
+
+  // Separate Moderators (Left Frame) and Panelists (Right Main Frame)
+  const explicitModerators = panelMembers.filter((m) =>
+    m.role?.toLowerCase().includes("moderator")
+  );
+  const explicitPanelists = panelMembers.filter(
+    (m) => !m.role?.toLowerCase().includes("moderator")
+  );
+  const moderators =
+    explicitModerators.length > 0
+      ? explicitModerators
+      : panelMembers.slice(0, 1);
+  const panelists =
+    explicitModerators.length > 0
+      ? explicitPanelists
+      : panelMembers.slice(1);
+
+  const schoolList =
+    participatingSchools.items && participatingSchools.items.length > 0
+      ? participatingSchools.items
+      : SUMMIT_CONTENT.participatingSchools.items;
+
+  // Ensure each half of the full-width infinite marquee has at least 12 cards so even 2K/4K full-width screens never have gaps
+  const repeatFactor = Math.max(
+    1,
+    Math.ceil(12 / Math.max(schoolList.length, 1))
+  );
+  const singleHalfSchools = Array.from({ length: repeatFactor }).flatMap(
+    (_, rIdx) =>
+      schoolList.map((school, sIdx) => ({
+        ...school,
+        _trackKey: `r${rIdx}-s${sIdx}-${school.id}`,
+      }))
+  );
 
   return (
     <>
@@ -99,11 +132,12 @@ export default function SummitInteractiveSections({
               >
                 {/* Top Colored Accent Stripe */}
                 <div
-                  className={`h-1.5 w-full bg-gradient-to-r ${spk.topAccent ||
+                  className={`h-1.5 w-full bg-gradient-to-r ${
+                    spk.topAccent ||
                     (idx % 2 === 0
                       ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
                       : "from-[#FF7900] via-[#E56D00] to-[#FFC400]")
-                    }`}
+                  }`}
                 />
 
                 <div className="flex flex-col sm:flex-row flex-1">
@@ -125,11 +159,12 @@ export default function SummitInteractiveSections({
                     <div>
                       {/* Speaker Badge */}
                       <span
-                        className={`text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${spk.badgeColor ||
+                        className={`text-[10px] sm:text-[10.5px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                          spk.badgeColor ||
                           (idx % 2 === 0
                             ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
                             : "bg-[#FF7900] text-white border-[#FF7900]/30")
-                          } inline-block mb-2.5`}
+                        } inline-block mb-2.5`}
                       >
                         {spk.role}
                       </span>
@@ -158,100 +193,165 @@ export default function SummitInteractiveSections({
       </section>
 
       {/* ────────────────────────────────────────────────────────── */}
-      {/* 5B. PANEL DISCUSSION                                      */}
+      {/* 5B. PANEL DISCUSSION — COMPACT, EQUAL-SIZE ALIGNED CARDS  */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
         className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20 md:scroll-mt-28"
         id="panel-discussion"
       >
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D7F5EF] to-transparent" />
-        <div className="absolute -top-24 left-1/4 w-72 h-72 rounded-full bg-[#D7F5EF]/40 blur-3xl pointer-events-none transform-gpu" />
-        <div className="absolute -bottom-24 right-1/4 w-72 h-72 rounded-full bg-[#DDEFF7]/40 blur-3xl pointer-events-none transform-gpu" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
+        <div className="absolute -top-28 left-1/4 w-72 h-72 rounded-full bg-[#D7F5EF]/45 blur-3xl pointer-events-none transform-gpu" />
+        <div className="absolute -bottom-28 right-1/4 w-72 h-72 rounded-full bg-[#DDEFF7]/45 blur-3xl pointer-events-none transform-gpu" />
 
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center max-w-4xl mx-auto mb-8 sm:mb-10"
+            className="text-center max-w-3xl mx-auto mb-8 sm:mb-11 transform-gpu"
           >
-            <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900]">
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-              <span>Panel Discussion</span>
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-            </div>
-            <h2 className="mt-5 font-serif font-extrabold text-2xl sm:text-4xl lg:text-[44px] text-[#102E4D] tracking-tight leading-tight">
-              Redefining Success in a Changing World
+            {panelDiscussion.eyebrow ? (
+              <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2.5">
+                <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
+                <span>{panelDiscussion.eyebrow}</span>
+                <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
+              </div>
+            ) : null}
+
+            <h2 className="font-serif font-extrabold text-2xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight leading-tight">
+              {panelDiscussion.heading}
             </h2>
-            <p className="mt-2 text-sm sm:text-lg lg:text-xl font-semibold text-[#234767] leading-relaxed">
-              Leadership, Wellbeing and Life Readiness in Education
-            </p>
+            <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
+
+            {panelDiscussion.subtitle ? (
+              <p className="mt-4 text-xs sm:text-base lg:text-lg font-bold text-[#1B3A5C] max-w-2xl mx-auto leading-relaxed">
+                {panelDiscussion.subtitle}
+              </p>
+            ) : null}
           </motion.div>
 
+          {/* Side-by-Side Framed Layout: Left Brand Navy Blue Moderator Card + Right Brand Orange Unified Panelists Card */}
           <motion.div
-            initial={{ opacity: 0, y: 22 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-3xl border border-[#102E4D]/15 bg-white/95 shadow-xl p-4 sm:p-5 lg:p-6"
+            viewport={{ once: true, margin: "-30px" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="relative rounded-3xl bg-white border border-[#D7F5EF] shadow-md p-5 sm:p-7 lg:p-8 overflow-hidden"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-[210px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,1fr)] gap-4 sm:gap-5 lg:gap-6">
-              <div className="relative pt-5">
-                <div className="absolute top-0 left-1/2 lg:left-5 -translate-x-1/2 lg:translate-x-0 z-10 bg-[#102E4D] text-[#FFC400] text-[10px] sm:text-xs font-extrabold uppercase tracking-widest px-4 py-2 rounded-full border border-white/20 shadow-md">
-                  Moderator
-                </div>
-                <div className="h-full min-h-[260px] sm:min-h-[280px] lg:min-h-[360px] rounded-2xl border border-[#D7F5EF] bg-gradient-to-b from-[#F7FBFC] to-[#EAF6F3] overflow-hidden flex flex-col items-center justify-center px-4 py-7 sm:py-8">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-full overflow-hidden border-4 border-white shadow-md mb-5 bg-white">
-                    <img
-                      src="/moderator.jpg"
-                      alt="Quratulain Ali Rizvi"
-                      className="h-full w-full object-cover object-center"
-                      loading="lazy"
-                      decoding="async"
-                    />
+            {/* Top Signature Accent Bar matching Speakers & Objectives */}
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900]" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-7 items-stretch pt-3 relative z-10">
+              {/* LEFT FRAME: MODERATOR(S) — BRAND NAVY BLUE THEME */}
+              <div className="lg:col-span-4 xl:col-span-3 flex flex-col">
+                <div className="relative h-full rounded-2xl border-2 border-[#102E4D]/30 bg-white pt-8 pb-5 px-4 sm:px-5 flex flex-col justify-between shadow-xs">
+                  {/* Top Border Cutout Pill ("Moderator" / "Moderators") in Brand Navy Blue */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
+                    <div className="px-5 py-1 rounded-full bg-[#102E4D] text-[#FFC400] font-serif font-extrabold text-xs sm:text-sm uppercase tracking-widest shadow-xs ring-4 ring-white whitespace-nowrap">
+                      {moderators.length > 1 ? "Moderators" : "Moderator"}
+                    </div>
                   </div>
-                  <h3 className="font-serif font-extrabold text-xl sm:text-2xl text-[#102E4D] text-center">
-                    Quratulain Ali Rizvi
-                  </h3>
-                  <p className="mt-1 text-xs sm:text-sm font-bold text-[#234767] text-center">
-                    Principal, GSIS School and College
-                  </p>
+
+                  {/* Moderator Cards Stack (1 or 2+ Moderators, expanding vertically to match Panelists height) */}
+                  <div
+                    className={`flex-1 flex flex-col ${
+                      moderators.length > 1 ? "gap-5" : ""
+                    } h-full`}
+                  >
+                    {moderators.map((mod, mIdx) => (
+                      <div
+                        key={mod.id || `mod-${mIdx}`}
+                        className="flex-1 flex flex-col group"
+                      >
+                        {/* Full-Covered Portrait Container that Expands with Card Height */}
+                        <div className="relative flex-1 w-full min-h-[250px] sm:min-h-[270px] rounded-xl overflow-hidden border border-[#D7F5EF] bg-[#EAF6F3] shadow-2xs">
+                          <img
+                            src={mod.image || "/Submit/Panalist/moderator.jpg"}
+                            alt={mod.name}
+                            className="absolute inset-0 w-full h-full object-cover object-top select-none group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </div>
+
+                        {/* Moderator Details Below Image */}
+                        <div className="pt-4 text-center shrink-0">
+                          <h4 className="font-serif font-extrabold text-lg sm:text-xl text-[#102E4D] group-hover:text-[#FF7900] transition-colors leading-snug">
+                            {mod.name}
+                          </h4>
+                          <div className="w-10 h-0.5 bg-[#102E4D] rounded-full my-1.5 mx-auto opacity-80" />
+                          <p className="text-xs sm:text-[13px] font-semibold text-slate-600 leading-snug whitespace-pre-line">
+                            {mod.designation}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <div className="mb-4 flex items-center justify-center gap-3">
-                  <div className="h-px w-12 sm:w-16 lg:w-20 bg-[#102E4D]/60" />
-                  <h3 className="font-serif font-extrabold text-xl sm:text-2xl text-[#102E4D]">
-                    Panelists
-                  </h3>
-                  <div className="h-px w-12 sm:w-16 lg:w-20 bg-[#102E4D]/60" />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PANEL_DISCUSSION_PARTICIPANTS.map((panelist) => (
-                    <div
-                      key={panelist.name}
-                      className="min-h-[220px] sm:min-h-[250px] lg:min-h-[285px] rounded-2xl border border-[#D7F5EF] bg-gradient-to-b from-[#F7FBFC] to-[#EAF6F3] overflow-hidden flex flex-col items-center justify-center px-2.5 py-6"
-                    >
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-white shadow-md mb-4 bg-white">
-                        <img
-                          src={panelist.image}
-                          alt={panelist.name}
-                          className="h-full w-full object-cover object-center"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </div>
-                      <h4 className="font-serif font-extrabold text-base sm:text-lg text-[#102E4D] text-center">
-                        {panelist.name}
-                      </h4>
-                      <p className="mt-1 text-[10px] sm:text-xs font-bold text-[#234767] text-center leading-snug">
-                        {panelist.designation}
-                      </p>
+              {/* RIGHT FRAME: ALL PANELISTS IN ONE UNIFIED MAIN CARD — BRAND ORANGE THEME */}
+              <div className="lg:col-span-8 xl:col-span-9 flex flex-col">
+                <div className="relative h-full rounded-2xl border-2 border-[#FF7900]/35 bg-white pt-8 pb-6 px-4 sm:px-6 lg:px-7 flex flex-col justify-center shadow-xs">
+                  {/* Top Border Cutout Pill ("Panelists") in Brand Orange */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
+                    <div className="px-6 py-1 rounded-full bg-[#FF7900] text-white font-serif font-extrabold text-xs sm:text-sm uppercase tracking-widest shadow-xs ring-4 ring-white whitespace-nowrap">
+                      Panelists
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Unified Panelists Grid Inside One Main Card */}
+                  <div
+                    className={`grid grid-cols-1 ${
+                      panelists.length === 1
+                        ? "sm:grid-cols-1 max-w-sm"
+                        : panelists.length === 2
+                        ? "sm:grid-cols-2 max-w-2xl"
+                        : panelists.length === 4
+                        ? "sm:grid-cols-2 xl:grid-cols-4"
+                        : "sm:grid-cols-2 md:grid-cols-3"
+                    } gap-4 sm:gap-5 w-full mx-auto items-stretch my-auto`}
+                  >
+                    {panelists.map((panelist, pIdx) => (
+                      <div
+                        key={panelist.id || `${panelist.name}-${pIdx}`}
+                        className="relative rounded-2xl bg-[#FAFCFB] border border-[#D7F5EF] hover:border-[#FFC400] p-4 sm:p-5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col items-center justify-between text-center group overflow-hidden"
+                      >
+                        {/* Top Brand Orange Accent Bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#FF7900] to-[#FFC400]" />
+
+                        <div className="flex flex-col items-center w-full pt-1">
+                          {/* Circular Portrait with Subtle Brand Orange & Mint Border */}
+                          <div className="w-28 h-28 sm:w-30 sm:h-30 rounded-full overflow-hidden border-[3px] border-[#FF7900]/25 ring-4 ring-[#EAF6F3] shadow-sm bg-[#EAF6F3] mb-3.5 shrink-0 group-hover:scale-105 group-hover:border-[#FF7900] transition-all duration-200">
+                            <img
+                              src={panelist.image || "/anonymous-female.svg"}
+                              alt={panelist.name}
+                              className="w-full h-full object-cover object-top select-none"
+                              loading="lazy"
+                              decoding="async"
+                              width={160}
+                              height={160}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Panelist Name & Designation */}
+                        <div className="w-full flex-1 flex flex-col items-center justify-center">
+                          <h4 className="font-serif font-extrabold text-base sm:text-[17px] text-[#102E4D] group-hover:text-[#FF7900] transition-colors leading-snug">
+                            {panelist.name}
+                          </h4>
+
+                          <div className="w-8 h-0.5 bg-[#FF7900] rounded-full my-2 opacity-80" />
+
+                          <p className="text-xs sm:text-[12.5px] font-semibold text-slate-600 leading-snug max-w-[235px] mx-auto whitespace-pre-line">
+                            {panelist.designation}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -260,61 +360,93 @@ export default function SummitInteractiveSections({
       </section>
 
       {/* ────────────────────────────────────────────────────────── */}
-      {/* PARTICIPATING SCHOOLS                                     */}
+      {/* 5C. PARTICIPATING SCHOOLS — FULL-WIDTH CONTINUOUS SLIDER   */}
       {/* ────────────────────────────────────────────────────────── */}
       <section
         className="w-full py-9 sm:py-12 lg:py-14 relative overflow-hidden scroll-mt-20 md:scroll-mt-28"
         id="participating-schools"
       >
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#D7F5EF] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-[#D7F5EF]" />
         <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-96 h-56 bg-[#D7F5EF]/45 rounded-full blur-3xl pointer-events-none transform-gpu" />
 
+        {/* Centered Section Header — Matching Typography & Scale of All Summit Sections */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center mb-7 sm:mb-9"
+            className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 transform-gpu"
           >
-            <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900]">
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-              <span>Participating Schools</span>
-              <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
-            </div>
-          </motion.div>
+            {participatingSchools.eyebrow ? (
+              <div className="inline-flex items-center justify-center gap-2 text-xs sm:text-sm font-bold uppercase tracking-widest text-[#FF7900] mb-2">
+                <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
+                <span>{participatingSchools.eyebrow}</span>
+                <span className="w-5 h-[2px] bg-[#FF7900] inline-block" />
+              </div>
+            ) : null}
 
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative overflow-hidden rounded-3xl border border-[#D7F5EF] bg-white/90 shadow-lg py-5 sm:py-7 mask-fade-x"
+            {participatingSchools.heading ? (
+              <>
+                <h2 className="font-serif font-extrabold text-2xl sm:text-4xl lg:text-5xl text-[#102E4D] tracking-tight leading-tight">
+                  {participatingSchools.heading}
+                </h2>
+                <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3.5 rounded-full" />
+              </>
+            ) : null}
+
+            {participatingSchools.subtext ? (
+              <p className="text-xs sm:text-[15px] text-slate-600 leading-relaxed font-normal max-w-3xl mx-auto mt-4 sm:mt-5">
+                {participatingSchools.subtext}
+              </p>
+            ) : null}
+          </motion.div>
+        </div>
+
+        {/* Full-Viewport-Width Edge-to-Edge Marquee Slider Track */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="relative w-full overflow-hidden border-y border-[#D7F5EF] bg-white/95 shadow-md py-6 sm:py-8 z-10"
+        >
+          {/* Top Subtle Accent Line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900] opacity-85" />
+
+          {/* Left & Right Soft Edge Fade Overlays */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-24 lg:w-32 bg-gradient-to-r from-white via-white/85 to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-24 lg:w-32 bg-gradient-to-l from-white via-white/85 to-transparent z-10" />
+
+          <div
+            className="flex w-max animate-marquee items-center hover:[animation-play-state:paused]"
+            style={{ "--marquee-duration": "40s" } as React.CSSProperties}
           >
-            <div
-              className="flex w-max animate-marquee items-center hover:[animation-play-state:paused]"
-              style={{ "--marquee-duration": "24s" } as React.CSSProperties}
-            >
-              {[0, 1].map((copy) =>
-                PARTICIPATING_SCHOOL_LOGOS.map((logo, index) => (
+            {[0, 1].map((halfIdx) => (
+              <div
+                key={`marquee-half-${halfIdx}`}
+                className="flex items-center shrink-0"
+                aria-hidden={halfIdx === 1 ? true : undefined}
+              >
+                {singleHalfSchools.map((school) => (
                   <div
-                    key={`${copy}-${logo}`}
-                    className="mx-3 sm:mx-5 flex h-24 w-44 sm:h-28 sm:w-52 shrink-0 items-center justify-center rounded-2xl border border-[#E4EEF1] bg-white px-5 shadow-sm"
-                    aria-hidden={copy === 1 ? true : undefined}
+                    key={`half-${halfIdx}-${school._trackKey}`}
+                    title={school.name}
+                    className="mx-3 sm:mx-4 flex h-28 w-52 sm:h-32 sm:w-60 shrink-0 items-center justify-center rounded-2xl border border-[#D7F5EF] hover:border-[#FFC400] bg-white px-5 py-3.5 shadow-sm hover:shadow-lg transition-all duration-200 group"
                   >
                     <img
-                      src={logo}
-                      alt={copy === 0 ? `Participating school ${index + 1}` : ""}
-                      className="max-h-20 max-w-full object-contain select-none"
+                      src={school.logo}
+                      alt={halfIdx === 0 ? school.name : ""}
+                      className="max-h-20 sm:max-h-24 max-w-[170px] sm:max-w-[205px] w-auto h-auto object-contain object-center select-none group-hover:scale-105 transition-transform duration-200"
                       loading="lazy"
                       decoding="async"
                     />
                   </div>
-                ))
-              )}
-            </div>
-          </motion.div>
-        </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
       {/* ────────────────────────────────────────────────────────── */}
@@ -341,7 +473,6 @@ export default function SummitInteractiveSections({
               {videos.heading}
             </h2>
             <div className="w-20 h-1 bg-[#FFC400] mx-auto mt-3 rounded-full" />
-
           </motion.div>
 
           {/* Interactive 3D Video Slider (Reference Matching) */}

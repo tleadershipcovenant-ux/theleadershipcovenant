@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
     optimizePackageImports: ["framer-motion"],
+    agentUpgrade: "security",
   },
   images: {
     formats: ["image/avif", "image/webp"],

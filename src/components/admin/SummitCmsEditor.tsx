@@ -41,6 +41,8 @@ import {
   normalizeSummitCms,
   type SummitPageContent,
   type SummitSpeaker,
+  type SummitPanelMember,
+  type SummitParticipatingSchool,
   type SummitVideoItem,
   type SummitObjectiveItem,
   type SummitAudienceRole,
@@ -78,13 +80,32 @@ export default function SummitCmsEditor() {
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "hero" | "objectives" | "audience" | "speakers" | "videos" | "cta"
+    | "hero"
+    | "objectives"
+    | "audience"
+    | "speakers"
+    | "panel"
+    | "schools"
+    | "videos"
+    | "cta"
   >("hero");
 
   // Speaker Modal State
   const [editingSpeakerIndex, setEditingSpeakerIndex] = useState<number | null>(null);
   const [isAddingSpeaker, setIsAddingSpeaker] = useState(false);
   const [speakerModalData, setSpeakerModalData] = useState<SummitSpeaker | null>(null);
+  const [speakerModalPosition, setSpeakerModalPosition] = useState<number>(0);
+
+  // Panel Discussion Member Modal State
+  const [editingPanelIndex, setEditingPanelIndex] = useState<number | null>(null);
+  const [isAddingPanel, setIsAddingPanel] = useState(false);
+  const [panelModalData, setPanelModalData] = useState<SummitPanelMember | null>(null);
+  const [panelModalPosition, setPanelModalPosition] = useState<number>(0);
+
+  // Participating School Modal State
+  const [editingSchoolIndex, setEditingSchoolIndex] = useState<number | null>(null);
+  const [isAddingSchool, setIsAddingSchool] = useState(false);
+  const [schoolModalData, setSchoolModalData] = useState<SummitParticipatingSchool | null>(null);
 
   // Video Modal State
   const [editingVideoIndex, setEditingVideoIndex] = useState<number | null>(null);
@@ -93,7 +114,7 @@ export default function SummitCmsEditor() {
 
   // Delete Confirmation State
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: "speaker" | "video" | "objective" | "audience";
+    type: "speaker" | "panel" | "school" | "video" | "objective" | "audience";
     index: number;
     title: string;
   } | null>(null);
@@ -291,6 +312,7 @@ export default function SummitCmsEditor() {
       topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
     };
     setSpeakerModalData(newSpeaker);
+    setSpeakerModalPosition(content.speakers.items.length);
     setIsAddingSpeaker(true);
     setEditingSpeakerIndex(null);
   };
@@ -299,6 +321,7 @@ export default function SummitCmsEditor() {
     const target = content.speakers.items[index];
     if (!target) return;
     setSpeakerModalData({ ...target });
+    setSpeakerModalPosition(index);
     setEditingSpeakerIndex(index);
     setIsAddingSpeaker(false);
   };
@@ -319,9 +342,18 @@ export default function SummitCmsEditor() {
     };
 
     if (isAddingSpeaker) {
-      nextList.push(readySpeaker);
+      const targetPos = Math.max(
+        0,
+        Math.min(speakerModalPosition, nextList.length)
+      );
+      nextList.splice(targetPos, 0, readySpeaker);
     } else if (editingSpeakerIndex !== null) {
-      nextList[editingSpeakerIndex] = readySpeaker;
+      nextList.splice(editingSpeakerIndex, 1);
+      const targetPos = Math.max(
+        0,
+        Math.min(speakerModalPosition, nextList.length)
+      );
+      nextList.splice(targetPos, 0, readySpeaker);
     }
 
     setContent((prev) => ({
@@ -333,7 +365,7 @@ export default function SummitCmsEditor() {
     setSpeakerModalData(null);
     setFeedback({
       type: "success",
-      text: `Speaker "${readySpeaker.name}" updated. Click "Publish Changes" (Ctrl+S) to save.`,
+      text: `Speaker "${readySpeaker.name}" saved at Card Position #${speakerModalPosition + 1}. Click "Publish Changes" (Ctrl+S) to save.`,
     });
   };
 
@@ -344,6 +376,46 @@ export default function SummitCmsEditor() {
     const temp = list[index];
     list[index] = list[target];
     list[target] = temp;
+    setContent((prev) => ({
+      ...prev,
+      speakers: { ...prev.speakers, items: list },
+    }));
+  };
+
+  const handleSetSpeakerPosition = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const list = [...content.speakers.items];
+    if (fromIndex < 0 || fromIndex >= list.length) return;
+    const clampedTo = Math.max(0, Math.min(toIndex, list.length - 1));
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(clampedTo, 0, moved);
+    setContent((prev) => ({
+      ...prev,
+      speakers: { ...prev.speakers, items: list },
+    }));
+    setFeedback({
+      type: "success",
+      text: `Moved "${moved.name}" to Card Position #${clampedTo + 1}. Click "Publish (Ctrl+S)" to persist.`,
+    });
+  };
+
+  const handleSetSpeakerRoleInline = (index: number, nextRole: string) => {
+    const list = [...content.speakers.items];
+    const item = list[index];
+    if (!item) return;
+    const isLead =
+      nextRole.toLowerCase().includes("lead") ||
+      nextRole.toLowerCase().includes("keynote");
+    list[index] = {
+      ...item,
+      role: nextRole,
+      badgeColor: isLead
+        ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+        : "bg-[#FF7900] text-white border-[#FF7900]/30",
+      topAccent: isLead
+        ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+        : "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+    };
     setContent((prev) => ({
       ...prev,
       speakers: { ...prev.speakers, items: list },
@@ -429,6 +501,214 @@ export default function SummitCmsEditor() {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
+  // CRUD FOR PANEL DISCUSSION MEMBERS
+  // ───────────────────────────────────────────────────────────────────────────
+  const handleOpenAddPanelMember = (
+    defaultRole: "Moderator" | "Panelist" = "Panelist"
+  ) => {
+    const isMod = defaultRole === "Moderator";
+    const newMember: SummitPanelMember = {
+      id: `panel-${Date.now()}`,
+      name: isMod ? "New Moderator" : "New Panelist",
+      role: defaultRole,
+      designation: "Educational Leader & Institutional Head",
+      image: isMod ? "/Submit/Panalist/moderator.jpg" : "/anonymous-female.svg",
+      badgeColor: isMod
+        ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+        : "bg-[#FF7900] text-white border-[#FF7900]/30",
+      topAccent: isMod
+        ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+        : "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+    };
+    setPanelModalData(newMember);
+    setPanelModalPosition(
+      isMod ? 0 : content.panelDiscussion.items.length
+    );
+    setIsAddingPanel(true);
+    setEditingPanelIndex(null);
+  };
+
+  const handleOpenEditPanelMember = (index: number) => {
+    const target = content.panelDiscussion.items[index];
+    if (!target) return;
+    setPanelModalData({ ...target });
+    setPanelModalPosition(index);
+    setEditingPanelIndex(index);
+    setIsAddingPanel(false);
+  };
+
+  const handleSavePanelModal = () => {
+    if (!panelModalData || !panelModalData.name.trim()) {
+      alert("Please provide the panel member's name.");
+      return;
+    }
+    const roleVal = panelModalData.role.trim() || "Panelist";
+    const isMod = roleVal.toLowerCase().includes("moderator");
+    const readyMember: SummitPanelMember = {
+      ...panelModalData,
+      name: panelModalData.name.trim(),
+      role: roleVal,
+      designation: panelModalData.designation.trim(),
+      image: panelModalData.image.trim() || "/anonymous-female.svg",
+      badgeColor:
+        panelModalData.badgeColor ||
+        (isMod
+          ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+          : "bg-[#FF7900] text-white border-[#FF7900]/30"),
+      topAccent:
+        panelModalData.topAccent ||
+        (isMod
+          ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+          : "from-[#FF7900] via-[#E56D00] to-[#FFC400]"),
+    };
+
+    const nextList = [...content.panelDiscussion.items];
+    if (isAddingPanel) {
+      const targetPos = Math.max(
+        0,
+        Math.min(panelModalPosition, nextList.length)
+      );
+      nextList.splice(targetPos, 0, readyMember);
+    } else if (editingPanelIndex !== null) {
+      nextList.splice(editingPanelIndex, 1);
+      const targetPos = Math.max(
+        0,
+        Math.min(panelModalPosition, nextList.length)
+      );
+      nextList.splice(targetPos, 0, readyMember);
+    }
+
+    setContent((prev) => ({
+      ...prev,
+      panelDiscussion: { ...prev.panelDiscussion, items: nextList },
+    }));
+    setEditingPanelIndex(null);
+    setIsAddingPanel(false);
+    setPanelModalData(null);
+    setFeedback({
+      type: "success",
+      text: `Panel member "${readyMember.name}" saved at Card Position #${panelModalPosition + 1}. Click "Publish (Ctrl+S)" to persist.`,
+    });
+  };
+
+  const handleMovePanelMember = (index: number, dir: -1 | 1) => {
+    const list = [...content.panelDiscussion.items];
+    const target = index + dir;
+    if (target < 0 || target >= list.length) return;
+    const temp = list[index];
+    list[index] = list[target];
+    list[target] = temp;
+    setContent((prev) => ({
+      ...prev,
+      panelDiscussion: { ...prev.panelDiscussion, items: list },
+    }));
+  };
+
+  const handleSetPanelPosition = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const list = [...content.panelDiscussion.items];
+    if (fromIndex < 0 || fromIndex >= list.length) return;
+    const clampedTo = Math.max(0, Math.min(toIndex, list.length - 1));
+    const [moved] = list.splice(fromIndex, 1);
+    list.splice(clampedTo, 0, moved);
+    setContent((prev) => ({
+      ...prev,
+      panelDiscussion: { ...prev.panelDiscussion, items: list },
+    }));
+    setFeedback({
+      type: "success",
+      text: `Moved "${moved.name}" to Card Position #${clampedTo + 1}. Click "Publish (Ctrl+S)" to persist.`,
+    });
+  };
+
+  const handleSetPanelRoleInline = (index: number, nextRole: string) => {
+    const list = [...content.panelDiscussion.items];
+    const item = list[index];
+    if (!item) return;
+    const isMod = nextRole.toLowerCase().includes("moderator");
+    list[index] = {
+      ...item,
+      role: nextRole,
+      badgeColor: isMod
+        ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+        : "bg-[#FF7900] text-white border-[#FF7900]/30",
+      topAccent: isMod
+        ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+        : "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+    };
+    setContent((prev) => ({
+      ...prev,
+      panelDiscussion: { ...prev.panelDiscussion, items: list },
+    }));
+  };
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // CRUD FOR PARTICIPATING SCHOOLS
+  // ───────────────────────────────────────────────────────────────────────────
+  const handleOpenAddSchool = () => {
+    const newSchool: SummitParticipatingSchool = {
+      id: `school-${Date.now()}`,
+      name: "Partner School / Institution",
+      logo: "/Submit/SchoolLogos/S1 (1).png",
+    };
+    setSchoolModalData(newSchool);
+    setIsAddingSchool(true);
+    setEditingSchoolIndex(null);
+  };
+
+  const handleOpenEditSchool = (index: number) => {
+    const target = content.participatingSchools.items[index];
+    if (!target) return;
+    setSchoolModalData({ ...target });
+    setEditingSchoolIndex(index);
+    setIsAddingSchool(false);
+  };
+
+  const handleSaveSchoolModal = () => {
+    if (!schoolModalData || !schoolModalData.logo.trim()) {
+      alert("Please provide or upload a school logo image.");
+      return;
+    }
+    const readySchool: SummitParticipatingSchool = {
+      ...schoolModalData,
+      name: schoolModalData.name.trim() || "Participating School",
+      logo: schoolModalData.logo.trim(),
+    };
+
+    const nextList = [...content.participatingSchools.items];
+    if (isAddingSchool) {
+      nextList.push(readySchool);
+    } else if (editingSchoolIndex !== null) {
+      nextList[editingSchoolIndex] = readySchool;
+    }
+
+    setContent((prev) => ({
+      ...prev,
+      participatingSchools: { ...prev.participatingSchools, items: nextList },
+    }));
+    setEditingSchoolIndex(null);
+    setIsAddingSchool(false);
+    setSchoolModalData(null);
+    setFeedback({
+      type: "success",
+      text: `School "${readySchool.name}" saved. Click "Publish (Ctrl+S)" to persist.`,
+    });
+  };
+
+  const handleMoveSchool = (index: number, dir: -1 | 1) => {
+    const list = [...content.participatingSchools.items];
+    const target = index + dir;
+    if (target < 0 || target >= list.length) return;
+    const temp = list[index];
+    list[index] = list[target];
+    list[target] = temp;
+    setContent((prev) => ({
+      ...prev,
+      participatingSchools: { ...prev.participatingSchools, items: list },
+    }));
+  };
+
+  // ───────────────────────────────────────────────────────────────────────────
   // DELETE CONFIRMATION HANDLER
   // ───────────────────────────────────────────────────────────────────────────
   const handleDeleteConfirmed = () => {
@@ -440,6 +720,20 @@ export default function SummitCmsEditor() {
       setContent((prev) => ({
         ...prev,
         speakers: { ...prev.speakers, items: next },
+      }));
+    } else if (type === "panel") {
+      const next = content.panelDiscussion.items.filter((_, i) => i !== index);
+      setContent((prev) => ({
+        ...prev,
+        panelDiscussion: { ...prev.panelDiscussion, items: next },
+      }));
+    } else if (type === "school") {
+      const next = content.participatingSchools.items.filter(
+        (_, i) => i !== index
+      );
+      setContent((prev) => ({
+        ...prev,
+        participatingSchools: { ...prev.participatingSchools, items: next },
       }));
     } else if (type === "video") {
       const next = content.videos.items.filter((_, i) => i !== index);
@@ -619,8 +913,10 @@ export default function SummitCmsEditor() {
               { id: "objectives", label: "02 Summit Objectives", icon: Target },
               { id: "audience", label: "03 Target Audience Roles", icon: Users },
               { id: "speakers", label: "04 Speakers & Facilitators", icon: Sparkles },
-              { id: "videos", label: "05 Watch & Relive Videos", icon: Video },
-              { id: "cta", label: "06 Reserve Seat CTA", icon: Layers },
+              { id: "panel", label: "05 Panel Discussion", icon: GraduationCap },
+              { id: "schools", label: "06 Participating Schools", icon: Building2 },
+              { id: "videos", label: "07 Watch & Relive Videos", icon: Video },
+              { id: "cta", label: "08 Reserve Seat CTA", icon: Layers },
             ].map((tab) => {
               const TabIcon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -1307,50 +1603,595 @@ export default function SummitCmsEditor() {
                       </div>
                     </div>
 
+                    {/* Quick Position & Role Controls + Toolbar */}
+                    <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <div>
+                          <label className="block text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                            Card Position
+                          </label>
+                          <select
+                            value={idx}
+                            onChange={(e) =>
+                              handleSetSpeakerPosition(
+                                idx,
+                                Number(e.target.value)
+                              )
+                            }
+                            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+                          >
+                            {content.speakers.items.map((_, posIdx) => (
+                              <option key={posIdx} value={posIdx}>
+                                Position #{posIdx + 1}
+                                {posIdx === 0
+                                  ? " (1st Speaker)"
+                                  : posIdx === 1
+                                  ? " (2nd Speaker)"
+                                  : ` (Speaker ${posIdx + 1})`}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                            Role Badge
+                          </label>
+                          <select
+                            value={
+                              [
+                                "Lead Facilitator",
+                                "Event Facilitator",
+                                "Keynote Speaker",
+                                "Co-Facilitator",
+                                "Guest Facilitator",
+                              ].includes(spk.role)
+                                ? spk.role
+                                : "__custom__"
+                            }
+                            onChange={(e) => {
+                              if (e.target.value !== "__custom__") {
+                                handleSetSpeakerRoleInline(idx, e.target.value);
+                              } else {
+                                handleOpenEditSpeaker(idx);
+                              }
+                            }}
+                            className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+                          >
+                            <option value="Lead Facilitator">Lead Facilitator</option>
+                            <option value="Event Facilitator">Event Facilitator</option>
+                            <option value="Keynote Speaker">Keynote Speaker</option>
+                            <option value="Co-Facilitator">Co-Facilitator</option>
+                            <option value="Guest Facilitator">Guest Facilitator</option>
+                            {![
+                              "Lead Facilitator",
+                              "Event Facilitator",
+                              "Keynote Speaker",
+                              "Co-Facilitator",
+                              "Guest Facilitator",
+                            ].includes(spk.role) && (
+                              <option value="__custom__">{spk.role}</option>
+                            )}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/70">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-[#102E4D] text-[#FFC400]">
+                            #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveSpeaker(idx, -1)}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                            title="Move Left"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5 -rotate-90" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === content.speakers.items.length - 1}
+                            onClick={() => handleMoveSpeaker(idx, 1)}
+                            className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                            title="Move Right"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5 -rotate-90" />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEditSpeaker(idx)}
+                            className="px-3 py-1.5 rounded-lg bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit Details</span>
+                          </button>
+                          {content.speakers.items.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeleteTarget({
+                                  type: "speaker",
+                                  index: idx,
+                                  title: spk.name,
+                                })
+                              }
+                              className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer"
+                              title="Delete Speaker"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* TAB 05: PANEL DISCUSSION (FULL CRUD)                                */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "panel" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF7900]">
+                    Section 05
+                  </span>
+                  <h2 className="text-xl font-serif font-black text-[#102E4D]">
+                    Panel Discussion (Moderator Frame &amp; Panelists Main Card)
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Moderators display in the dedicated left full-cover card (expanding with height); Panelists display together in the right main card.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAddPanelMember("Moderator")}
+                    className="px-4 py-2.5 rounded-xl bg-[#102E4D] hover:bg-[#001B33] text-[#FFC400] text-xs font-extrabold uppercase tracking-wider shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Moderator</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAddPanelMember("Panelist")}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Panelist</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Section Header Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Section Eyebrow
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.panelDiscussion.eyebrow}
+                    placeholder="Panel Discussion"
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        panelDiscussion: {
+                          ...prev.panelDiscussion,
+                          eyebrow: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Main Panel Topic Heading
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.panelDiscussion.heading}
+                    placeholder="Redefining Success in a Changing World"
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        panelDiscussion: {
+                          ...prev.panelDiscussion,
+                          heading: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div className="md:col-span-3">
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Panel Subtitle / Theme Focus
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.panelDiscussion.subtitle}
+                    placeholder="Leadership, Wellbeing and Life Readiness in Education"
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        panelDiscussion: {
+                          ...prev.panelDiscussion,
+                          subtitle: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Panel Members Compact Equal-Sized Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+                {content.panelDiscussion.items.map((member, idx) => {
+                  const isMod = member.role?.toLowerCase().includes("moderator");
+                  return (
+                    <div
+                      key={member.id || idx}
+                      className="rounded-2xl bg-white border border-[#D7F5EF] hover:border-[#FFC400] shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col justify-between group relative"
+                    >
+                      <div
+                        className={`h-1.5 w-full bg-gradient-to-r ${
+                          member.topAccent ||
+                          (isMod
+                            ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+                            : "from-[#FF7900] via-[#E56D00] to-[#FFC400]")
+                        }`}
+                      />
+
+                      <div className="p-5 flex-1 flex flex-col items-center justify-between text-center">
+                        <div className="flex flex-col items-center">
+                          <span
+                            className={`text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border ${
+                              member.badgeColor ||
+                              (isMod
+                                ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+                                : "bg-[#FF7900] text-white border-[#FF7900]/30")
+                            } inline-block mb-3`}
+                          >
+                            {member.role}
+                          </span>
+
+                          <div className="w-22 h-22 rounded-full overflow-hidden bg-[#EAF6F3] border-2 border-slate-200 shadow-sm mb-3">
+                            <img
+                              src={member.image || "/anonymous-female.svg"}
+                              alt={member.name}
+                              className="w-full h-full object-cover object-center"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="w-full">
+                          <h3 className="font-serif font-extrabold text-base text-[#102E4D]">
+                            {member.name}
+                          </h3>
+                          <div className="w-8 h-0.5 bg-[#FFC400] rounded-full my-1.5 mx-auto" />
+                          <p className="text-xs font-semibold text-slate-600 line-clamp-2 leading-snug">
+                            {member.designation}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Quick Card Position & Role Selector + Toolbar */}
+                      <div className="bg-slate-50 border-t border-slate-100 px-4 py-3 space-y-2.5">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                              Card Position
+                            </label>
+                            <select
+                              value={idx}
+                              onChange={(e) =>
+                                handleSetPanelPosition(
+                                  idx,
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+                            >
+                              {content.panelDiscussion.items.map((_, posIdx) => (
+                                <option key={posIdx} value={posIdx}>
+                                  Position #{posIdx + 1}
+                                  {posIdx === 0
+                                    ? " (1st Card)"
+                                    : posIdx === 1
+                                    ? " (2nd Card)"
+                                    : posIdx === 2
+                                    ? " (3rd Card)"
+                                    : ` (Card ${posIdx + 1})`}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-[9.5px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
+                              Member Role
+                            </label>
+                            <select
+                              value={
+                                [
+                                  "Moderator",
+                                  "Panelist",
+                                  "1st Panelist",
+                                  "2nd Panelist",
+                                  "3rd Panelist",
+                                  "Keynote Panelist",
+                                ].includes(member.role)
+                                  ? member.role
+                                  : "__custom__"
+                              }
+                              onChange={(e) => {
+                                if (e.target.value !== "__custom__") {
+                                  handleSetPanelRoleInline(idx, e.target.value);
+                                } else {
+                                  handleOpenEditPanelMember(idx);
+                                }
+                              }}
+                              className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-bold text-[#102E4D] focus:border-[#FF7900] focus:outline-none cursor-pointer"
+                            >
+                              <option value="Moderator">Moderator</option>
+                              <option value="Panelist">Panelist</option>
+                              <option value="1st Panelist">1st Panelist</option>
+                              <option value="2nd Panelist">2nd Panelist</option>
+                              <option value="3rd Panelist">3rd Panelist</option>
+                              <option value="Keynote Panelist">Keynote Panelist</option>
+                              {![
+                                "Moderator",
+                                "Panelist",
+                                "1st Panelist",
+                                "2nd Panelist",
+                                "3rd Panelist",
+                                "Keynote Panelist",
+                              ].includes(member.role) && (
+                                <option value="__custom__">{member.role}</option>
+                              )}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/70">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-[#102E4D] text-[#FFC400]">
+                              #{idx + 1}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMovePanelMember(idx, -1)}
+                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Left"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5 -rotate-90" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={
+                                idx === content.panelDiscussion.items.length - 1
+                              }
+                              onClick={() => handleMovePanelMember(idx, 1)}
+                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                              title="Move Right"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5 -rotate-90" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditPanelMember(idx)}
+                              className="px-3 py-1.5 rounded-lg bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                            {content.panelDiscussion.items.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDeleteTarget({
+                                    type: "panel",
+                                    index: idx,
+                                    title: member.name,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer"
+                                title="Delete Panel Member"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* TAB 06: PARTICIPATING SCHOOLS (FULL CRUD)                           */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {activeTab === "schools" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FF7900]">
+                    Section 06
+                  </span>
+                  <h2 className="text-xl font-serif font-black text-[#102E4D]">
+                    Participating Schools (Marquee Slider)
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Manage partner school logos and names featured in the continuous participating schools slider.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleOpenAddSchool}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add School Logo</span>
+                </button>
+              </div>
+
+              {/* Section Header Controls */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Section Eyebrow
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.participatingSchools.eyebrow}
+                    placeholder="Participating Schools"
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        participatingSchools: {
+                          ...prev.participatingSchools,
+                          eyebrow: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Section Heading
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.participatingSchools.heading}
+                    placeholder="Leading Institutions Joining the Summit"
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        participatingSchools: {
+                          ...prev.participatingSchools,
+                          heading: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Subtext Narrative (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={content.participatingSchools.subtext}
+                    placeholder="Visionary schools and educational networks uniting..."
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        participatingSchools: {
+                          ...prev.participatingSchools,
+                          subtext: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Participating Schools Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                {content.participatingSchools.items.map((school, idx) => (
+                  <div
+                    key={school.id || idx}
+                    className="rounded-2xl border border-[#D7F5EF] hover:border-[#FFC400] bg-white shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between"
+                  >
+                    <div className="h-1 w-full bg-gradient-to-r from-[#102E4D] via-[#FFC400] to-[#FF7900]" />
+                    <div className="p-4 flex flex-col items-center text-center">
+                      <div className="h-24 w-full rounded-xl border border-slate-100 bg-slate-50/60 flex items-center justify-center p-3 mb-3">
+                        <img
+                          src={school.logo}
+                          alt={school.name}
+                          className="max-h-16 max-w-[140px] object-contain"
+                        />
+                      </div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#FF7900]">
+                        School 0{idx + 1}
+                      </span>
+                      <h4 className="font-serif font-bold text-sm text-[#102E4D] truncate w-full mt-0.5">
+                        {school.name}
+                      </h4>
+                    </div>
+
                     {/* Toolbar */}
-                    <div className="bg-slate-50 border-t border-slate-100 px-5 py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
+                    <div className="bg-slate-50 border-t border-slate-100 px-3.5 py-2.5 flex items-center justify-between">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
                           disabled={idx === 0}
-                          onClick={() => handleMoveSpeaker(idx, -1)}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30"
-                          title="Move Left"
+                          onClick={() => handleMoveSchool(idx, -1)}
+                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                          title="Move Earlier"
                         >
                           <ArrowUp className="w-3.5 h-3.5 -rotate-90" />
                         </button>
                         <button
                           type="button"
-                          disabled={idx === content.speakers.items.length - 1}
-                          onClick={() => handleMoveSpeaker(idx, 1)}
-                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30"
-                          title="Move Right"
+                          disabled={
+                            idx === content.participatingSchools.items.length - 1
+                          }
+                          onClick={() => handleMoveSchool(idx, 1)}
+                          className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 disabled:opacity-30 cursor-pointer"
+                          title="Move Later"
                         >
                           <ArrowDown className="w-3.5 h-3.5 -rotate-90" />
                         </button>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => handleOpenEditSpeaker(idx)}
-                          className="px-3 py-1.5 rounded-lg bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1"
+                          onClick={() => handleOpenEditSchool(idx)}
+                          className="px-2.5 py-1.5 rounded-lg bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1 cursor-pointer"
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
+                          <Edit3 className="w-3 h-3" />
                           <span>Edit</span>
                         </button>
-                        {content.speakers.items.length > 1 && (
+                        {content.participatingSchools.items.length > 1 && (
                           <button
                             type="button"
                             onClick={() =>
                               setDeleteTarget({
-                                type: "speaker",
+                                type: "school",
                                 index: idx,
-                                title: spk.name,
+                                title: school.name,
                               })
                             }
-                            className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors"
-                            title="Delete Speaker"
+                            className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 transition-colors cursor-pointer"
+                            title="Delete School"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -1365,7 +2206,7 @@ export default function SummitCmsEditor() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        {/* TAB 05: WATCH & RELIVE VIDEOS (FULL CRUD)                           */}
+        {/* TAB 07: WATCH & RELIVE VIDEOS (FULL CRUD)                           */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {activeTab === "videos" && (
           <div className="space-y-6">
@@ -1765,7 +2606,35 @@ export default function SummitCmsEditor() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                      Card Display Position
+                    </label>
+                    <select
+                      className={cmsInputClass}
+                      value={speakerModalPosition}
+                      onChange={(e) =>
+                        setSpeakerModalPosition(Number(e.target.value))
+                      }
+                    >
+                      {Array.from({
+                        length:
+                          content.speakers.items.length +
+                          (isAddingSpeaker ? 1 : 0),
+                      }).map((_, posIdx) => (
+                        <option key={posIdx} value={posIdx}>
+                          Position #{posIdx + 1}
+                          {posIdx === 0
+                            ? " (1st Card)"
+                            : posIdx === 1
+                            ? " (2nd Card)"
+                            : ` (Card ${posIdx + 1})`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
                       Role Badge Label
@@ -2086,6 +2955,421 @@ export default function SummitCmsEditor() {
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all"
               >
                 Save Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* PANEL DISCUSSION MEMBER EDIT / ADD MODAL                            */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {panelModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-3xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 sm:p-6 bg-[#001B33] text-white flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFC400]">
+                  {isAddingPanel
+                    ? "Add Panel Discussion Member"
+                    : "Edit Panel Discussion Member"}
+                </span>
+                <h3 className="font-serif font-black text-lg sm:text-xl">
+                  {panelModalData.name || "Panel Member"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPanelModalData(null);
+                  setIsAddingPanel(false);
+                  setEditingPanelIndex(null);
+                }}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-7 space-y-4">
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={panelModalData.name}
+                    placeholder="e.g. Quratulain Ali Rizvi"
+                    onChange={(e) =>
+                      setPanelModalData({
+                        ...panelModalData,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                      Card Display Position
+                    </label>
+                    <select
+                      className={cmsInputClass}
+                      value={panelModalPosition}
+                      onChange={(e) =>
+                        setPanelModalPosition(Number(e.target.value))
+                      }
+                    >
+                      {Array.from({
+                        length:
+                          content.panelDiscussion.items.length +
+                          (isAddingPanel ? 1 : 0),
+                      }).map((_, posIdx) => (
+                        <option key={posIdx} value={posIdx}>
+                          Position #{posIdx + 1}
+                          {posIdx === 0
+                            ? " (1st Card)"
+                            : posIdx === 1
+                            ? " (2nd Card)"
+                            : posIdx === 2
+                            ? " (3rd Card)"
+                            : ` (Card ${posIdx + 1})`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                      Quick Role Preset
+                    </label>
+                    <select
+                      className={cmsInputClass}
+                      value={
+                        [
+                          "Moderator",
+                          "Panelist",
+                          "1st Panelist",
+                          "2nd Panelist",
+                          "3rd Panelist",
+                          "Keynote Panelist",
+                        ].includes(panelModalData.role)
+                          ? panelModalData.role
+                          : "__custom__"
+                      }
+                      onChange={(e) => {
+                        if (e.target.value === "__custom__") return;
+                        const nextRole = e.target.value;
+                        const isMod = nextRole.toLowerCase().includes("moderator");
+                        setPanelModalData({
+                          ...panelModalData,
+                          role: nextRole,
+                          badgeColor: isMod
+                            ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+                            : "bg-[#FF7900] text-white border-[#FF7900]/30",
+                          topAccent: isMod
+                            ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+                            : "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+                        });
+                      }}
+                    >
+                      <option value="Moderator">Moderator (Navy &amp; Gold)</option>
+                      <option value="Panelist">Panelist (Orange &amp; Gold)</option>
+                      <option value="1st Panelist">1st Panelist</option>
+                      <option value="2nd Panelist">2nd Panelist</option>
+                      <option value="3rd Panelist">3rd Panelist</option>
+                      <option value="Keynote Panelist">Keynote Panelist</option>
+                      <option value="__custom__">Custom Role Label</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                      Role Badge Text
+                    </label>
+                    <input
+                      type="text"
+                      className={cmsInputClass}
+                      value={panelModalData.role}
+                      placeholder="Moderator or Panelist"
+                      onChange={(e) => {
+                        const nextRole = e.target.value;
+                        const isMod = nextRole.toLowerCase().includes("moderator");
+                        setPanelModalData({
+                          ...panelModalData,
+                          role: nextRole,
+                          badgeColor: isMod
+                            ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+                            : "bg-[#FF7900] text-white border-[#FF7900]/30",
+                          topAccent: isMod
+                            ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+                            : "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Designation &amp; Institution
+                  </label>
+                  <textarea
+                    rows={2}
+                    className={cmsInputClass}
+                    value={panelModalData.designation}
+                    placeholder="e.g. Principal, GSIS School and College"
+                    onChange={(e) =>
+                      setPanelModalData({
+                        ...panelModalData,
+                        designation: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                    Profile Photo URL
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      className={cmsInputClass}
+                      value={panelModalData.image}
+                      placeholder="/Submit/Panalist/moderator.jpg"
+                      onChange={(e) =>
+                        setPanelModalData({
+                          ...panelModalData,
+                          image: e.target.value,
+                        })
+                      }
+                    />
+                    <button
+                      type="button"
+                      disabled={isUploading}
+                      onClick={() =>
+                        triggerImageUpload((url) => {
+                          setPanelModalData((prev) =>
+                            prev ? { ...prev, image: url } : null
+                          );
+                        })
+                      }
+                      className="px-3.5 py-2.5 rounded-xl bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Live Card Preview (Moderator Full-Cover vs Panelist Circular) */}
+              <div className="lg:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-center">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-3 block text-center">
+                  {panelModalData.role?.toLowerCase().includes("moderator")
+                    ? "Live Moderator Card Preview (Full-Cover Left Frame)"
+                    : "Live Panelist Preview (Right Panelists Main Card)"}
+                </span>
+                {panelModalData.role?.toLowerCase().includes("moderator") ? (
+                  <div className="relative rounded-2xl border-2 border-[#102E4D]/35 bg-white pt-6 pb-4 px-4 flex flex-col justify-between shadow-sm">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-white px-3">
+                      <span className="font-serif font-extrabold text-base text-[#102E4D]">
+                        Moderator
+                      </span>
+                    </div>
+                    <div className="relative w-full h-52 rounded-xl overflow-hidden border border-[#D7F5EF] bg-[#EAF6F3]">
+                      <img
+                        src={
+                          panelModalData.image ||
+                          "/Submit/Panalist/moderator.jpg"
+                        }
+                        alt={panelModalData.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="pt-3 text-center">
+                      <h4 className="font-serif font-extrabold text-base text-[#102E4D]">
+                        {panelModalData.name || "Moderator Name"}
+                      </h4>
+                      <div className="w-8 h-0.5 bg-[#FFC400] rounded-full my-1.5 mx-auto" />
+                      <p className="text-xs font-bold text-[#234767] whitespace-pre-line">
+                        {panelModalData.designation || "Designation & Institution"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative rounded-2xl border-2 border-[#102E4D]/35 bg-white pt-7 pb-5 px-4 flex flex-col items-center justify-center text-center shadow-sm">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-white px-3">
+                      <span className="font-serif font-extrabold text-base text-[#102E4D]">
+                        Panelists
+                      </span>
+                    </div>
+                    <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-[#102E4D]/15 ring-4 ring-[#EAF6F3] shadow-sm bg-[#EAF6F3] mb-3">
+                      <img
+                        src={panelModalData.image || "/anonymous-female.svg"}
+                        alt={panelModalData.name}
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <h4 className="font-serif font-extrabold text-base text-[#102E4D]">
+                      {panelModalData.name || "Panelist Name"}
+                    </h4>
+                    <div className="w-8 h-0.5 bg-[#FFC400] rounded-full my-1.5 mx-auto" />
+                    <p className="text-xs font-semibold text-[#234767] whitespace-pre-line">
+                      {panelModalData.designation || "Designation & Institution"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPanelModalData(null);
+                  setIsAddingPanel(false);
+                  setEditingPanelIndex(null);
+                }}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePanelModal}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer"
+              >
+                Save Panel Member
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {/* PARTICIPATING SCHOOL EDIT / ADD MODAL                               */}
+      {/* ─────────────────────────────────────────────────────────────────── */}
+      {schoolModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 sm:p-6 bg-[#001B33] text-white flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#FFC400]">
+                  {isAddingSchool
+                    ? "Add Participating School Logo"
+                    : "Edit Participating School"}
+                </span>
+                <h3 className="font-serif font-black text-lg sm:text-xl">
+                  {schoolModalData.name || "School Details"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSchoolModalData(null);
+                  setIsAddingSchool(false);
+                  setEditingSchoolIndex(null);
+                }}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 sm:p-8 space-y-5 overflow-y-auto">
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                  School / Institution Name *
+                </label>
+                <input
+                  type="text"
+                  className={cmsInputClass}
+                  value={schoolModalData.name}
+                  placeholder="e.g. Army Public School & College"
+                  onChange={(e) =>
+                    setSchoolModalData({
+                      ...schoolModalData,
+                      name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#102E4D] mb-1.5">
+                  School Logo URL *
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    className={cmsInputClass}
+                    value={schoolModalData.logo}
+                    placeholder="/Submit/SchoolLogos/S1 (1).png"
+                    onChange={(e) =>
+                      setSchoolModalData({
+                        ...schoolModalData,
+                        logo: e.target.value,
+                      })
+                    }
+                  />
+                  <button
+                    type="button"
+                    disabled={isUploading}
+                    onClick={() =>
+                      triggerImageUpload((url) => {
+                        setSchoolModalData((prev) =>
+                          prev ? { ...prev, logo: url } : null
+                        );
+                      })
+                    }
+                    className="px-3.5 py-2.5 rounded-xl bg-[#001B33] text-white text-xs font-bold hover:bg-[#102E4D] transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Slider Card Preview */}
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col items-center">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-3 block">
+                  Live Marquee Card Preview
+                </span>
+                <div className="h-28 w-52 rounded-2xl border border-[#D7F5EF] bg-white p-4 shadow-sm flex items-center justify-center">
+                  <img
+                    src={
+                      schoolModalData.logo || "/Submit/SchoolLogos/S1 (1).png"
+                    }
+                    alt={schoolModalData.name}
+                    className="max-h-18 max-w-[165px] object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setSchoolModalData(null);
+                  setIsAddingSchool(false);
+                  setEditingSchoolIndex(null);
+                }}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSchoolModal}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF7900] to-[#E56D00] text-white text-xs font-extrabold uppercase tracking-wider shadow-md hover:shadow-lg transition-all cursor-pointer"
+              >
+                Save School Logo
               </button>
             </div>
           </div>

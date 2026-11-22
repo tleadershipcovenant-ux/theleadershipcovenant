@@ -97,9 +97,11 @@ export default function SummitPageView() {
         audience={content.audience}
       />
 
-      {/* 5, 6, 9. Interactive Animated Sections (Speakers, Video Slider, CTA) */}
+      {/* 5, 6, 9. Interactive Animated Sections (Speakers, Panel Discussion, Participating Schools, Video Slider, CTA) */}
       <SummitInteractiveSections
         speakers={content.speakers}
+        panelDiscussion={content.panelDiscussion}
+        participatingSchools={content.participatingSchools}
         videos={content.videos}
         registration={content.registration}
       />

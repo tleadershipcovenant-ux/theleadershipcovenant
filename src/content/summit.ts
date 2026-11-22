@@ -55,6 +55,36 @@ export interface SummitSpeakersContent {
   items: SummitSpeaker[];
 }
 
+export interface SummitPanelMember {
+  id: string;
+  name: string;
+  role: string;
+  designation: string;
+  image: string;
+  badgeColor?: string;
+  topAccent?: string;
+}
+
+export interface SummitPanelDiscussionContent {
+  eyebrow: string;
+  heading: string;
+  subtitle: string;
+  items: SummitPanelMember[];
+}
+
+export interface SummitParticipatingSchool {
+  id: string;
+  name: string;
+  logo: string;
+}
+
+export interface SummitParticipatingSchoolsContent {
+  eyebrow: string;
+  heading: string;
+  subtext: string;
+  items: SummitParticipatingSchool[];
+}
+
 export interface SummitVideoItem {
   id: string;
   youtubeId: string;
@@ -88,6 +118,8 @@ export interface SummitPageContent {
   objectives: SummitObjectivesContent;
   audience: SummitAudienceContent;
   speakers: SummitSpeakersContent;
+  panelDiscussion: SummitPanelDiscussionContent;
+  participatingSchools: SummitParticipatingSchoolsContent;
   videos: SummitVideosContent;
   registration: SummitCtaContent;
 }
@@ -113,6 +145,101 @@ export const SUMMIT_DEFAULT_SPEAKERS: SummitSpeaker[] = [
     image: "/images/ubaid.jpg",
     badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
     topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+  },
+];
+
+export const SUMMIT_DEFAULT_PANEL_MEMBERS: SummitPanelMember[] = [
+  {
+    id: "panel-moderator-1",
+    name: "Quratulain Ali Rizvi",
+    role: "Moderator",
+    designation: "Principal, GSIS School and College",
+    image: "/Submit/Panalist/moderator.jpg",
+    badgeColor: "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30",
+    topAccent: "from-[#102E4D] via-[#001B33] to-[#FFC400]",
+  },
+  {
+    id: "panel-member-1",
+    name: "Sabahat K. Tatari",
+    role: "Panelist",
+    designation:
+      "Head of International Baccalaureate Programmes, Headstart School",
+    image: "/Submit/Panalist/panelist1.jpg",
+    badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
+    topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+  },
+  {
+    id: "panel-member-2",
+    name: "Prof. Dr. Muhammad Sajid",
+    role: "Panelist",
+    designation:
+      "Director, Institute of Professional Development IIUI\nDirector IIUI School",
+    image: "/Submit/Panalist/panelist2.jpeg",
+    badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
+    topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+  },
+  {
+    id: "panel-member-3",
+    name: "Wg Cdr. Tahira Rasool",
+    role: "Panelist",
+    designation:
+      "Deputy Director FEAD (Fazaia Educational Advisory Department)",
+    image: "/anonymous-female.svg",
+    badgeColor: "bg-[#FF7900] text-white border-[#FF7900]/30",
+    topAccent: "from-[#FF7900] via-[#E56D00] to-[#FFC400]",
+  },
+];
+
+export const SUMMIT_DEFAULT_PARTICIPATING_SCHOOLS: SummitParticipatingSchool[] = [
+  {
+    id: "school-1",
+    name: "Participating Partner School 1",
+    logo: "/Submit/SchoolLogos/S1 (1).png",
+  },
+  {
+    id: "school-2",
+    name: "Participating Partner School 2",
+    logo: "/Submit/SchoolLogos/S1 (1).jpeg",
+  },
+  {
+    id: "school-3",
+    name: "Participating Partner School 3",
+    logo: "/Submit/SchoolLogos/S1 (2).jpeg",
+  },
+  {
+    id: "school-4",
+    name: "Participating Partner School 4",
+    logo: "/Submit/SchoolLogos/S1 (3).jpeg",
+  },
+  {
+    id: "school-5",
+    name: "Participating Partner School 5",
+    logo: "/Submit/SchoolLogos/S1 (4).jpeg",
+  },
+  {
+    id: "school-6",
+    name: "Participating Partner School 6",
+    logo: "/Submit/SchoolLogos/S1 (5).jpeg",
+  },
+  {
+    id: "school-7",
+    name: "Participating Partner School 7",
+    logo: "/Submit/SchoolLogos/S1 (6).jpeg",
+  },
+  {
+    id: "school-8",
+    name: "Participating Partner School 8",
+    logo: "/Submit/SchoolLogos/S1 (7).jpeg",
+  },
+  {
+    id: "school-9",
+    name: "Participating Partner School 9",
+    logo: "/Submit/SchoolLogos/S1 (8).jpeg",
+  },
+  {
+    id: "school-10",
+    name: "Participating Partner School 10",
+    logo: "/Submit/SchoolLogos/S1 (9).jpeg",
   },
 ];
 
@@ -228,6 +355,19 @@ export const SUMMIT_CONTENT: SummitPageContent = {
     heading: "Featuring Distinguished Voices from Education",
     items: SUMMIT_DEFAULT_SPEAKERS,
   },
+  panelDiscussion: {
+    eyebrow: "Panel Discussion",
+    heading: "Redefining Success in a Changing World",
+    subtitle: "Leadership, Wellbeing and Life Readiness in Education",
+    items: SUMMIT_DEFAULT_PANEL_MEMBERS,
+  },
+  participatingSchools: {
+    eyebrow: "Participating Schools",
+    heading: "Leading Institutions Joining the Summit",
+    subtext:
+      "Visionary schools and educational networks uniting to build a culture of leadership and whole-school transformation.",
+    items: SUMMIT_DEFAULT_PARTICIPATING_SCHOOLS,
+  },
   videos: {
     eyebrow: "Watch & Relive",
     heading: "Highlights from our last event",
@@ -314,7 +454,9 @@ export function normalizeSummitCms(
       return {
         role: String(it?.role || def?.role || "Leader"),
         icon: iconKey,
-        topGradient: String(it?.topGradient || def?.topGradient || "from-[#102E4D] to-[#FFC400]"),
+        topGradient: String(
+          it?.topGradient || def?.topGradient || "from-[#102E4D] to-[#FFC400]"
+        ),
       };
     }),
   };
@@ -347,6 +489,111 @@ export function normalizeSummitCms(
         ),
       };
     }),
+  };
+
+  // Panel Discussion
+  const panelSrc =
+    (src.panelDiscussion as Partial<SummitPanelDiscussionContent> | undefined) ||
+    {};
+  const rawPanelList = Array.isArray(panelSrc.items) ? panelSrc.items : null;
+  // Auto-upgrade legacy 3-item hardcoded list that still has Wajiha Shabbir or old root image paths
+  const hasLegacyPanel =
+    !rawPanelList ||
+    rawPanelList.some(
+      (it: Partial<SummitPanelMember>) =>
+        it?.name === "Wajiha Shabbir" ||
+        it?.image === "/moderator.jpg" ||
+        it?.image === "/panelist1.jpg"
+    );
+  const panelItemsRaw = hasLegacyPanel
+    ? defaults.panelDiscussion.items
+    : rawPanelList;
+
+  const panelDiscussion: SummitPanelDiscussionContent = {
+    eyebrow: String(
+      panelSrc.eyebrow || defaults.panelDiscussion.eyebrow
+    ),
+    heading: String(
+      panelSrc.heading || defaults.panelDiscussion.heading
+    ),
+    subtitle: String(
+      panelSrc.subtitle ?? defaults.panelDiscussion.subtitle
+    ),
+    items: panelItemsRaw.map((it: Partial<SummitPanelMember>, i: number) => {
+      const def =
+        defaults.panelDiscussion.items[i] || defaults.panelDiscussion.items[0];
+      const roleStr = String(it?.role || def?.role || "Panelist");
+      const isMod = roleStr.toLowerCase().includes("moderator");
+      let imgPath = String(it?.image || def?.image || "/anonymous-female.svg");
+      if (imgPath === "/moderator.jpg") imgPath = "/Submit/Panalist/moderator.jpg";
+      if (imgPath === "/panelist1.jpg") imgPath = "/Submit/Panalist/panelist1.jpg";
+      return {
+        id: String(it?.id || def?.id || `panel-${i + 1}`),
+        name: String(it?.name || def?.name || "Panel Member"),
+        role: roleStr,
+        designation: String(it?.designation || def?.designation || ""),
+        image: imgPath,
+        badgeColor: String(
+          it?.badgeColor ||
+            (isMod
+              ? "bg-[#102E4D] text-[#FFC400] border-[#102E4D]/30"
+              : "bg-[#FF7900] text-white border-[#FF7900]/30")
+        ),
+        topAccent: String(
+          it?.topAccent ||
+            (isMod
+              ? "from-[#102E4D] via-[#001B33] to-[#FFC400]"
+              : "from-[#FF7900] via-[#E56D00] to-[#FFC400]")
+        ),
+      };
+    }),
+  };
+
+  // Participating Schools
+  const schoolsSrc =
+    (src.participatingSchools as
+      | Partial<SummitParticipatingSchoolsContent>
+      | undefined) || {};
+  const rawSchoolsList = Array.isArray(schoolsSrc.items)
+    ? schoolsSrc.items
+    : null;
+  // Auto-upgrade legacy "/SchoolLogos/..." paths to "/Submit/SchoolLogos/..."
+  const hasLegacySchools =
+    !rawSchoolsList ||
+    rawSchoolsList.some(
+      (it: Partial<SummitParticipatingSchool>) =>
+        typeof it?.logo === "string" && it.logo.startsWith("/SchoolLogos/")
+    );
+  const schoolsItemsRaw = hasLegacySchools
+    ? defaults.participatingSchools.items
+    : rawSchoolsList;
+
+  const participatingSchools: SummitParticipatingSchoolsContent = {
+    eyebrow: String(
+      schoolsSrc.eyebrow || defaults.participatingSchools.eyebrow
+    ),
+    heading: String(
+      schoolsSrc.heading ?? defaults.participatingSchools.heading
+    ),
+    subtext: String(
+      schoolsSrc.subtext ?? defaults.participatingSchools.subtext
+    ),
+    items: schoolsItemsRaw.map(
+      (it: Partial<SummitParticipatingSchool>, i: number) => {
+        const def =
+          defaults.participatingSchools.items[i] ||
+          defaults.participatingSchools.items[0];
+        return {
+          id: String(it?.id || def?.id || `school-${i + 1}`),
+          name: String(
+            it?.name || def?.name || `Participating School ${i + 1}`
+          ),
+          logo: String(
+            it?.logo || def?.logo || "/Submit/SchoolLogos/S1 (1).png"
+          ),
+        };
+      }
+    ),
   };
 
   // Videos
@@ -416,6 +663,20 @@ export function normalizeSummitCms(
     speakers: {
       ...speakers,
       items: speakers.items.length > 0 ? speakers.items : defaults.speakers.items,
+    },
+    panelDiscussion: {
+      ...panelDiscussion,
+      items:
+        panelDiscussion.items.length > 0
+          ? panelDiscussion.items
+          : defaults.panelDiscussion.items,
+    },
+    participatingSchools: {
+      ...participatingSchools,
+      items:
+        participatingSchools.items.length > 0
+          ? participatingSchools.items
+          : defaults.participatingSchools.items,
     },
     videos: {
       ...videos,
